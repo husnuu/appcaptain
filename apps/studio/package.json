@@ -1,0 +1,23 @@
+{
+  "name": "@getyourboat/studio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev --port 3333",
+    "build": "sanity build",
+    "start": "sanity start",
+    "deploy": "sanity deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.68.3",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@sanity/vision": "^3.68.3",
+    "@types/react": "^18.3.17",
+    "typescript": "^5.6.3"
+  }
+}

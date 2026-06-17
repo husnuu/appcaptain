@@ -1,0 +1,4589 @@
+{
+  "source": "BoatListingRequirements.xlsx > Requirements Matrix",
+  "color_rule": "Only cells filled bright green (#00FF00) under SEAHUB HOURLY and SEAHUB STAY INCLUDED were included.",
+  "counts": {
+    "total_unique_fields": 137,
+    "seahub_hourly_fields": 56,
+    "seahub_stay_included_fields": 133
+  },
+  "fields": [
+    {
+      "sort_order": 1,
+      "source_row": 3,
+      "key": "user_account_email_password",
+      "label": "User Account (Email/Password)",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 2,
+      "source_row": 4,
+      "key": "full_name_contact_person",
+      "label": "Full Name / Contact Person",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 3,
+      "source_row": 5,
+      "key": "phone_number",
+      "label": "Phone Number",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 4,
+      "source_row": 6,
+      "key": "company_business_name",
+      "label": "Company / Business Name",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 5,
+      "source_row": 7,
+      "key": "profile_photo_logo",
+      "label": "Profile Photo / Logo",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 6,
+      "source_row": 8,
+      "key": "address_location",
+      "label": "Address / Location",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 7,
+      "source_row": 11,
+      "key": "language",
+      "label": "Language",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 8,
+      "source_row": 14,
+      "key": "boat_type_sailboat_motor_gulet_etc",
+      "label": "Boat Type (sailboat, motor, gulet, etc.)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 9,
+      "source_row": 15,
+      "key": "boat_name",
+      "label": "Boat Name",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 10,
+      "source_row": 16,
+      "key": "country",
+      "label": "Country",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 11,
+      "source_row": 17,
+      "key": "region",
+      "label": "Region",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 12,
+      "source_row": 18,
+      "key": "city",
+      "label": "City",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 13,
+      "source_row": 20,
+      "key": "marina",
+      "label": "Marina",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 14,
+      "source_row": 21,
+      "key": "manufacturer_brand",
+      "label": "Manufacturer / Brand",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 15,
+      "source_row": 22,
+      "key": "model",
+      "label": "Model",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 16,
+      "source_row": 24,
+      "key": "capacity",
+      "label": "Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 17,
+      "source_row": 29,
+      "key": "year_of_manufacture",
+      "label": "Year of Manufacture",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 18,
+      "source_row": 30,
+      "key": "year_of_refit",
+      "label": "Year of Refit",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 19,
+      "source_row": 33,
+      "key": "length_ft_m",
+      "label": "Length (ft/m)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 20,
+      "source_row": 34,
+      "key": "beam_width",
+      "label": "Beam (width)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 21,
+      "source_row": 35,
+      "key": "draft",
+      "label": "Draft",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 22,
+      "source_row": 36,
+      "key": "water_tank_capacity",
+      "label": "Water Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 23,
+      "source_row": 37,
+      "key": "waste_tank_capacity",
+      "label": "Waste Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 24,
+      "source_row": 38,
+      "key": "hull_material",
+      "label": "Hull Material",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 25,
+      "source_row": 39,
+      "key": "number_of_engines",
+      "label": "Number of Engines",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 26,
+      "source_row": 41,
+      "key": "total_engine_power_hp",
+      "label": "Total Engine Power (HP)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 27,
+      "source_row": 42,
+      "key": "fuel_tank_capacity",
+      "label": "Fuel Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 28,
+      "source_row": 43,
+      "key": "fuel_consumption",
+      "label": "Fuel Consumption",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 29,
+      "source_row": 44,
+      "key": "engine_type_brand",
+      "label": "Engine Type (Brand)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 30,
+      "source_row": 45,
+      "key": "fuel_type",
+      "label": "Fuel Type",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 31,
+      "source_row": 46,
+      "key": "number_of_crew_members",
+      "label": "Number of Crew Members",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional button needed",
+        "seahub_stay_included": "Optional button needed"
+      }
+    },
+    {
+      "sort_order": 32,
+      "source_row": 51,
+      "key": "max_speed",
+      "label": "Max Speed",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 33,
+      "source_row": 53,
+      "key": "number_of_cabins_for_customer_without_crew",
+      "label": "Number of Cabins for Customer without Crew",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 34,
+      "source_row": 54,
+      "key": "master_cabin",
+      "label": "Master Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 35,
+      "source_row": 55,
+      "key": "single_cabin",
+      "label": "Single Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 36,
+      "source_row": 56,
+      "key": "double_cabin",
+      "label": "Double Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 37,
+      "source_row": 60,
+      "key": "double_cabin_bunk_beds",
+      "label": "Double Cabin (Bunk Beds)",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 38,
+      "source_row": 61,
+      "key": "beds_in_saloon",
+      "label": "Beds in Saloon",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 39,
+      "source_row": 64,
+      "key": "maximum_sleeps_berths",
+      "label": "Maximum sleeps (Berths)",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 40,
+      "source_row": 66,
+      "key": "total_toilets_just_for_customers",
+      "label": "Total Toilets just for Customers",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 41,
+      "source_row": 69,
+      "key": "shared_bathrooms",
+      "label": "Shared Bathrooms",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 42,
+      "source_row": 70,
+      "key": "electric_toilets",
+      "label": "Electric Toilets",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 43,
+      "source_row": 72,
+      "key": "air_conditioning",
+      "label": "Air Conditioning",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 44,
+      "source_row": 73,
+      "key": "bbq",
+      "label": "BBQ",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 45,
+      "source_row": 74,
+      "key": "coffee_machine",
+      "label": "Coffee Machine",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 46,
+      "source_row": 75,
+      "key": "cooker",
+      "label": "Cooker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 47,
+      "source_row": 76,
+      "key": "dishwasher",
+      "label": "Dishwasher",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 48,
+      "source_row": 77,
+      "key": "freezer",
+      "label": "Freezer",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 49,
+      "source_row": 78,
+      "key": "fridge",
+      "label": "Fridge",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 50,
+      "source_row": 79,
+      "key": "heating_isinma_webasto",
+      "label": "Heating (ısınma webasto)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 51,
+      "source_row": 80,
+      "key": "ice_maker",
+      "label": "Ice Maker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 52,
+      "source_row": 81,
+      "key": "kitchen_utensils",
+      "label": "Kitchen Utensils",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 53,
+      "source_row": 82,
+      "key": "microwave",
+      "label": "Microwave",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 54,
+      "source_row": 83,
+      "key": "outside_shower",
+      "label": "Outside Shower",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 55,
+      "source_row": 84,
+      "key": "oven",
+      "label": "Oven",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 56,
+      "source_row": 86,
+      "key": "shower",
+      "label": "Shower",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 57,
+      "source_row": 88,
+      "key": "towels",
+      "label": "Towels",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 58,
+      "source_row": 93,
+      "key": "usb_socket",
+      "label": "USB Socket",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 59,
+      "source_row": 94,
+      "key": "wi_fi",
+      "label": "Wİfi",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 60,
+      "source_row": 95,
+      "key": "fans",
+      "label": "Fans",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 61,
+      "source_row": 96,
+      "key": "water_maker",
+      "label": "Water Maker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 62,
+      "source_row": 97,
+      "key": "audio_system_hoparlor",
+      "label": "Audio System (Hoparlör)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 63,
+      "source_row": 102,
+      "key": "sprayhood",
+      "label": "Sprayhood",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 64,
+      "source_row": 103,
+      "key": "lazy_bag",
+      "label": "Lazy Bag",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 65,
+      "source_row": 104,
+      "key": "hair_dryer",
+      "label": "Hair Dryer",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 66,
+      "source_row": 107,
+      "key": "cockpit_cushion",
+      "label": "Cockpit Cushion",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 67,
+      "source_row": 110,
+      "key": "teak_cockpit",
+      "label": "Teak Cockpit",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 68,
+      "source_row": 111,
+      "key": "cockpit_table",
+      "label": "Cockpit Table",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 69,
+      "source_row": 114,
+      "key": "usb_aux_connection",
+      "label": "USB/AUX Connection",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 70,
+      "source_row": 115,
+      "key": "usb_mp3",
+      "label": "USB MP3",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 71,
+      "source_row": 116,
+      "key": "bar",
+      "label": "Bar",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 72,
+      "source_row": 118,
+      "key": "tv",
+      "label": "TV",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 73,
+      "source_row": 143,
+      "key": "autopilot",
+      "label": "Autopilot",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 74,
+      "source_row": 144,
+      "key": "bimini",
+      "label": "Bimini",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 75,
+      "source_row": 145,
+      "key": "bow_thruster",
+      "label": "Bow Thruster",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 76,
+      "source_row": 146,
+      "key": "dinghy",
+      "label": "Dinghy",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 77,
+      "source_row": 147,
+      "key": "dinghy_s_motor",
+      "label": "Dinghy's motor",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 78,
+      "source_row": 148,
+      "key": "electric_winches",
+      "label": "Electric Winches",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 79,
+      "source_row": 149,
+      "key": "flybridge",
+      "label": "Flybridge",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 80,
+      "source_row": 150,
+      "key": "generator",
+      "label": "Generator",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 81,
+      "source_row": 152,
+      "key": "inverter",
+      "label": "Inverter",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 82,
+      "source_row": 153,
+      "key": "outside_gps_plotter",
+      "label": "Outside GPS Plotter",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 83,
+      "source_row": 154,
+      "key": "radar",
+      "label": "Radar",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 84,
+      "source_row": 157,
+      "key": "solar_panels",
+      "label": "Solar Panels",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 85,
+      "source_row": 159,
+      "key": "teak_deck",
+      "label": "Teak Deck",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 86,
+      "source_row": 161,
+      "key": "220v_power_outlet",
+      "label": "220V Power Outlet",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 87,
+      "source_row": 162,
+      "key": "gps",
+      "label": "GPS",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 88,
+      "source_row": 163,
+      "key": "sun_deck",
+      "label": "Sun Deck",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 89,
+      "source_row": 166,
+      "key": "vhf",
+      "label": "VHF",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 90,
+      "source_row": 167,
+      "key": "depth_sounder",
+      "label": "Depth Sounder",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 91,
+      "source_row": 169,
+      "key": "bathing_ladder",
+      "label": "Bathing Ladder",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 92,
+      "source_row": 170,
+      "key": "guides_and_maps",
+      "label": "Guides and Maps",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 93,
+      "source_row": 171,
+      "key": "hot_water",
+      "label": "Hot Water",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true,
+      "notes": {
+        "seahub_hourly": "For drinking",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 94,
+      "source_row": 173,
+      "key": "swim_platform",
+      "label": "Swim Platform",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 95,
+      "source_row": 175,
+      "key": "life_jackets",
+      "label": "Life Jackets",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 96,
+      "source_row": 176,
+      "key": "life_belts",
+      "label": "Life Belts",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 97,
+      "source_row": 177,
+      "key": "safety_lines",
+      "label": "Safety Lines",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 98,
+      "source_row": 178,
+      "key": "life_raft",
+      "label": "Life Raft",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 99,
+      "source_row": 179,
+      "key": "signal_flags",
+      "label": "Signal Flags",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 100,
+      "source_row": 180,
+      "key": "epirb_emergency_position_indicating_radio_beacons",
+      "label": "EPIRB (Emergency Position Indicating Radio Beacons)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 101,
+      "source_row": 181,
+      "key": "first_aid_kit",
+      "label": "First Aid Kit",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 102,
+      "source_row": 199,
+      "key": "not_permitted",
+      "label": "Not Permitted",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 103,
+      "source_row": 200,
+      "key": "welcome_at_additional_charge",
+      "label": "Welcome at additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 104,
+      "source_row": 201,
+      "key": "welcome_at_no_additional_charge",
+      "label": "Welcome at no additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 105,
+      "source_row": 203,
+      "key": "bareboat",
+      "label": "Bareboat",
+      "section": "rental_type",
+      "source_section": "RENTAL TYPE",
+      "type": "rental_option",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 106,
+      "source_row": 204,
+      "key": "skipper",
+      "label": "Skipper",
+      "section": "rental_type",
+      "source_section": "RENTAL TYPE",
+      "type": "rental_option",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "NO SELECTED FOR OWNER BUT SHOW TO CUSTOMER",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 107,
+      "source_row": 213,
+      "key": "deposit_type_payment_before",
+      "label": "Deposit Type (payment % before)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 108,
+      "source_row": 214,
+      "key": "instant_booking",
+      "label": "Instant Booking",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 109,
+      "source_row": 215,
+      "key": "confirmation_required",
+      "label": "Confirmation Required",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 110,
+      "source_row": 216,
+      "key": "cancellation_policy",
+      "label": "Cancellation Policy",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 111,
+      "source_row": 217,
+      "key": "check_in",
+      "label": "Check-in",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 112,
+      "source_row": 218,
+      "key": "check_out",
+      "label": "Check-out",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 113,
+      "source_row": 219,
+      "key": "check_in_time_day_rental",
+      "label": "Check-in time (day rental)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 114,
+      "source_row": 220,
+      "key": "check_out_time_day_rental",
+      "label": "Check-out time (day rental)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 115,
+      "source_row": 221,
+      "key": "fuel_cost",
+      "label": "Fuel Cost",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "if its no contact them ",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 116,
+      "source_row": 225,
+      "key": "min_rental_duration",
+      "label": "Min Rental Duration",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 117,
+      "source_row": 226,
+      "key": "weekly_check_in_out_day",
+      "label": "Weekly Check-in/out Day",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 118,
+      "source_row": 227,
+      "key": "daily_a_c_usage",
+      "label": "Daily A/C Usage",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 119,
+      "source_row": 231,
+      "key": "boat_rules_and_policies",
+      "label": "Boat Rules & Policies",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 120,
+      "source_row": 237,
+      "key": "alcohol_allowed",
+      "label": "Alcohol Allowed",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 121,
+      "source_row": 238,
+      "key": "outside_food_drink_allowed",
+      "label": "Outside Food/Drink Allowed",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 122,
+      "source_row": 242,
+      "key": "mooring_fees_not_included",
+      "label": "Mooring Fees Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 123,
+      "source_row": 243,
+      "key": "mooring_fees_included",
+      "label": "Mooring Fees Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 124,
+      "source_row": 244,
+      "key": "final_cleaning_not_included",
+      "label": "Final Cleaning Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 125,
+      "source_row": 245,
+      "key": "final_cleaning_included",
+      "label": "Final Cleaning Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 126,
+      "source_row": 246,
+      "key": "transit_log_not_included",
+      "label": "Transit Log Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 127,
+      "source_row": 247,
+      "key": "transit_log_included",
+      "label": "Transit Log Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 128,
+      "source_row": 251,
+      "key": "services_dj_photoshoot_decoration_birthday_laser_show_etc",
+      "label": "Services(DJ,Photoshoot,Decoration,Birthday,Laser Show etc)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 129,
+      "source_row": 253,
+      "key": "crew_members_included_in_the_price",
+      "label": "Crew members included in the price",
+      "section": "crew",
+      "source_section": "CREW",
+      "type": "crew_option",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Servent",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 130,
+      "source_row": 256,
+      "key": "certificate_of_insurance",
+      "label": "Certificate of Insurance",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 131,
+      "source_row": 257,
+      "key": "certificate_of_ownership",
+      "label": "Certificate of Ownership",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 132,
+      "source_row": 259,
+      "key": "amount_of_security_deposit",
+      "label": "Amount of security deposit",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 133,
+      "source_row": 266,
+      "key": "boat_plan",
+      "label": "Boat Plan",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": null,
+        "seahub_stay_included": "Optional "
+      }
+    },
+    {
+      "sort_order": 134,
+      "source_row": 267,
+      "key": "description",
+      "label": "Description",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 135,
+      "source_row": 268,
+      "key": "boat_photos",
+      "label": "Boat Photos",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 136,
+      "source_row": 269,
+      "key": "listing_title",
+      "label": "Listing Title",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 137,
+      "source_row": 270,
+      "key": "video_upload",
+      "label": "Video Upload",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional",
+        "seahub_stay_included": "Optional"
+      }
+    }
+  ],
+  "seahub_hourly": [
+    {
+      "sort_order": 1,
+      "source_row": 3,
+      "key": "user_account_email_password",
+      "label": "User Account (Email/Password)",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 2,
+      "source_row": 4,
+      "key": "full_name_contact_person",
+      "label": "Full Name / Contact Person",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 3,
+      "source_row": 5,
+      "key": "phone_number",
+      "label": "Phone Number",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 4,
+      "source_row": 6,
+      "key": "company_business_name",
+      "label": "Company / Business Name",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 5,
+      "source_row": 7,
+      "key": "profile_photo_logo",
+      "label": "Profile Photo / Logo",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 6,
+      "source_row": 8,
+      "key": "address_location",
+      "label": "Address / Location",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 7,
+      "source_row": 11,
+      "key": "language",
+      "label": "Language",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 8,
+      "source_row": 14,
+      "key": "boat_type_sailboat_motor_gulet_etc",
+      "label": "Boat Type (sailboat, motor, gulet, etc.)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 9,
+      "source_row": 15,
+      "key": "boat_name",
+      "label": "Boat Name",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 10,
+      "source_row": 16,
+      "key": "country",
+      "label": "Country",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 11,
+      "source_row": 17,
+      "key": "region",
+      "label": "Region",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 12,
+      "source_row": 18,
+      "key": "city",
+      "label": "City",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 13,
+      "source_row": 20,
+      "key": "marina",
+      "label": "Marina",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 14,
+      "source_row": 21,
+      "key": "manufacturer_brand",
+      "label": "Manufacturer / Brand",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 15,
+      "source_row": 22,
+      "key": "model",
+      "label": "Model",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 16,
+      "source_row": 24,
+      "key": "capacity",
+      "label": "Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 17,
+      "source_row": 29,
+      "key": "year_of_manufacture",
+      "label": "Year of Manufacture",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 18,
+      "source_row": 30,
+      "key": "year_of_refit",
+      "label": "Year of Refit",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 19,
+      "source_row": 33,
+      "key": "length_ft_m",
+      "label": "Length (ft/m)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 20,
+      "source_row": 34,
+      "key": "beam_width",
+      "label": "Beam (width)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 26,
+      "source_row": 41,
+      "key": "total_engine_power_hp",
+      "label": "Total Engine Power (HP)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 31,
+      "source_row": 46,
+      "key": "number_of_crew_members",
+      "label": "Number of Crew Members",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional button needed",
+        "seahub_stay_included": "Optional button needed"
+      }
+    },
+    {
+      "sort_order": 40,
+      "source_row": 66,
+      "key": "total_toilets_just_for_customers",
+      "label": "Total Toilets just for Customers",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 43,
+      "source_row": 72,
+      "key": "air_conditioning",
+      "label": "Air Conditioning",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 48,
+      "source_row": 77,
+      "key": "freezer",
+      "label": "Freezer",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 49,
+      "source_row": 78,
+      "key": "fridge",
+      "label": "Fridge",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 50,
+      "source_row": 79,
+      "key": "heating_isinma_webasto",
+      "label": "Heating (ısınma webasto)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 58,
+      "source_row": 93,
+      "key": "usb_socket",
+      "label": "USB Socket",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 59,
+      "source_row": 94,
+      "key": "wi_fi",
+      "label": "Wİfi",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 62,
+      "source_row": 97,
+      "key": "audio_system_hoparlor",
+      "label": "Audio System (Hoparlör)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 69,
+      "source_row": 114,
+      "key": "usb_aux_connection",
+      "label": "USB/AUX Connection",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 71,
+      "source_row": 116,
+      "key": "bar",
+      "label": "Bar",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 72,
+      "source_row": 118,
+      "key": "tv",
+      "label": "TV",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 93,
+      "source_row": 171,
+      "key": "hot_water",
+      "label": "Hot Water",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true,
+      "notes": {
+        "seahub_hourly": "For drinking",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 95,
+      "source_row": 175,
+      "key": "life_jackets",
+      "label": "Life Jackets",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 101,
+      "source_row": 181,
+      "key": "first_aid_kit",
+      "label": "First Aid Kit",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 102,
+      "source_row": 199,
+      "key": "not_permitted",
+      "label": "Not Permitted",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 103,
+      "source_row": 200,
+      "key": "welcome_at_additional_charge",
+      "label": "Welcome at additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 104,
+      "source_row": 201,
+      "key": "welcome_at_no_additional_charge",
+      "label": "Welcome at no additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 107,
+      "source_row": 213,
+      "key": "deposit_type_payment_before",
+      "label": "Deposit Type (payment % before)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 108,
+      "source_row": 214,
+      "key": "instant_booking",
+      "label": "Instant Booking",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 109,
+      "source_row": 215,
+      "key": "confirmation_required",
+      "label": "Confirmation Required",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 110,
+      "source_row": 216,
+      "key": "cancellation_policy",
+      "label": "Cancellation Policy",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 115,
+      "source_row": 221,
+      "key": "fuel_cost",
+      "label": "Fuel Cost",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "if its no contact them ",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 116,
+      "source_row": 225,
+      "key": "min_rental_duration",
+      "label": "Min Rental Duration",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 119,
+      "source_row": 231,
+      "key": "boat_rules_and_policies",
+      "label": "Boat Rules & Policies",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 120,
+      "source_row": 237,
+      "key": "alcohol_allowed",
+      "label": "Alcohol Allowed",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 121,
+      "source_row": 238,
+      "key": "outside_food_drink_allowed",
+      "label": "Outside Food/Drink Allowed",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 128,
+      "source_row": 251,
+      "key": "services_dj_photoshoot_decoration_birthday_laser_show_etc",
+      "label": "Services(DJ,Photoshoot,Decoration,Birthday,Laser Show etc)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": false
+      }
+    },
+    {
+      "sort_order": 129,
+      "source_row": 253,
+      "key": "crew_members_included_in_the_price",
+      "label": "Crew members included in the price",
+      "section": "crew",
+      "source_section": "CREW",
+      "type": "crew_option",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Servent",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 130,
+      "source_row": 256,
+      "key": "certificate_of_insurance",
+      "label": "Certificate of Insurance",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 131,
+      "source_row": 257,
+      "key": "certificate_of_ownership",
+      "label": "Certificate of Ownership",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 134,
+      "source_row": 267,
+      "key": "description",
+      "label": "Description",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 135,
+      "source_row": 268,
+      "key": "boat_photos",
+      "label": "Boat Photos",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 136,
+      "source_row": 269,
+      "key": "listing_title",
+      "label": "Listing Title",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 137,
+      "source_row": 270,
+      "key": "video_upload",
+      "label": "Video Upload",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional",
+        "seahub_stay_included": "Optional"
+      }
+    }
+  ],
+  "seahub_stay_included": [
+    {
+      "sort_order": 1,
+      "source_row": 3,
+      "key": "user_account_email_password",
+      "label": "User Account (Email/Password)",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 2,
+      "source_row": 4,
+      "key": "full_name_contact_person",
+      "label": "Full Name / Contact Person",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 3,
+      "source_row": 5,
+      "key": "phone_number",
+      "label": "Phone Number",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 4,
+      "source_row": 6,
+      "key": "company_business_name",
+      "label": "Company / Business Name",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 5,
+      "source_row": 7,
+      "key": "profile_photo_logo",
+      "label": "Profile Photo / Logo",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 6,
+      "source_row": 8,
+      "key": "address_location",
+      "label": "Address / Location",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 7,
+      "source_row": 11,
+      "key": "language",
+      "label": "Language",
+      "section": "account_profile",
+      "source_section": "ACCOUNT / PROFILE INFO",
+      "type": "profile_field",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 8,
+      "source_row": 14,
+      "key": "boat_type_sailboat_motor_gulet_etc",
+      "label": "Boat Type (sailboat, motor, gulet, etc.)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 9,
+      "source_row": 15,
+      "key": "boat_name",
+      "label": "Boat Name",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 10,
+      "source_row": 16,
+      "key": "country",
+      "label": "Country",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 11,
+      "source_row": 17,
+      "key": "region",
+      "label": "Region",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 12,
+      "source_row": 18,
+      "key": "city",
+      "label": "City",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 13,
+      "source_row": 20,
+      "key": "marina",
+      "label": "Marina",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 14,
+      "source_row": 21,
+      "key": "manufacturer_brand",
+      "label": "Manufacturer / Brand",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 15,
+      "source_row": 22,
+      "key": "model",
+      "label": "Model",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 16,
+      "source_row": 24,
+      "key": "capacity",
+      "label": "Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 17,
+      "source_row": 29,
+      "key": "year_of_manufacture",
+      "label": "Year of Manufacture",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 18,
+      "source_row": 30,
+      "key": "year_of_refit",
+      "label": "Year of Refit",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 19,
+      "source_row": 33,
+      "key": "length_ft_m",
+      "label": "Length (ft/m)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 20,
+      "source_row": 34,
+      "key": "beam_width",
+      "label": "Beam (width)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 21,
+      "source_row": 35,
+      "key": "draft",
+      "label": "Draft",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 22,
+      "source_row": 36,
+      "key": "water_tank_capacity",
+      "label": "Water Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 23,
+      "source_row": 37,
+      "key": "waste_tank_capacity",
+      "label": "Waste Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 24,
+      "source_row": 38,
+      "key": "hull_material",
+      "label": "Hull Material",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 25,
+      "source_row": 39,
+      "key": "number_of_engines",
+      "label": "Number of Engines",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 26,
+      "source_row": 41,
+      "key": "total_engine_power_hp",
+      "label": "Total Engine Power (HP)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 27,
+      "source_row": 42,
+      "key": "fuel_tank_capacity",
+      "label": "Fuel Tank Capacity",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 28,
+      "source_row": 43,
+      "key": "fuel_consumption",
+      "label": "Fuel Consumption",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 29,
+      "source_row": 44,
+      "key": "engine_type_brand",
+      "label": "Engine Type (Brand)",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 30,
+      "source_row": 45,
+      "key": "fuel_type",
+      "label": "Fuel Type",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 31,
+      "source_row": 46,
+      "key": "number_of_crew_members",
+      "label": "Number of Crew Members",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional button needed",
+        "seahub_stay_included": "Optional button needed"
+      }
+    },
+    {
+      "sort_order": 32,
+      "source_row": 51,
+      "key": "max_speed",
+      "label": "Max Speed",
+      "section": "boat_identity_and_specifications",
+      "source_section": "BOAT IDENTITY & SPECIFICATIONS (TEKNE ÖZELLİKLERİ + MOTOR DETAYLARI)",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 33,
+      "source_row": 53,
+      "key": "number_of_cabins_for_customer_without_crew",
+      "label": "Number of Cabins for Customer without Crew",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 34,
+      "source_row": 54,
+      "key": "master_cabin",
+      "label": "Master Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 35,
+      "source_row": 55,
+      "key": "single_cabin",
+      "label": "Single Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 36,
+      "source_row": 56,
+      "key": "double_cabin",
+      "label": "Double Cabin",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 37,
+      "source_row": 60,
+      "key": "double_cabin_bunk_beds",
+      "label": "Double Cabin (Bunk Beds)",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 38,
+      "source_row": 61,
+      "key": "beds_in_saloon",
+      "label": "Beds in Saloon",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 39,
+      "source_row": 64,
+      "key": "maximum_sleeps_berths",
+      "label": "Maximum sleeps (Berths)",
+      "section": "cabins",
+      "source_section": "CABINS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 40,
+      "source_row": 66,
+      "key": "total_toilets_just_for_customers",
+      "label": "Total Toilets just for Customers",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 41,
+      "source_row": 69,
+      "key": "shared_bathrooms",
+      "label": "Shared Bathrooms",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 42,
+      "source_row": 70,
+      "key": "electric_toilets",
+      "label": "Electric Toilets",
+      "section": "bathrooms",
+      "source_section": "BATHROOMS",
+      "type": "feature",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 43,
+      "source_row": 72,
+      "key": "air_conditioning",
+      "label": "Air Conditioning",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 44,
+      "source_row": 73,
+      "key": "bbq",
+      "label": "BBQ",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 45,
+      "source_row": 74,
+      "key": "coffee_machine",
+      "label": "Coffee Machine",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 46,
+      "source_row": 75,
+      "key": "cooker",
+      "label": "Cooker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 47,
+      "source_row": 76,
+      "key": "dishwasher",
+      "label": "Dishwasher",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 48,
+      "source_row": 77,
+      "key": "freezer",
+      "label": "Freezer",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 49,
+      "source_row": 78,
+      "key": "fridge",
+      "label": "Fridge",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 50,
+      "source_row": 79,
+      "key": "heating_isinma_webasto",
+      "label": "Heating (ısınma webasto)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 51,
+      "source_row": 80,
+      "key": "ice_maker",
+      "label": "Ice Maker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 52,
+      "source_row": 81,
+      "key": "kitchen_utensils",
+      "label": "Kitchen Utensils",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 53,
+      "source_row": 82,
+      "key": "microwave",
+      "label": "Microwave",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 54,
+      "source_row": 83,
+      "key": "outside_shower",
+      "label": "Outside Shower",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 55,
+      "source_row": 84,
+      "key": "oven",
+      "label": "Oven",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 56,
+      "source_row": 86,
+      "key": "shower",
+      "label": "Shower",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 57,
+      "source_row": 88,
+      "key": "towels",
+      "label": "Towels",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 58,
+      "source_row": 93,
+      "key": "usb_socket",
+      "label": "USB Socket",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 59,
+      "source_row": 94,
+      "key": "wi_fi",
+      "label": "Wİfi",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 60,
+      "source_row": 95,
+      "key": "fans",
+      "label": "Fans",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 61,
+      "source_row": 96,
+      "key": "water_maker",
+      "label": "Water Maker",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 62,
+      "source_row": 97,
+      "key": "audio_system_hoparlor",
+      "label": "Audio System (Hoparlör)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 63,
+      "source_row": 102,
+      "key": "sprayhood",
+      "label": "Sprayhood",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 64,
+      "source_row": 103,
+      "key": "lazy_bag",
+      "label": "Lazy Bag",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 65,
+      "source_row": 104,
+      "key": "hair_dryer",
+      "label": "Hair Dryer",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 66,
+      "source_row": 107,
+      "key": "cockpit_cushion",
+      "label": "Cockpit Cushion",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 67,
+      "source_row": 110,
+      "key": "teak_cockpit",
+      "label": "Teak Cockpit",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 68,
+      "source_row": 111,
+      "key": "cockpit_table",
+      "label": "Cockpit Table",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 70,
+      "source_row": 115,
+      "key": "usb_mp3",
+      "label": "USB MP3",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "entertainment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 71,
+      "source_row": 116,
+      "key": "bar",
+      "label": "Bar",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "kitchen_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 72,
+      "source_row": 118,
+      "key": "tv",
+      "label": "TV",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 73,
+      "source_row": 143,
+      "key": "autopilot",
+      "label": "Autopilot",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 74,
+      "source_row": 144,
+      "key": "bimini",
+      "label": "Bimini",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 75,
+      "source_row": 145,
+      "key": "bow_thruster",
+      "label": "Bow Thruster",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 76,
+      "source_row": 146,
+      "key": "dinghy",
+      "label": "Dinghy",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 77,
+      "source_row": 147,
+      "key": "dinghy_s_motor",
+      "label": "Dinghy's motor",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "other_amenities",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 78,
+      "source_row": 148,
+      "key": "electric_winches",
+      "label": "Electric Winches",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 79,
+      "source_row": 149,
+      "key": "flybridge",
+      "label": "Flybridge",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 80,
+      "source_row": 150,
+      "key": "generator",
+      "label": "Generator",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 81,
+      "source_row": 152,
+      "key": "inverter",
+      "label": "Inverter",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 82,
+      "source_row": 153,
+      "key": "outside_gps_plotter",
+      "label": "Outside GPS Plotter",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 83,
+      "source_row": 154,
+      "key": "radar",
+      "label": "Radar",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 84,
+      "source_row": 157,
+      "key": "solar_panels",
+      "label": "Solar Panels",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 85,
+      "source_row": 159,
+      "key": "teak_deck",
+      "label": "Teak Deck",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 86,
+      "source_row": 161,
+      "key": "220v_power_outlet",
+      "label": "220V Power Outlet",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 87,
+      "source_row": 162,
+      "key": "gps",
+      "label": "GPS",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 88,
+      "source_row": 163,
+      "key": "sun_deck",
+      "label": "Sun Deck",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 89,
+      "source_row": 166,
+      "key": "vhf",
+      "label": "VHF",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 90,
+      "source_row": 167,
+      "key": "depth_sounder",
+      "label": "Depth Sounder",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 91,
+      "source_row": 169,
+      "key": "bathing_ladder",
+      "label": "Bathing Ladder",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 92,
+      "source_row": 170,
+      "key": "guides_and_maps",
+      "label": "Guides and Maps",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "navigation",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 93,
+      "source_row": 171,
+      "key": "hot_water",
+      "label": "Hot Water",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "interior_equipment",
+      "can_be_extra": true,
+      "notes": {
+        "seahub_hourly": "For drinking",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 94,
+      "source_row": 173,
+      "key": "swim_platform",
+      "label": "Swim Platform",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "deck",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 95,
+      "source_row": 175,
+      "key": "life_jackets",
+      "label": "Life Jackets",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 96,
+      "source_row": 176,
+      "key": "life_belts",
+      "label": "Life Belts",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 97,
+      "source_row": 177,
+      "key": "safety_lines",
+      "label": "Safety Lines",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 98,
+      "source_row": 178,
+      "key": "life_raft",
+      "label": "Life Raft",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 99,
+      "source_row": 179,
+      "key": "signal_flags",
+      "label": "Signal Flags",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 100,
+      "source_row": 180,
+      "key": "epirb_emergency_position_indicating_radio_beacons",
+      "label": "EPIRB (Emergency Position Indicating Radio Beacons)",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 101,
+      "source_row": 181,
+      "key": "first_aid_kit",
+      "label": "First Aid Kit",
+      "section": "amenities",
+      "source_section": "AMENITIES & ENTERTAINMENT & EQUIPMENTS (NAVIGATION, GÜVERTE EKİPMANLARI, İÇ EKİPMANLAR, MUTFAK, SECURİTY, ENTERTAINMENT)",
+      "type": "amenity",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "amenity_category": "security",
+      "can_be_extra": true
+    },
+    {
+      "sort_order": 102,
+      "source_row": 199,
+      "key": "not_permitted",
+      "label": "Not Permitted",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 103,
+      "source_row": 200,
+      "key": "welcome_at_additional_charge",
+      "label": "Welcome at additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 104,
+      "source_row": 201,
+      "key": "welcome_at_no_additional_charge",
+      "label": "Welcome at no additional charge",
+      "section": "rules_pets",
+      "source_section": "PETS",
+      "type": "rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 105,
+      "source_row": 203,
+      "key": "bareboat",
+      "label": "Bareboat",
+      "section": "rental_type",
+      "source_section": "RENTAL TYPE",
+      "type": "rental_option",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 106,
+      "source_row": 204,
+      "key": "skipper",
+      "label": "Skipper",
+      "section": "rental_type",
+      "source_section": "RENTAL TYPE",
+      "type": "rental_option",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "NO SELECTED FOR OWNER BUT SHOW TO CUSTOMER",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 107,
+      "source_row": 213,
+      "key": "deposit_type_payment_before",
+      "label": "Deposit Type (payment % before)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 108,
+      "source_row": 214,
+      "key": "instant_booking",
+      "label": "Instant Booking",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 109,
+      "source_row": 215,
+      "key": "confirmation_required",
+      "label": "Confirmation Required",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 110,
+      "source_row": 216,
+      "key": "cancellation_policy",
+      "label": "Cancellation Policy",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 111,
+      "source_row": 217,
+      "key": "check_in",
+      "label": "Check-in",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 112,
+      "source_row": 218,
+      "key": "check_out",
+      "label": "Check-out",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 113,
+      "source_row": 219,
+      "key": "check_in_time_day_rental",
+      "label": "Check-in time (day rental)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 114,
+      "source_row": 220,
+      "key": "check_out_time_day_rental",
+      "label": "Check-out time (day rental)",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 115,
+      "source_row": 221,
+      "key": "fuel_cost",
+      "label": "Fuel Cost",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "if its no contact them ",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 116,
+      "source_row": 225,
+      "key": "min_rental_duration",
+      "label": "Min Rental Duration",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 117,
+      "source_row": 226,
+      "key": "weekly_check_in_out_day",
+      "label": "Weekly Check-in/out Day",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 118,
+      "source_row": 227,
+      "key": "daily_a_c_usage",
+      "label": "Daily A/C Usage",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 119,
+      "source_row": 231,
+      "key": "boat_rules_and_policies",
+      "label": "Boat Rules & Policies",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "booking_rule",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 122,
+      "source_row": 242,
+      "key": "mooring_fees_not_included",
+      "label": "Mooring Fees Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 123,
+      "source_row": 243,
+      "key": "mooring_fees_included",
+      "label": "Mooring Fees Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 124,
+      "source_row": 244,
+      "key": "final_cleaning_not_included",
+      "label": "Final Cleaning Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 125,
+      "source_row": 245,
+      "key": "final_cleaning_included",
+      "label": "Final Cleaning Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 126,
+      "source_row": 246,
+      "key": "transit_log_not_included",
+      "label": "Transit Log Not Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 127,
+      "source_row": 247,
+      "key": "transit_log_included",
+      "label": "Transit Log Included",
+      "section": "booking_rules_and_pricing",
+      "source_section": "BOOKING",
+      "type": "pricing_rule",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 129,
+      "source_row": 253,
+      "key": "crew_members_included_in_the_price",
+      "label": "Crew members included in the price",
+      "section": "crew",
+      "source_section": "CREW",
+      "type": "crew_option",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Servent",
+        "seahub_stay_included": null
+      }
+    },
+    {
+      "sort_order": 130,
+      "source_row": 256,
+      "key": "certificate_of_insurance",
+      "label": "Certificate of Insurance",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 131,
+      "source_row": 257,
+      "key": "certificate_of_ownership",
+      "label": "Certificate of Ownership",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 132,
+      "source_row": 259,
+      "key": "amount_of_security_deposit",
+      "label": "Amount of security deposit",
+      "section": "documents",
+      "source_section": "DOCUMENTS",
+      "type": "document",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 133,
+      "source_row": 266,
+      "key": "boat_plan",
+      "label": "Boat Plan",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": false,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": null,
+        "seahub_stay_included": "Optional "
+      }
+    },
+    {
+      "sort_order": 134,
+      "source_row": 267,
+      "key": "description",
+      "label": "Description",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 135,
+      "source_row": 268,
+      "key": "boat_photos",
+      "label": "Boat Photos",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 136,
+      "source_row": 269,
+      "key": "listing_title",
+      "label": "Listing Title",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      }
+    },
+    {
+      "sort_order": 137,
+      "source_row": 270,
+      "key": "video_upload",
+      "label": "Video Upload",
+      "section": "media_and_description",
+      "source_section": "MEDIA & DESCRIPTION (FOTOĞRAFLAR KISMINDA)",
+      "type": "media_description",
+      "included_in": {
+        "seahub_hourly": true,
+        "seahub_stay_included": true
+      },
+      "notes": {
+        "seahub_hourly": "Optional",
+        "seahub_stay_included": "Optional"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "_comment": "Enumerated option lists that the requirements matrix (seahub_boat_listing_requirements_seed.json) does NOT contain. Kept here as config (not hardcoded in business logic) and extensible. The seed script imports these into lookup tables.",
+  "boat_types": [
+    { "key": "motoryacht", "label": "Motoryacht", "sort_order": 1 },
+    { "key": "sailboat", "label": "Sailboat", "sort_order": 2 },
+    { "key": "catamaran", "label": "Catamaran", "sort_order": 3 },
+    { "key": "gulet", "label": "Gulet", "sort_order": 4 }
+  ],
+  "listing_models": [
+    { "key": "hourly", "label": "Hourly", "sort_order": 1 },
+    { "key": "daily", "label": "Daily", "sort_order": 2 },
+    { "key": "overnight", "label": "Overnight", "sort_order": 3 },
+    { "key": "weekly_charter", "label": "Weekly Charter", "sort_order": 4 }
+  ]
+}
