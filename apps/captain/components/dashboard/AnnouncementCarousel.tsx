@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Banner, Carousel, Skeleton, faLightbulb } from "@getyourboat/ui";
+import type { AnnouncementDTO } from "@getyourboat/shared";
 import { useAnnouncements } from "../../lib/api/dashboard";
 
 export function AnnouncementCarousel() {
@@ -15,7 +16,7 @@ export function AnnouncementCarousel() {
   return (
     <Carousel
       className="mb-6"
-      slides={data.map((a) => (
+      slides={data.map((a: AnnouncementDTO) => (
         <Banner
           key={a.id}
           icon={faLightbulb}
