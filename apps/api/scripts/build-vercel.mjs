@@ -1,19 +1,34 @@
 import * as esbuild from "esbuild";
+import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const apiRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const monorepoRoot = existsSync(join(apiRoot, "../../packages/database"))
+  ? join(apiRoot, "../..")
+  : process.cwd();
+
+console.log("Monorepo root:", monorepoRoot);
+
+execSync("pnpm --filter @getyourboat/shared build", {
+  cwd: monorepoRoot,
+  stdio: "inherit",
+});
+execSync("pnpm --filter @getyourboat/database build", {
+  cwd: monorepoRoot,
+  stdio: "inherit",
+});
 
 await esbuild.build({
-  entryPoints: [join(root, "scripts/handler.ts")],
-  outfile: join(root, "api/index.js"),
+  entryPoints: [join(apiRoot, "scripts/handler.ts")],
+  outfile: join(apiRoot, "api/index.cjs"),
   bundle: true,
   platform: "node",
   target: "node20",
   format: "cjs",
   sourcemap: true,
   logLevel: "info",
-  // Bundle workspace packages; keep native/prisma deps external for Vercel runtime.
   external: [
     "@prisma/client",
     "bcryptjs",
@@ -22,9 +37,9 @@ await esbuild.build({
     "utf-8-validate",
   ],
   alias: {
-    "@getyourboat/database": join(root, "../../packages/database/src/index.ts"),
-    "@getyourboat/shared": join(root, "../../packages/shared/src/index.ts"),
+    "@getyourboat/database": join(monorepoRoot, "packages/database/dist/index.js"),
+    "@getyourboat/shared": join(monorepoRoot, "packages/shared/dist/index.js"),
   },
 });
 
-console.log("Vercel handler bundled to api/index.js");
+console.log("Vercel handler bundled to api/index.cjs");

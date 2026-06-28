@@ -2,10 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --filter @getyourboat/api...",
-  "buildCommand": "cd ../.. && pnpm --filter @getyourboat/database db:generate && cd apps/api && pnpm build:vercel",
+  "buildCommand": "pnpm build:vercel",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
-    "api/index.js": {
+    "api/index.cjs": {
       "maxDuration": 30,
       "includeFiles": "{../../node_modules/.prisma/**,../../node_modules/@prisma/client/**,../../packages/database/generated/**}"
     }
