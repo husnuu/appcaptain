@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "build:vercel": "node scripts/build-vercel.mjs",
     "start": "node dist/server.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@vercel/node": "^5.0.0",
+    "esbuild": "^0.25.0",
     "@getyourboat/config": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",

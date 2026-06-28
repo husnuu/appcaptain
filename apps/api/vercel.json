@@ -1,11 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd ../.. && pnpm install",
-  "buildCommand": "cd ../.. && pnpm db:generate",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30
-    }
-  }
+  "buildCommand": "cd ../.. && pnpm --filter @getyourboat/database db:generate && cd apps/api && pnpm build:vercel",
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }

@@ -2,6 +2,9 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import {
   BoatBrandCategory,
   BrandModelRequestStatus,
+  type AdminCreateBrandInput,
+  type AdminCreateModelInput,
+  type CreateBrandModelRequestInput,
   adminCreateBrandSchema,
   adminCreateModelSchema,
   adminReviewRequestSchema,
@@ -35,7 +38,10 @@ export async function captainBoatBrandRoutes(app: FastifyInstance) {
   });
 
   app.post("/brand-model-requests", async (req, reply) => {
-    const body = parseDetailed(createBrandModelRequestSchema, req.body);
+    const body = parseDetailed(
+      createBrandModelRequestSchema,
+      req.body
+    ) as CreateBrandModelRequestInput;
     const item = await service.createBrandModelRequest(req.authUser!.id, body);
     return reply.code(201).send(item);
   });
@@ -51,7 +57,7 @@ export async function adminBoatBrandRoutes(app: FastifyInstance) {
   });
 
   app.post("/admin/boat-brands", async (req, reply) => {
-    const body = parseDetailed(adminCreateBrandSchema, req.body);
+    const body = parseDetailed(adminCreateBrandSchema, req.body) as AdminCreateBrandInput;
     const item = await service.adminCreateBrand(body);
     return reply.code(201).send(item);
   });
@@ -63,7 +69,7 @@ export async function adminBoatBrandRoutes(app: FastifyInstance) {
   });
 
   app.post("/admin/boat-models", async (req, reply) => {
-    const body = parseDetailed(adminCreateModelSchema, req.body);
+    const body = parseDetailed(adminCreateModelSchema, req.body) as AdminCreateModelInput;
     const item = await service.adminCreateModel(body);
     return reply.code(201).send(item);
   });

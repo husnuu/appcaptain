@@ -1,6 +1,9 @@
 import {
   BoatBrandCategory,
   BrandModelRequestStatus,
+  type AdminCreateBrandInput,
+  type AdminCreateModelInput,
+  type CreateBrandModelRequestInput,
   boatTypeToBrandCategory,
 } from "@getyourboat/shared";
 import { boatBrandRepository } from "@getyourboat/database";
@@ -16,7 +19,7 @@ export function listModels(brandId: string, activeOnly = true) {
 
 export function createBrandModelRequest(
   captainId: string,
-  input: { requestedBrand: string; requestedModel?: string | null; boatTypeKey?: string }
+  input: CreateBrandModelRequestInput
 ) {
   return boatBrandRepository.createRequest({
     captainId,
@@ -73,21 +76,13 @@ export async function rejectBrandModelRequest(id: string) {
   return boatBrandRepository.updateRequestStatus(id, BrandModelRequestStatus.REJECTED);
 }
 
-export async function adminCreateBrand(input: {
-  name: string;
-  category: BoatBrandCategory;
-  logoUrl?: string | null;
-}) {
+export async function adminCreateBrand(input: AdminCreateBrandInput) {
   const existing = await boatBrandRepository.findBrandByName(input.name);
   if (existing) throw badRequest("Bu marka zaten kayıtlı");
   return boatBrandRepository.createBrand(input);
 }
 
-export async function adminCreateModel(input: {
-  brandId: string;
-  name: string;
-  notes?: string | null;
-}) {
+export async function adminCreateModel(input: AdminCreateModelInput) {
   return boatBrandRepository.createModel(input);
 }
 
