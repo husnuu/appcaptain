@@ -66,8 +66,8 @@ function HeaderMenu({
 }
 
 export function Header() {
-  const { user } = useAuth();
-  const { data: profile, reload: reloadProfile } = useProfile();
+  const { user, isAuthenticated } = useAuth();
+  const { data: profile, reload: reloadProfile } = useProfile(isAuthenticated);
   const [locale, setLocale] = useState<AppLocale>("tr");
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const [localeBusy, setLocaleBusy] = useState(false);
@@ -76,6 +76,7 @@ export function Header() {
   const { data: conversations } = useQuery({
     queryKey: ["header-conversations"],
     queryFn: () => api.listConversations().then((r) => r.items),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -248,9 +249,18 @@ export function Header() {
           </HeaderMenu>
         </div>
 
-        <div className="ml-2 hidden text-right sm:block">
-          <div className="text-body-sm font-medium text-ink">{user?.email}</div>
-        </div>
+        {isAuthenticated && user?.email ? (
+          <div className="ml-2 hidden text-right sm:block">
+            <div className="text-body-sm font-medium text-ink">{user.email}</div>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="ml-2 rounded-lg px-3 py-2 text-body-sm font-medium text-brand-600 hover:bg-gray-100"
+          >
+            Giriş yap
+          </Link>
+        )}
       </div>
     </header>
   );

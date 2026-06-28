@@ -1,7 +1,6 @@
 "use client";
 
 import type { AuthUserDTO } from "@getyourboat/shared";
-import { ProfileRole } from "@getyourboat/shared";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -19,6 +18,7 @@ import {
   refreshSession,
   signup as authSignup,
 } from "../lib/auth/client";
+import { onSessionExpired } from "../lib/auth/session-events";
 
 interface AuthContextValue {
   user: AuthUserDTO | null;
@@ -32,18 +32,16 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const DEMO_USER: AuthUserDTO = {
-  id: "demo-user",
-  email: "demo@getyourboat.com",
-  fullName: "Demo Kaptan",
-  role: ProfileRole.OWNER,
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUserDTO | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const clearSession = useCallback(() => {
+    setUser(null);
+    setIsAuthenticated(false);
+  }, []);
 
   const redirectAfterAuth = useCallback(async () => {
     try {
@@ -72,15 +70,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session.user);
         setIsAuthenticated(true);
       } else {
-        setUser(DEMO_USER);
-        setIsAuthenticated(false);
+        clearSession();
       }
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, []);
+  }, [clearSession]);
+
+  useEffect(() => {
+    return onSessionExpired(() => {
+      clearSession();
+      router.replace("/login?expired=1");
+    });
+  }, [clearSession, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -99,13 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         await logoutSession().catch(() => {});
-        setUser(DEMO_USER);
-        setIsAuthenticated(false);
-        router.push("/");
+        clearSession();
+        router.push("/login");
       },
       redirectAfterAuth,
     }),
-    [user, loading, isAuthenticated, router, redirectAfterAuth]
+    [user, loading, isAuthenticated, router, redirectAfterAuth, clearSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

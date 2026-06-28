@@ -33,8 +33,9 @@ const STATUS_VARIANT: Record<BoatStatus, "neutral" | "warning" | "success" | "da
 function BoatsContent() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { data: boats, loading, error, reload } = useMyBoats();
-  const { data: profile, loading: profileLoading } = useProfile();
+  const queryEnabled = !authLoading && isAuthenticated;
+  const { data: boats, loading, error, reload } = useMyBoats(queryEnabled);
+  const { data: profile, loading: profileLoading } = useProfile(queryEnabled);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -128,7 +129,14 @@ function BoatsContent() {
 
       {error || createError || actionError ? (
         <div className="mb-4">
-          <Alert variant="danger">{error ?? createError ?? actionError}</Alert>
+          <Alert variant="danger">
+            <p>{error ?? createError ?? actionError}</p>
+            {error?.includes("Oturumunuzun süresi doldu") ? (
+              <Link href="/login" className="mt-2 inline-block font-medium underline">
+                Giriş sayfasına git
+              </Link>
+            ) : null}
+          </Alert>
         </div>
       ) : null}
 

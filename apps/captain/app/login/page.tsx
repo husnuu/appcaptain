@@ -9,11 +9,17 @@ import { Alert, Checkbox, Field, Input } from "../../components/ui";
 
 export default function LoginPage() {
   const { signIn, isAuthenticated, loading, redirectAfterAuth } = useAuth();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    setSessionExpired(new URLSearchParams(window.location.search).get("expired") === "1");
+  }, []);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -48,6 +54,11 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {sessionExpired ? (
+              <Alert variant="warning">
+                Oturumunuz sona erdi. Lütfen tekrar giriş yapın.
+              </Alert>
+            ) : null}
             {error ? <Alert variant="danger">{error}</Alert> : null}
             <Field label="E-posta">
               <Input

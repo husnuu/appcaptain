@@ -5,7 +5,16 @@ import { api, ApiError } from "./api";
 import type { BoatListItem, OnboardingConfig, SerializedBoat } from "./types";
 
 function errorMessage(err: unknown, fallback: string): string {
-  return err instanceof ApiError ? err.message : fallback;
+  if (err instanceof ApiError) {
+    if (err.code === "SESSION_EXPIRED") {
+      return "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.";
+    }
+    if (err.status === 401) {
+      return "Bu işlem için giriş yapmanız gerekiyor.";
+    }
+    return err.message;
+  }
+  return fallback;
 }
 
 export interface QueryState<T> {
@@ -15,12 +24,23 @@ export interface QueryState<T> {
   reload: () => Promise<void>;
 }
 
-function useApiQuery<T>(fn: () => Promise<T>, deps: unknown[]): QueryState<T> {
+function useApiQuery<T>(
+  fn: () => Promise<T>,
+  deps: unknown[],
+  options?: { enabled?: boolean }
+): QueryState<T> {
+  const enabled = options?.enabled ?? true;
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const run = useCallback(async () => {
+    if (!enabled) {
+      setData(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -31,15 +51,10 @@ function useApiQuery<T>(fn: () => Promise<T>, deps: unknown[]): QueryState<T> {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, enabled]);
 
   useEffect(() => {
-    let active = true;
-    run().catch(() => {});
-    return () => {
-      active = false;
-      void active;
-    };
+    void run();
   }, [run]);
 
   return { data, loading, error, reload: run };
@@ -51,13 +66,21 @@ export function useOnboardingConfig() {
 }
 
 /** The signed-in captain's boats. */
-export function useMyBoats() {
-  return useApiQuery<BoatListItem[]>(() => api.myBoats().then((r) => r.items), []);
+export function useMyBoats(enabled = true) {
+  return useApiQuery<BoatListItem[]>(
+    () => api.myBoats().then((r) => r.items),
+    [],
+    { enabled }
+  );
 }
 
 /** Owner profile for the pre-wizard gate. */
-export function useProfile() {
-  return useApiQuery(() => api.getProfile().then((r) => r.profile), []);
+export function useProfile(enabled = true) {
+  return useApiQuery(
+    () => api.getProfile().then((r) => r.profile),
+    [],
+    { enabled }
+  );
 }
 
 /**

@@ -1,5 +1,6 @@
 import { getAccessToken } from "./auth/token-store";
 import { refreshSession } from "./auth/client";
+import { notifySessionExpired } from "./auth/session-events";
 import { supabase } from "./supabase";
 import { boatTypeToBrandCategory } from "@getyourboat/shared";
 import type {
@@ -61,7 +62,20 @@ async function request<T>(
       if (refreshed) {
         return request<T>(path, { ...options, retry: false });
       }
+      notifySessionExpired();
+      throw new ApiError(401, "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.", {
+        code: "SESSION_EXPIRED",
+      });
     }
+    throw new ApiError(401, "Bu işlem için giriş yapmanız gerekiyor.", {
+      code: "UNAUTHORIZED",
+    });
+  }
+
+  if (res.status === 401 && auth) {
+    throw new ApiError(401, "Bu işlem için giriş yapmanız gerekiyor.", {
+      code: "UNAUTHORIZED",
+    });
   }
 
   const text = await res.text();

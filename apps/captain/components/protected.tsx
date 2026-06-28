@@ -9,7 +9,7 @@ export function Protected({ children }: { children: ReactNode }) {
 }
 
 export function TopBar() {
-  const { user, signOut } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
   return (
     <header className="sticky top-0 z-10 bg-ink-800 text-white">
       <div className="mx-auto flex max-w-content items-center justify-between px-4 py-3">
@@ -17,7 +17,13 @@ export function TopBar() {
           GetYourBoat <span className="text-brand-500">Captain</span>
         </Link>
         <div className="flex items-center gap-3 text-body-sm text-gray-300">
-          <span className="hidden sm:inline">{user?.email}</span>
+          {isAuthenticated && user?.email ? (
+            <span className="hidden sm:inline">{user.email}</span>
+          ) : (
+            <Link href="/login" className="text-white hover:underline">
+              Giriş yap
+            </Link>
+          )}
           <button
             onClick={() => signOut()}
             className="rounded-lg border border-white/20 px-3 py-1.5 font-medium text-white transition hover:bg-white/10"
