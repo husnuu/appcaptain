@@ -5,7 +5,7 @@
   "buildCommand": "pnpm build:vercel",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
-    "api/index.cjs": {
+    "api/index.js": {
       "maxDuration": 30,
       "includeFiles": "{../../node_modules/.prisma/**,../../node_modules/@prisma/client/**,../../packages/database/generated/**}"
     }
