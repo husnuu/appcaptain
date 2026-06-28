@@ -9,7 +9,6 @@ import { Alert, Checkbox, Field, Input } from "../../components/ui";
 
 export default function LoginPage() {
   const { signIn, isAuthenticated, loading, redirectAfterAuth } = useAuth();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
