@@ -22,7 +22,7 @@ execSync("pnpm --filter @getyourboat/database build", {
 
 await esbuild.build({
   entryPoints: [join(apiRoot, "scripts/handler.ts")],
-  outfile: join(apiRoot, "api/index.cjs"),
+  outfile: join(apiRoot, "api/handler.cjs"),
   bundle: true,
   platform: "node",
   target: "node20",
@@ -42,4 +42,4 @@ await esbuild.build({
   },
 });
 
-console.log("Vercel handler bundled to api/index.cjs");
+console.log("Vercel handler bundled to api/handler.cjs");
