@@ -31,33 +31,15 @@ function copyPrismaEngines() {
     );
   }
 
-  const targets = [
-    join(apiRoot, "api", engineFile),
-    join(apiRoot, engineFile),
-    join(apiRoot, "generated/client"),
-    join(apiRoot, "api/generated/client"),
-  ];
+  // Copy only the query engine binary — not the full generated/client tree
+  // (Vercel rejects query_engine_bg.js + query_engine_bg.wasm as conflicting paths).
+  const destFile = join(apiRoot, "api", engineFile);
+  mkdirSync(dirname(destFile), { recursive: true });
+  cpSync(enginePath, destFile);
+  console.log("Copied Prisma engine ->", destFile);
 
-  for (const destDir of [targets[2], targets[3]]) {
-    mkdirSync(destDir, { recursive: true });
-    cpSync(prismaClientDir, destDir, { recursive: true });
-    console.log("Copied Prisma client ->", destDir);
-  }
-
-  for (const destFile of [targets[0], targets[1]]) {
-    mkdirSync(dirname(destFile), { recursive: true });
-    cpSync(enginePath, destFile);
-    console.log("Copied Prisma engine ->", destFile);
-  }
-
-  const required = [
-    join(apiRoot, "api/generated/client", engineFile),
-    join(apiRoot, "api", engineFile),
-  ];
-  for (const file of required) {
-    if (!existsSync(file)) {
-      throw new Error(`Prisma engine missing after copy: ${file}`);
-    }
+  if (!existsSync(destFile)) {
+    throw new Error(`Prisma engine missing after copy: ${destFile}`);
   }
 }
 
