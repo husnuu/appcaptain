@@ -80,9 +80,10 @@ function toDocumentDTO(d: FullBoat["documents"][number]): BoatDocumentDTO {
   };
 }
 
-function boatPlanUrlFromBoat(
-  boat: Pick<FullBoat, "structuredRules" | "featureValues">
-): string | null {
+function boatPlanUrlFromBoat(boat: {
+  structuredRules: FullBoat["structuredRules"];
+  featureValues: ReadonlyArray<{ featureKey: string; value: string | null }>;
+}): string | null {
   const rules = boat.structuredRules as Record<string, unknown> | null;
   const fromRules = rules?.boat_plan;
   if (typeof fromRules === "string" && fromRules.trim()) return fromRules;
