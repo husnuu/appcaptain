@@ -1,6 +1,7 @@
 "use client";
 
 import type { AuthUserDTO } from "@getyourboat/shared";
+import { ProfileRole } from "@getyourboat/shared";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -18,7 +19,6 @@ import {
   refreshSession,
   signup as authSignup,
 } from "../lib/auth/client";
-import { getAccessToken } from "../lib/auth/token-store";
 
 interface AuthContextValue {
   user: AuthUserDTO | null;
@@ -32,9 +32,16 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const DEMO_USER: AuthUserDTO = {
+  id: "demo-user",
+  email: "demo@getyourboat.com",
+  fullName: "Demo Kaptan",
+  role: ProfileRole.OWNER,
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUserDTO | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<AuthUserDTO | null>(DEMO_USER);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const redirectAfterAuth = useCallback(async () => {
@@ -60,11 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       const session = await refreshSession();
       if (!active) return;
-      if (session) {
-        setUser(session.user);
-      } else if (getAccessToken()) {
-        setUser(null);
-      }
+      if (session) setUser(session.user);
       setLoading(false);
     })();
     return () => {
@@ -76,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
-      isAuthenticated: !!user && !!getAccessToken(),
+      isAuthenticated: !!user,
       async signIn(email, password, rememberMe) {
         const session = await authLogin({ email, password, rememberMe });
         setUser(session.user);
@@ -86,9 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session.user);
       },
       async signOut() {
-        await logoutSession();
-        setUser(null);
-        router.push("/login");
+        await logoutSession().catch(() => {});
+        setUser(DEMO_USER);
+        router.push("/");
       },
       redirectAfterAuth,
     }),

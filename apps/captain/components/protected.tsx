@@ -1,26 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
-import { Spinner } from "./ui";
+import type { ReactNode } from "react";
 import { useAuth } from "./auth-provider";
 
 export function Protected({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) router.replace("/login");
-  }, [loading, user, router]);
-
-  if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="h-6 w-6" />
-      </div>
-    );
-  }
   return <>{children}</>;
 }
 
