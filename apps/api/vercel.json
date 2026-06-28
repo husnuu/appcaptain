@@ -3,7 +3,10 @@
   "framework": null,
   "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --filter @getyourboat/api...",
   "buildCommand": "pnpm build:vercel",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/health", "destination": "/api" }
+  ],
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
