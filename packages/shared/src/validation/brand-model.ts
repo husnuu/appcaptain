@@ -22,25 +22,3 @@ export const adminCreateModelSchema = z.object({
 export const adminReviewRequestSchema = z.object({
   category: z.nativeEnum(BoatBrandCategory).optional(),
 });
-
-export type CreateBrandModelRequestInput = {
-  requestedBrand: string;
-  requestedModel?: string | null;
-  boatTypeKey?: string;
-};
-
-export type AdminCreateBrandInput = {
-  name: string;
-  category: BoatBrandCategory;
-  logoUrl?: string | null;
-};
-
-export type AdminCreateModelInput = {
-  brandId: string;
-  name: string;
-  notes?: string | null;
-};
-
-export type AdminReviewRequestInput = {
-  category?: BoatBrandCategory;
-};

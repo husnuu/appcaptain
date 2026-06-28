@@ -35,3 +35,19 @@ export interface CreateBrandModelRequestInput {
   requestedModel?: string | null;
   boatTypeKey?: string;
 }
+
+export interface AdminCreateBrandInput {
+  name: string;
+  category: BoatBrandCategory;
+  logoUrl?: string | null;
+}
+
+export interface AdminCreateModelInput {
+  brandId: string;
+  name: string;
+  notes?: string | null;
+}
+
+export interface AdminReviewRequestInput {
+  category?: BoatBrandCategory;
+}
