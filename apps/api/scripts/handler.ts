@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import serverless from "serverless-http";
-import { buildApp } from "./app.js";
+import { buildApp } from "../src/app.js";
 
 type ServerlessHandler = ReturnType<typeof serverless>;
 
@@ -15,7 +15,7 @@ async function getHandler(): Promise<ServerlessHandler> {
   return handler;
 }
 
-/** Vercel serverless entry — all HTTP routes are rewritten here via vercel.json. */
+/** Bundled Vercel serverless entry (see scripts/build-vercel.mjs). */
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
   const proxy = await getHandler();
   return proxy(req, res);

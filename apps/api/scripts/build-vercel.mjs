@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 await esbuild.build({
-  entryPoints: [join(root, "src/vercel.ts")],
+  entryPoints: [join(root, "scripts/handler.ts")],
   outfile: join(root, "api/index.js"),
   bundle: true,
   platform: "node",
@@ -13,6 +13,7 @@ await esbuild.build({
   format: "cjs",
   sourcemap: true,
   logLevel: "info",
+  // Bundle workspace packages; keep native/prisma deps external for Vercel runtime.
   external: [
     "@prisma/client",
     "bcryptjs",
@@ -20,6 +21,10 @@ await esbuild.build({
     "bufferutil",
     "utf-8-validate",
   ],
+  alias: {
+    "@getyourboat/database": join(root, "../../packages/database/src/index.ts"),
+    "@getyourboat/shared": join(root, "../../packages/shared/src/index.ts"),
+  },
 });
 
 console.log("Vercel handler bundled to api/index.js");
