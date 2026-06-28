@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ../.. && pnpm install",
+  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --filter @getyourboat/api...",
   "buildCommand": "cd ../.. && pnpm --filter @getyourboat/database db:generate && cd apps/api && pnpm build:vercel",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }
