@@ -49,6 +49,16 @@ function copyPrismaEngines() {
     cpSync(enginePath, destFile);
     console.log("Copied Prisma engine ->", destFile);
   }
+
+  const required = [
+    join(apiRoot, "api/generated/client", engineFile),
+    join(apiRoot, "api", engineFile),
+  ];
+  for (const file of required) {
+    if (!existsSync(file)) {
+      throw new Error(`Prisma engine missing after copy: ${file}`);
+    }
+  }
 }
 
 await esbuild.build({
