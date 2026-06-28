@@ -3,4 +3,7 @@ api/handler.cjs
 api/handler.cjs.map
 api/index.js.map
 api/index.cjs.map
+api/generated/
 api/libquery_engine-*.node
+generated/
+libquery_engine-*.node
