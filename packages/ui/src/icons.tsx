@@ -55,6 +55,9 @@ export {
   faUsers,
   faRulerHorizontal,
   faLocationDot,
+  faLocationCrosshairs,
+  faMapLocationDot,
+  faSatellite,
   faStar,
   faGaugeSimpleHigh,
 } from "@fortawesome/free-solid-svg-icons";

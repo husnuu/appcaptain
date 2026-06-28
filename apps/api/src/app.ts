@@ -5,7 +5,7 @@ import { authPlugin } from "./plugins/auth.js";
 import { captainAuthPlugin } from "./plugins/captain-auth.js";
 import { registerRoutes } from "./routes/index.js";
 import { HttpError } from "./lib/errors.js";
-import { env } from "./config/env.js";
+import { captainOrigins } from "./config/env.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -18,7 +18,7 @@ export async function buildApp() {
   });
 
   await app.register(cors, {
-    origin: [env.CAPTAIN_ORIGIN],
+    origin: captainOrigins,
     credentials: true,
   });
   await app.register(cookie);

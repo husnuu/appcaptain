@@ -6,6 +6,7 @@ import {
   getListingModelPriceLabel,
   INCLUDED_FEE_FIELD_GROUPS,
   LOCATION_FIELD_KEYS,
+  LOCATION_FORM_FIELD_KEYS,
   PRICING_FIELD_LABELS,
   readIncludedFeePair,
 } from "../onboarding";
@@ -53,6 +54,9 @@ export interface BoatDetailLocation {
   region: string | null;
   city: string | null;
   marina: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  address: string | null;
   /** Human-readable single line for the booking box. */
   summary: string | null;
 }
@@ -139,14 +143,23 @@ function featureMap(boat: SerializedBoatDTO): Map<string, string> {
 
 function readLocation(boat: SerializedBoatDTO): BoatDetailLocation | null {
   const byKey = featureMap(boat);
-  const parts = LOCATION_FIELD_KEYS.map((k) => byKey.get(k)).filter(Boolean) as string[];
-  if (parts.length === 0) return null;
+  const parts = LOCATION_FORM_FIELD_KEYS.map((k) => byKey.get(k)).filter(Boolean) as string[];
+  const latRaw = byKey.get("latitude");
+  const lngRaw = byKey.get("longitude");
+  const latitude = latRaw ? Number.parseFloat(latRaw) : null;
+  const longitude = lngRaw ? Number.parseFloat(lngRaw) : null;
+  const hasCoords =
+    latitude != null && !Number.isNaN(latitude) && longitude != null && !Number.isNaN(longitude);
+  if (parts.length === 0 && !hasCoords && !byKey.get("address")) return null;
   return {
     country: byKey.get("country") ?? null,
     region: byKey.get("region") ?? null,
     city: byKey.get("city") ?? null,
     marina: byKey.get("marina") ?? null,
-    summary: parts.join(", "),
+    latitude: hasCoords ? latitude : null,
+    longitude: hasCoords ? longitude : null,
+    address: byKey.get("address") ?? null,
+    summary: byKey.get("address") ?? (parts.length > 0 ? parts.join(", ") : null),
   };
 }
 

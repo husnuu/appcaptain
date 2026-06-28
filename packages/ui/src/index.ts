@@ -69,3 +69,8 @@ export {
   BoatPreviewBanner,
   type BoatPreviewBannerProps,
 } from "./components/boat-preview-banner";
+export {
+  LocationPicker,
+  type LocationPickerProps,
+  type LocationPickerValue,
+} from "./components/location-picker";

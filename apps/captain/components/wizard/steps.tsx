@@ -15,6 +15,7 @@ import {
   faEye,
   faMoon,
   faSun,
+  LocationPicker,
   type IconDefinition,
 } from "@getyourboat/ui";
 import {
@@ -39,6 +40,8 @@ import {
   PRICING_REQUIRED_HINT,
   readFieldValues,
   toBoatDetailViewModel,
+  LOCATION_FIELD_KEYS,
+  LOCATION_FORM_FIELD_KEYS,
   type FeatureSubTabId,
   type FieldValueMap,
 } from "@getyourboat/shared";
@@ -737,6 +740,11 @@ export function LocationStep({
   onAutosaveStatusChange,
 }: StepProps) {
   const locationFields = getConfigFieldsForStep(config, OnboardingStep.LOCATION);
+  const formFields = locationFields.filter((f) =>
+    (LOCATION_FORM_FIELD_KEYS as readonly string[]).includes(f.key)
+  );
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
   const initialFeatures = useMemo(() => {
     const map: Record<string, string> = {};
     for (const f of boat.features) map[f.key] = f.value ?? "";
@@ -746,31 +754,42 @@ export function LocationStep({
   const [values, setValues] = useState<Record<string, string>>(initialFeatures);
   const { busy, fieldErrors, errorSummary, run } = useStepSaver(onSaved);
 
+  const buildFeatures = useCallback(
+    () =>
+      LOCATION_FIELD_KEYS.map((key) => ({
+        key,
+        value: values[key]?.trim() || "",
+      })).filter((f) => f.value),
+    [values]
+  );
+
   useStepDraftAutosave({
     boatId: boat.id,
     step: OnboardingStep.LOCATION,
-    getPayload: () => ({
-      features: locationFields.map((f) => ({
-        key: f.key,
-        value: values[f.key]?.trim() || "",
-      })),
-    }),
-    deps: [values, locationFields],
+    getPayload: () => ({ features: buildFeatures() }),
+    deps: [values],
     onSaved: syncBoat,
     onStatusChange: onAutosaveStatusChange,
   });
 
   function save() {
-    const features = locationFields
-      .map((f) => ({ key: f.key, value: values[f.key]?.trim() || "" }))
-      .filter((f) => f.value);
-    return api.updateLocation(boat.id, { features });
+    return api.updateLocation(boat.id, { features: buildFeatures() });
   }
+
+  const pickerValue = {
+    latitude: values.latitude ? Number.parseFloat(values.latitude) : null,
+    longitude: values.longitude ? Number.parseFloat(values.longitude) : null,
+    address: values.address || null,
+    marina: values.marina || null,
+    city: values.city || null,
+    region: values.region || null,
+    country: values.country || null,
+  };
 
   return (
     <StepShell
       title="Konum"
-      description="Teknenin bulunduğu ülke, bölge ve marina bilgilerini gir."
+      description="Marina veya limanı arayın, ardından haritada tam konumu iğne ile işaretleyin."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -787,19 +806,40 @@ export function LocationStep({
       {boat.listingModels.length === 0 ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
-      <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-        {locationFields.map((f) => (
-          <div key={f.key} data-field={f.key}>
-            <Field label={getFieldLabel(f)} error={fieldErrors[f.key]}>
-              <Input
-                value={values[f.key] ?? ""}
-                error={!!fieldErrors[f.key]}
-                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-              />
-            </Field>
-          </div>
-        ))}
-      </div>
+
+      <LocationPicker
+        className="mb-6"
+        mapboxToken={mapboxToken}
+        value={pickerValue}
+        onChange={(next) => {
+          setValues((prev) => ({
+            ...prev,
+            latitude: next.latitude != null ? String(next.latitude) : "",
+            longitude: next.longitude != null ? String(next.longitude) : "",
+            address: next.address ?? prev.address ?? "",
+            marina: next.marina ?? prev.marina ?? "",
+            city: next.city ?? prev.city ?? "",
+            region: next.region ?? prev.region ?? "",
+            country: next.country ?? prev.country ?? "",
+          }));
+        }}
+      />
+
+      {formFields.length > 0 ? (
+        <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+          {formFields.map((f) => (
+            <div key={f.key} data-field={f.key}>
+              <Field label={getFieldLabel(f)} error={fieldErrors[f.key]}>
+                <Input
+                  value={values[f.key] ?? ""}
+                  error={!!fieldErrors[f.key]}
+                  onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                />
+              </Field>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </StepShell>
   );
 }

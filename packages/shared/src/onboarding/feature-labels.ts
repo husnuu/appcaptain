@@ -76,6 +76,13 @@ export const FEATURE_FIELD_LABELS: Record<string, string> = {
   shared_bathrooms: "Paylaşımlı Banyo Sayısı",
   electric_toilets: "Elektrikli Tuvalet Sayısı",
   crew_members_included_in_the_price: "Fiyata Dahil Mürettebat Sayısı",
+  country: "Ülke",
+  region: "Bölge",
+  city: "Şehir",
+  marina: "Marina / Liman",
+  latitude: "Enlem",
+  longitude: "Boylam",
+  address: "Adres",
 };
 
 export const FEATURE_GROUP_LABELS: Record<string, string> = {

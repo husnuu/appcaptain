@@ -101,7 +101,8 @@ export function getRequiredLocationKeys(
   listingModelKeys: string[]
 ): string[] {
   const scoped = filterFieldsByListingModels(fields, listingModelKeys);
-  return getFieldsForWizardStep(scoped, OnboardingStep.LOCATION).map((f) => f.key);
+  const keys = getFieldsForWizardStep(scoped, OnboardingStep.LOCATION).map((f) => f.key);
+  return [...keys, "latitude", "longitude"];
 }
 
 /** Only core listing copy is required; rule toggles (pets, policies) are optional. */

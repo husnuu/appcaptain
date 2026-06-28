@@ -7,6 +7,13 @@ import { z } from "zod";
 config({ path: resolve(process.cwd(), "../../.env") });
 config();
 
+export function parseCaptainOrigins(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -16,7 +23,22 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8).default("change-me-in-production"),
   JWT_EXPIRES_IN: z.string().default("7d"),
   REFRESH_COOKIE_NAME: z.string().default("gyb_refresh"),
-  CAPTAIN_ORIGIN: z.string().url().default("http://localhost:3002"),
+  /** Comma-separated browser origins allowed by CORS (Captain, Admin, …). */
+  CAPTAIN_ORIGIN: z
+    .string()
+    .default("http://localhost:3002")
+    .superRefine((value, ctx) => {
+      for (const origin of parseCaptainOrigins(value)) {
+        try {
+          new URL(origin);
+        } catch {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid CAPTAIN_ORIGIN entry: ${origin}`,
+          });
+        }
+      }
+    }),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
@@ -31,3 +53,6 @@ const envSchema = z.object({
 
 export const env = envSchema.parse(process.env);
 export type Env = z.infer<typeof envSchema>;
+
+/** Parsed list from CAPTAIN_ORIGIN (comma-separated). */
+export const captainOrigins = parseCaptainOrigins(env.CAPTAIN_ORIGIN);

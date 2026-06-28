@@ -136,7 +136,10 @@ export function deriveCompletedWizardSteps(boat: SerializedBoatDTO): OnboardingS
   }
   if (
     boat.features.some(
-      (f) => ["country", "region", "city", "marina"].includes(f.key) && f.value?.trim()
+      (f) =>
+        (["country", "region", "city", "marina"].includes(f.key) && f.value?.trim()) ||
+        (f.key === "latitude" && f.value?.trim()) ||
+        (f.key === "longitude" && f.value?.trim())
     )
   ) {
     steps.add(OnboardingStep.LOCATION);

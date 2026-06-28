@@ -4,8 +4,22 @@ export const LOCATION_FIELD_KEYS = [
   "region",
   "city",
   "marina",
+  "latitude",
+  "longitude",
+  "address",
 ] as const;
 export type LocationFieldKey = (typeof LOCATION_FIELD_KEYS)[number];
+
+/** Harita picker ile doldurulan gizli koordinat alanları. */
+export const LOCATION_COORDINATE_KEYS = ["latitude", "longitude", "address"] as const;
+
+/** Konum adımında manuel formda gösterilen alanlar. */
+export const LOCATION_FORM_FIELD_KEYS = [
+  "country",
+  "region",
+  "city",
+  "marina",
+] as const;
 
 /** Motor alt sekmesindeki teknik alanlar. */
 export const ENGINE_FIELD_KEYS = [

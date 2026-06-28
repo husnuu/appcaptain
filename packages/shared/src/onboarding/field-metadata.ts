@@ -43,6 +43,9 @@ export const FIELD_BEHAVIOR: Record<string, FieldBehavior> = {
   /** Covered by `approvalType` on step 1 (Kiralama Modeli). */
   instant_booking: { ownerInput: false, customerVisible: false },
   confirmation_required: { ownerInput: false, customerVisible: false },
+  latitude: { ownerInput: false, customerVisible: false },
+  longitude: { ownerInput: false, customerVisible: false },
+  address: { ownerInput: false, customerVisible: true },
 };
 
 export function getFieldBehavior(key: string): FieldBehavior {

@@ -9,7 +9,7 @@ import {
 } from "@getyourboat/shared";
 import type { ProfileRole } from "@getyourboat/shared";
 import { authRepository } from "@getyourboat/database";
-import { env } from "../../config/env.js";
+import { captainOrigins } from "../../config/env.js";
 import * as service from "./services/messaging.service.js";
 
 let io: Server | null = null;
@@ -39,7 +39,7 @@ export function attachMessagingSocket(app: FastifyInstance) {
 
   io = new SocketServer(app.server, {
     cors: {
-      origin: env.CAPTAIN_ORIGIN,
+      origin: captainOrigins.length === 1 ? captainOrigins[0]! : captainOrigins,
       credentials: true,
     },
     path: "/socket.io",
