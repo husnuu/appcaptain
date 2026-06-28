@@ -7,7 +7,12 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": "{../../node_modules/.prisma/**,../../node_modules/@prisma/client/**,../../packages/database/generated/**}"
+      "includeFiles": [
+        "api/libquery_engine-rhel-openssl-3.0.x.so.node",
+        "api/generated/**",
+        "generated/**",
+        "../../packages/database/generated/**"
+      ]
     }
   }
 }
