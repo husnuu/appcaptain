@@ -1,3 +1,5 @@
 .vercel
 api/handler.cjs
 api/handler.cjs.map
+api/index.js.map
+api/index.cjs.map
