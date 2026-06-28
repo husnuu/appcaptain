@@ -1,0 +1,4 @@
+api/generated
+generated
+libquery_engine-*.node
+api/libquery_engine-*.node
