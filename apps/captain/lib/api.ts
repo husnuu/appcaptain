@@ -55,9 +55,12 @@ async function request<T>(
   });
 
   if (res.status === 401 && auth && retry) {
-    const refreshed = await refreshSession();
-    if (refreshed) {
-      return request<T>(path, { ...options, retry: false });
+    const hadToken = !!getAccessToken();
+    if (hadToken) {
+      const refreshed = await refreshSession();
+      if (refreshed) {
+        return request<T>(path, { ...options, retry: false });
+      }
     }
   }
 

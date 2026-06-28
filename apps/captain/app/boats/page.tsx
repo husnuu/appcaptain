@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   faPenToSquare,
   faTrash,
 } from "@getyourboat/ui";
+import { useAuth } from "../../components/auth-provider";
 import { AppShell } from "../../components/layout/AppShell";
 import { api, ApiError } from "../../lib/api";
 import { useMyBoats, useProfile } from "../../lib/hooks";
@@ -30,6 +32,7 @@ const STATUS_VARIANT: Record<BoatStatus, "neutral" | "warning" | "success" | "da
 
 function BoatsContent() {
   const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { data: boats, loading, error, reload } = useMyBoats();
   const { data: profile, loading: profileLoading } = useProfile();
   const [creating, setCreating] = useState(false);
@@ -106,6 +109,22 @@ function BoatsContent() {
           + Yeni Tekne
         </Button>
       </div>
+
+      {!authLoading && !isAuthenticated ? (
+        <div className="mb-4">
+          <Alert variant="info">
+            Teknelerinizi görmek ve yönetmek için{" "}
+            <Link href="/login" className="font-medium underline">
+              giriş yapın
+            </Link>
+            . Henüz hesabınız yoksa{" "}
+            <Link href="/signup" className="font-medium underline">
+              kayıt olun
+            </Link>
+            .
+          </Alert>
+        </div>
+      ) : null}
 
       {error || createError || actionError ? (
         <div className="mb-4">

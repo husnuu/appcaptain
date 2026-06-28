@@ -58,7 +58,11 @@ export async function login(body: {
 
 export async function refreshSession(): Promise<AuthResponseDTO | null> {
   try {
-    const data = await authFetch<AuthResponseDTO>("/api/auth/refresh", { method: "POST" });
+    const data = await authFetch<AuthResponseDTO & { authenticated?: boolean }>("/api/auth/session");
+    if (data.authenticated === false || !data.accessToken) {
+      setAccessToken(null);
+      return null;
+    }
     setAccessToken(data.accessToken);
     return data;
   } catch {

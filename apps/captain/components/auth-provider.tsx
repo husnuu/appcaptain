@@ -40,8 +40,9 @@ const DEMO_USER: AuthUserDTO = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUserDTO | null>(DEMO_USER);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<AuthUserDTO | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const redirectAfterAuth = useCallback(async () => {
@@ -67,7 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       const session = await refreshSession();
       if (!active) return;
-      if (session) setUser(session.user);
+      if (session) {
+        setUser(session.user);
+        setIsAuthenticated(true);
+      } else {
+        setUser(DEMO_USER);
+        setIsAuthenticated(false);
+      }
       setLoading(false);
     })();
     return () => {
@@ -79,23 +86,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
-      isAuthenticated: !!user,
+      isAuthenticated,
       async signIn(email, password, rememberMe) {
         const session = await authLogin({ email, password, rememberMe });
         setUser(session.user);
+        setIsAuthenticated(true);
       },
       async signUp(email, password, fullName) {
         const session = await authSignup({ email, password, fullName });
         setUser(session.user);
+        setIsAuthenticated(true);
       },
       async signOut() {
         await logoutSession().catch(() => {});
         setUser(DEMO_USER);
+        setIsAuthenticated(false);
         router.push("/");
       },
       redirectAfterAuth,
     }),
-    [user, loading, router, redirectAfterAuth]
+    [user, loading, isAuthenticated, router, redirectAfterAuth]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

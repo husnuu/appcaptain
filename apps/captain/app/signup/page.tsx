@@ -8,7 +8,7 @@ import { useAuth } from "../../components/auth-provider";
 import { Alert, Field, Input } from "../../components/ui";
 
 export default function SignupPage() {
-  const { signUp, user, loading, redirectAfterAuth } = useAuth();
+  const { signUp, isAuthenticated, loading, redirectAfterAuth } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,10 +18,10 @@ export default function SignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && isAuthenticated) {
       void redirectAfterAuth();
     }
-  }, [loading, user, redirectAfterAuth]);
+  }, [loading, isAuthenticated, redirectAfterAuth]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

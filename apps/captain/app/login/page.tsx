@@ -8,7 +8,7 @@ import { useAuth } from "../../components/auth-provider";
 import { Alert, Checkbox, Field, Input } from "../../components/ui";
 
 export default function LoginPage() {
-  const { signIn, user, loading, redirectAfterAuth } = useAuth();
+  const { signIn, isAuthenticated, loading, redirectAfterAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,10 +16,10 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && isAuthenticated) {
       void redirectAfterAuth();
     }
-  }, [loading, user, redirectAfterAuth]);
+  }, [loading, isAuthenticated, redirectAfterAuth]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
