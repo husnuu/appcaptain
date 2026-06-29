@@ -18,6 +18,30 @@ import type {
 
 const byOrder = { orderBy: { sortOrder: "asc" } } as const;
 
+const LOOKUP_CACHE_TTL_MS = 5 * 60 * 1000;
+const lookupCache = globalThis as unknown as {
+  config?: { at: number; data: OnboardingConfigDTO };
+  allFields?: { at: number; data: OnboardingFieldDTO[] };
+};
+
+async function cached<T>(
+  slot: "config" | "allFields",
+  loader: () => Promise<T>
+): Promise<T> {
+  const entry = slot === "config" ? lookupCache.config : lookupCache.allFields;
+  if (entry && Date.now() - entry.at < LOOKUP_CACHE_TTL_MS) {
+    return entry.data as T;
+  }
+  const data = await loader();
+  const cachedEntry = { at: Date.now(), data };
+  if (slot === "config") {
+    lookupCache.config = cachedEntry as { at: number; data: OnboardingConfigDTO };
+  } else {
+    lookupCache.allFields = cachedEntry as { at: number; data: OnboardingFieldDTO[] };
+  }
+  return data;
+}
+
 export class PrismaOnboardingLookupRepository implements OnboardingLookupRepository {
   getBoatTypes(): Promise<BoatTypeOptionDTO[]> {
     return prisma.boatTypeOption.findMany(byOrder);
@@ -71,10 +95,12 @@ export class PrismaOnboardingLookupRepository implements OnboardingLookupReposit
   }
 
   getAllFields(): Promise<OnboardingFieldDTO[]> {
-    return prisma.onboardingFieldDefinition.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: { inclusions: true },
-    });
+    return cached("allFields", () =>
+      prisma.onboardingFieldDefinition.findMany({
+        orderBy: { sortOrder: "asc" },
+        include: { inclusions: true },
+      })
+    );
   }
 
   async getResolvedConfig(listingModelKeys: string[]): Promise<ResolvedOnboardingConfigDTO> {
@@ -82,16 +108,18 @@ export class PrismaOnboardingLookupRepository implements OnboardingLookupReposit
     return resolveOnboardingConfig(config, fields, listingModelKeys);
   }
 
-  async getConfig(): Promise<OnboardingConfigDTO> {
-    const [boatTypes, listingModels, featureGroups, amenityCategories, documentTypes] =
-      await Promise.all([
-        this.getBoatTypes(),
-        this.getListingModels(),
-        this.getFeatureGroups(),
-        this.getAmenityCategories(),
-        this.getDocumentTypes(),
-      ]);
-    return { boatTypes, listingModels, featureGroups, amenityCategories, documentTypes };
+  getConfig(): Promise<OnboardingConfigDTO> {
+    return cached("config", async () => {
+      const [boatTypes, listingModels, featureGroups, amenityCategories, documentTypes] =
+        await Promise.all([
+          this.getBoatTypes(),
+          this.getListingModels(),
+          this.getFeatureGroups(),
+          this.getAmenityCategories(),
+          this.getDocumentTypes(),
+        ]);
+      return { boatTypes, listingModels, featureGroups, amenityCategories, documentTypes };
+    });
   }
 
   countByKeys(model: LookupModel, keys: string[]): Promise<number> {

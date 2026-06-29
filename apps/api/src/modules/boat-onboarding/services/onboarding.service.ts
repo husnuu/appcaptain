@@ -66,9 +66,10 @@ export async function getBoatState(boatId: string) {
 }
 
 async function listingModelKeysForBoat(boatId: string): Promise<string[]> {
-  const boat = await boatRepository.getState(boatId);
+  const keys = await boatRepository.getListingModelKeys(boatId);
+  const boat = await boatRepository.getOwnership(boatId);
   if (!boat) throw notFound("Boat not found");
-  return boat.listingModels.map((m) => m.key);
+  return keys;
 }
 
 export async function buildBoatTypeFeaturesSchemaForBoat(boatId: string) {

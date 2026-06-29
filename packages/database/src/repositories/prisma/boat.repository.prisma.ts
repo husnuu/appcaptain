@@ -187,6 +187,15 @@ export class PrismaBoatRepository implements BoatRepository {
     });
   }
 
+  async getListingModelKeys(boatId: string): Promise<string[]> {
+    const rows = await prisma.boatListingModel.findMany({
+      where: { boatId },
+      select: { listingModelKey: true },
+      orderBy: { listingModelKey: "asc" },
+    });
+    return rows.map((r) => r.listingModelKey);
+  }
+
   async listByOwner(ownerId: string): Promise<BoatListItemDTO[]> {
     const boats = await prisma.boat.findMany({
       where: { ownerId },

@@ -67,6 +67,7 @@ export interface BoatRepository {
   createDraft(ownerId: string): Promise<SerializedBoatDTO>;
   getState(boatId: string): Promise<SerializedBoatDTO | null>;
   getOwnership(boatId: string): Promise<BoatOwnership | null>;
+  getListingModelKeys(boatId: string): Promise<string[]>;
   listByOwner(ownerId: string): Promise<BoatListItemDTO[]>;
   listPending(): Promise<SerializedBoatDTO[]>;
 

@@ -25,7 +25,8 @@ export async function onboardingConfigRoutes(app: FastifyInstance) {
     return lookup.getFields({ type, section, package: pkg, packages: packageList });
   });
 
-  app.get("/onboarding/config", (req) => {
+  app.get("/onboarding/config", async (req, reply) => {
+    reply.header("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
     const { listingModelKeys } = req.query as { listingModelKeys?: string };
     if (listingModelKeys) {
       const keys = listingModelKeys
