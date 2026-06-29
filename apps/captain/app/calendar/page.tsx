@@ -75,6 +75,7 @@ function monthRange(year: number, month: number): { start: string; end: string }
 
 function DayCell({
   day,
+  isPast,
   isRangeStart,
   isInHoverRange,
   isRangeEnd,
@@ -82,6 +83,7 @@ function DayCell({
   onMouseEnter,
 }: {
   day: CalendarDay;
+  isPast: boolean;
   isRangeStart: boolean;
   isInHoverRange: boolean;
   isRangeEnd: boolean;
@@ -97,14 +99,16 @@ function DayCell({
   let style: { backgroundColor: string } | undefined;
 
   if (isBlocked) {
-    cls += "text-white";
-    style = { backgroundColor: BLOCKED_COLOR };
+    cls += isPast ? "cursor-default text-white/60" : "text-white";
+    style = { backgroundColor: BLOCKED_COLOR + (isPast ? "99" : "") };
+  } else if (isBooked) {
+    cls += "cursor-default bg-white/10 text-white/40";
+  } else if (isPast) {
+    cls += "cursor-default text-white/20";
   } else if (isRangeStart || isRangeEnd) {
     cls += "bg-white font-semibold text-gray-900";
   } else if (isInHoverRange) {
     cls += "bg-white/20 text-white";
-  } else if (isBooked) {
-    cls += "cursor-default bg-white/10 text-white/40";
   } else {
     cls += "bg-white/5 text-white hover:bg-white/15";
   }
@@ -115,15 +119,21 @@ function DayCell({
       onMouseEnter={onMouseEnter}
       className={cls.trim()}
       style={style}
-      disabled={isBooked}
+      disabled={isBooked || isPast}
       title={
-        isBlocked
-          ? "Blokeli (tıkla → kaldır)"
-          : isBooked
-            ? "Rezervasyonlu"
-            : isRangeStart
-              ? "Başlangıç seçildi — bitiş gününe tıkla"
-              : "Tıkla → seç"
+        isPast
+          ? isBlocked
+            ? "Blokeli (geçmiş)"
+            : isBooked
+              ? "Rezervasyonlu (geçmiş)"
+              : undefined
+          : isBlocked
+            ? "Blokeli (tıkla → kaldır)"
+            : isBooked
+              ? "Rezervasyonlu"
+              : isRangeStart
+                ? "Başlangıç seçildi — bitiş gününe tıkla"
+                : "Tıkla → seç"
       }
     >
       {dateNum}
@@ -150,6 +160,7 @@ function MonthCalendar({
   onDayClick: (day: CalendarDay) => void;
   onDayHover: (date: string) => void;
 }) {
+  const today = toYMD(new Date());
   const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
   // Monday-first: Sunday(0) → offset 6, Mon(1)→0, …
   const offset = firstDow === 0 ? 6 : firstDow - 1;
@@ -193,13 +204,14 @@ function MonthCalendar({
             <DayCell
               key={cell.date}
               day={cell}
+              isPast={cell.date < today}
               isRangeStart={cell.date === rangePickStart}
               isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
               isInHoverRange={
                 !!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)
               }
               onClick={onDayClick}
-              onMouseEnter={() => onDayHover(cell.date)}
+              onMouseEnter={() => cell.date >= today && onDayHover(cell.date)}
             />
           ) : (
             <div key={`empty-${i}`} />
@@ -222,13 +234,16 @@ function Legend({ model }: { model: BookingModel }) {
       <span className="flex items-center gap-1.5">
         <span
           className="inline-block h-3 w-3 rounded-sm"
-          style={{ backgroundColor: BOOKING_MODEL_COLORS[model] }}
+          style={{ backgroundColor: BLOCKED_COLOR }}
         />
         Blokeli
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block h-3 w-3 rounded-sm bg-white/20" />
-        Rezervasyonlu
+        <span
+          className="inline-block h-3 w-3 rounded-sm"
+          style={{ backgroundColor: BOOKING_MODEL_COLORS[model] }}
+        />
+        {MODEL_LABELS[model]} Rezervasyon
       </span>
     </div>
   );
@@ -408,7 +423,12 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
     else setMonth((m) => m + 1);
   }
 
+  const today = toYMD(new Date());
+
   function handleDayClick(day: CalendarDay) {
+    // Past days are view-only — only allow deleting a future block
+    if (day.date < today) return;
+
     if (day.status === "BLOCKED") {
       if (day.blockId && window.confirm("Bu blokajı kaldırmak istiyor musun?")) {
         void deleteBlock(day.blockId);
@@ -438,7 +458,7 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   }
 
   function handleDayHover(date: string) {
-    if (rangePickStart) setHoverDate(date);
+    if (rangePickStart && date >= today) setHoverDate(date);
   }
 
   async function deleteBlock(blockId: string) {
