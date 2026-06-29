@@ -44,6 +44,7 @@ export interface BookingCalendarRepository {
     end: Date,
   ): Promise<ReservationDateRange[]>;
   getBoatListingModelKeys(boatId: string): Promise<string[]>;
+  getBoatOwnerById(boatId: string): Promise<string | null>;
 }
 
 export function toBlockResponseDTO(row: CalendarBlockRow): BlockResponseDTO {

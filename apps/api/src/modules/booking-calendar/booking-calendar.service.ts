@@ -178,6 +178,14 @@ export async function createBlock(
 ): Promise<BlockResponseDTO> {
   validateModelFields(input);
 
+  // Reject past-date blocks server-side (UI already prevents this, but guard the API too).
+  const blockStartStr = input.model === BookingModel.HOURLY ? input.date! : input.startDate!;
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+  if (parseDate(blockStartStr) < todayUTC) {
+    throw badRequest("Cannot create a block in the past");
+  }
+
   const enabledKeys = await bookingCalendarRepository.getBoatListingModelKeys(input.boatId);
   const requiredKey = BOOKING_MODEL_TO_LISTING_KEY[input.model];
   if (!enabledKeys.includes(requiredKey)) {
@@ -225,7 +233,8 @@ export async function updateBlock(
   if (!existing) throw notFound("Block not found");
 
   if (existing.createdById !== user.id && user.role !== "ADMIN") {
-    throw forbidden("You did not create this block");
+    const ownerId = await bookingCalendarRepository.getBoatOwnerById(existing.boatId);
+    if (ownerId !== user.id) throw forbidden("You do not have permission to update this block");
   }
 
   // Resolve the final date/time values for overlap check.
@@ -294,7 +303,8 @@ export async function deleteBlock(id: string, user: AuthUser): Promise<void> {
   const existing = await bookingCalendarRepository.getBlockById(id);
   if (!existing) throw notFound("Block not found");
   if (existing.createdById !== user.id && user.role !== "ADMIN") {
-    throw forbidden("You did not create this block");
+    const ownerId = await bookingCalendarRepository.getBoatOwnerById(existing.boatId);
+    if (ownerId !== user.id) throw forbidden("You do not have permission to delete this block");
   }
   await bookingCalendarRepository.deleteBlock(id);
 }
@@ -361,7 +371,17 @@ export async function computeAvailability(
       }
     }
 
-    return { boatId, model, rangeStart, rangeEnd, slots: daySlots };
+    // Day-level summary so the month grid can show blocked/booked days on the HOURLY tab.
+    const days: CalendarDay[] = eachDayInRange(start, end).map((day) => {
+      const slotsForDay = daySlots.filter((s) => s.date === day);
+      const blocked = slotsForDay.find((s) => s.status === SlotStatus.BLOCKED);
+      if (blocked) return { date: day, status: SlotStatus.BLOCKED, blockId: blocked.blockId };
+      const booked = slotsForDay.find((s) => s.status === SlotStatus.BOOKED);
+      if (booked) return { date: day, status: SlotStatus.BOOKED, bookingId: booked.bookingId };
+      return { date: day, status: SlotStatus.AVAILABLE };
+    });
+
+    return { boatId, model, rangeStart, rangeEnd, slots: daySlots, days };
   }
 
   // Day-based models: any block (including HOURLY) that touches the day marks it blocked.

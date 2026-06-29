@@ -83,4 +83,12 @@ export class PrismaBookingCalendarRepository
     });
     return rows.map((r) => r.listingModelKey);
   }
+
+  async getBoatOwnerById(boatId: string) {
+    const boat = await prisma.boat.findUnique({
+      where: { id: boatId },
+      select: { ownerId: true },
+    });
+    return boat?.ownerId ?? null;
+  }
 }
