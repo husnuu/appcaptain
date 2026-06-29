@@ -11,15 +11,13 @@ function createClient(): PrismaClient {
 }
 
 function getClient(): PrismaClient {
-  if (globalForPrisma.prisma) return globalForPrisma.prisma;
-  const client = createClient();
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createClient();
   }
-  return client;
+  return globalForPrisma.prisma;
 }
 
-/** Lazy Prisma client — avoids engine init during serverless module load. */
+/** Lazy Prisma client — defers engine init; reuses one instance per serverless container. */
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
   get(_target, prop, receiver) {
     const client = getClient();
