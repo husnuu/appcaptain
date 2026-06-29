@@ -65,10 +65,18 @@ function toYMD(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function monthRange(year: number, month: number): { start: string; end: string } {
-  const start = new Date(Date.UTC(year, month, 1));
-  const end = new Date(Date.UTC(year, month + 1, 0));
-  return { start: toYMD(start), end: toYMD(end) };
+// Expands to full Monday→Sunday weeks so overflow days have real availability data
+function calendarRange(year: number, month: number): { start: string; end: string } {
+  const firstDay = new Date(Date.UTC(year, month, 1));
+  const lastDay = new Date(Date.UTC(year, month + 1, 0));
+  const firstDow = firstDay.getUTCDay();
+  const leadOffset = firstDow === 0 ? 6 : firstDow - 1;
+  const lastDow = lastDay.getUTCDay();
+  const trailOffset = lastDow === 0 ? 0 : 7 - lastDow;
+  return {
+    start: toYMD(new Date(Date.UTC(year, month, 1 - leadOffset))),
+    end: toYMD(new Date(Date.UTC(year, month + 1, trailOffset))),
+  };
 }
 
 // ─── Day status cell ───────────────────────────────────────────────────────────
@@ -76,6 +84,7 @@ function monthRange(year: number, month: number): { start: string; end: string }
 function DayCell({
   day,
   isPast,
+  isOverflow,
   isRangeStart,
   isInHoverRange,
   isRangeEnd,
@@ -84,6 +93,7 @@ function DayCell({
 }: {
   day: CalendarDay;
   isPast: boolean;
+  isOverflow: boolean;
   isRangeStart: boolean;
   isInHoverRange: boolean;
   isRangeEnd: boolean;
@@ -93,14 +103,15 @@ function DayCell({
   const isBlocked = day.status === "BLOCKED";
   const isBooked = day.status === "BOOKED";
   const dateNum = Number(day.date.slice(8));
+  const muted = isPast || isOverflow;
 
   let cls =
     "flex h-10 w-full items-center justify-center rounded-lg text-sm font-medium transition-all ";
   let style: { backgroundColor: string } | undefined;
 
   if (isBlocked) {
-    cls += isPast ? "cursor-default text-white/60" : "text-white";
-    style = { backgroundColor: BLOCKED_COLOR + (isPast ? "99" : "") };
+    cls += muted ? "cursor-default text-white/50" : "text-white";
+    style = { backgroundColor: BLOCKED_COLOR + (muted ? "88" : "") };
   } else if (isBooked) {
     cls += "cursor-default bg-white/10 text-white/40";
   } else if (isPast) {
@@ -121,11 +132,11 @@ function DayCell({
       style={style}
       disabled={isBooked || isPast}
       title={
-        isPast
+        muted
           ? isBlocked
-            ? "Blokeli (geçmiş)"
+            ? `Blokeli (${isPast ? "geçmiş" : "diğer ay"})`
             : isBooked
-              ? "Rezervasyonlu (geçmiş)"
+              ? `Rezervasyonlu (${isPast ? "geçmiş" : "diğer ay"})`
               : undefined
           : isBlocked
             ? "Blokeli (tıkla → kaldır)"
@@ -161,11 +172,26 @@ function MonthCalendar({
   onDayHover: (date: string) => void;
 }) {
   const today = toYMD(new Date());
-  const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
-  // Monday-first: Sunday(0) → offset 6, Mon(1)→0, …
-  const offset = firstDow === 0 ? 6 : firstDow - 1;
+  const firstOfMonth = toYMD(new Date(Date.UTC(year, month, 1)));
+  const lastOfMonth = toYMD(new Date(Date.UTC(year, month + 1, 0)));
   const dayMap = Object.fromEntries(days.map((d) => [d.date, d]));
+
+  // Monday-first lead offset
+  const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const leadOffset = firstDow === 0 ? 6 : firstDow - 1;
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const totalMain = leadOffset + daysInMonth;
+  const trailOffset = totalMain % 7 === 0 ? 0 : 7 - (totalMain % 7);
+  const totalCells = totalMain + trailOffset;
+
+  // Build full-week grid — negative/overflow day indices roll across month boundaries correctly
+  const cells = Array.from({ length: totalCells }, (_, i) => {
+    const date = toYMD(new Date(Date.UTC(year, month, 1 - leadOffset + i)));
+    return {
+      day: dayMap[date] ?? { date, status: "AVAILABLE" as const },
+      isOverflow: date < firstOfMonth || date > lastOfMonth,
+    };
+  });
 
   // Resolve the visual range min/max for hover preview
   const rangeMin =
@@ -181,14 +207,6 @@ function MonthCalendar({
         : rangePickStart
       : null;
 
-  const cells: (CalendarDay | null)[] = [
-    ...Array(offset).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => {
-      const date = toYMD(new Date(Date.UTC(year, month, i + 1)));
-      return dayMap[date] ?? { date, status: "AVAILABLE" as const };
-    }),
-  ];
-
   return (
     <div className="mt-4">
       <div className="mb-2 grid grid-cols-7 gap-1">
@@ -199,24 +217,21 @@ function MonthCalendar({
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {cells.map((cell, i) =>
-          cell ? (
-            <DayCell
-              key={cell.date}
-              day={cell}
-              isPast={cell.date < today}
-              isRangeStart={cell.date === rangePickStart}
-              isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
-              isInHoverRange={
-                !!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)
-              }
-              onClick={onDayClick}
-              onMouseEnter={() => cell.date >= today && onDayHover(cell.date)}
-            />
-          ) : (
-            <div key={`empty-${i}`} />
-          )
-        )}
+        {cells.map(({ day: cell, isOverflow }) => (
+          <DayCell
+            key={cell.date}
+            day={cell}
+            isPast={cell.date < today}
+            isOverflow={isOverflow}
+            isRangeStart={cell.date === rangePickStart}
+            isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
+            isInHoverRange={
+              !!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)
+            }
+            onClick={onDayClick}
+            onMouseEnter={() => cell.date >= today && onDayHover(cell.date)}
+          />
+        ))}
       </div>
     </div>
   );
@@ -392,7 +407,7 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [blockListKey, setBlockListKey] = useState(0);
 
-  const { start, end } = monthRange(year, month);
+  const { start, end } = calendarRange(year, month);
 
   const loadAvailability = useCallback(async () => {
     setLoadingAvail(true);
