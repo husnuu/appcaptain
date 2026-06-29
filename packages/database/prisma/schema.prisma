@@ -180,6 +180,20 @@ enum EngineType {
   SAIL_NO_ENGINE
 }
 
+enum BookingModel {
+  HOURLY
+  DAILY
+  STAY_INCLUDED
+  WEEKLY
+}
+
+enum BlockReason {
+  MAINTENANCE
+  OWNER_USE
+  MANUAL
+  OTHER
+}
+
 /* ===================== Captain profiles (auth + boats) ================= */
 // Standalone captain accounts — email/password auth via apps/api JWT.
 
@@ -483,6 +497,9 @@ model Boat {
   // Legacy marketplace relations (phase 0)
   reservations  Reservation[]
   reviews       Review[]
+
+  // Booking calendar
+  calendarBlocks CalendarBlock[]
 
   @@index([ownerId])
   @@index([status])
@@ -804,4 +821,28 @@ model Review {
   createdAt     DateTime    @default(now())
 
   @@index([boatId])
+}
+
+/* ======================== Booking calendar ========================== */
+
+model CalendarBlock {
+  id        String       @id @default(cuid())
+  boatId    String
+  boat      Boat         @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  model     BookingModel
+  reason    BlockReason
+  note      String?
+  // Day-based: range start/end. Hourly: both set to the single day.
+  startDate DateTime
+  endDate   DateTime
+  // Hourly only — 'HH:mm' strings.
+  startTime String?
+  endTime   String?
+  // Profile.id of the captain or admin who created the block.
+  createdById String     @db.Uuid
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([boatId, startDate, endDate])
+  @@map("calendar_blocks")
 }
