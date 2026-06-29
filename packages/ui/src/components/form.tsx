@@ -83,15 +83,28 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = "Select";
 
+export function RequiredMark() {
+  return (
+    <span className="ml-0.5 text-danger-500" aria-hidden title="Zorunlu">
+      *
+    </span>
+  );
+}
+
 export function Label({
   className,
+  required,
+  children,
   ...props
-}: React.LabelHTMLAttributes<HTMLLabelElement>) {
+}: React.LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
   return (
     <label
       className={cn("mb-1.5 block text-[13px] font-medium text-gray-600", className)}
       {...props}
-    />
+    >
+      {children}
+      {required ? <RequiredMark /> : null}
+    </label>
   );
 }
 
@@ -104,16 +117,18 @@ export function Field({
   label,
   hint,
   error,
+  required,
   children,
 }: {
   label?: string;
   hint?: string;
   error?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      {label ? <Label>{label}</Label> : null}
+      {label ? <Label required={required}>{label}</Label> : null}
       {children}
       {error ? (
         <FieldError>{error}</FieldError>

@@ -416,30 +416,13 @@ export function BoatTypeFeaturesStep({
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
 
-      {tabGroups.length > 0 ? (
-        <Tabs
-          items={tabGroups.map((t) => ({
-            id: t.id,
-            label: t.label,
-            badge:
-              tabErrorCounts[t.id] && tabErrorCounts[t.id]! > 0 ? (
-                <span
-                  className="inline-flex h-2 w-2 rounded-full bg-danger-500"
-                  aria-label={`${tabErrorCounts[t.id]} hatalı alan`}
-                />
-              ) : undefined,
-          }))}
-          activeId={activeTab}
-          onChange={(id) => {
-            void flushFeaturesDraft();
-            setActiveTab(id as FeatureSubTabId);
-          }}
-          className="mb-6"
-        />
-      ) : null}
-
-      <section className="mb-7 space-y-4 rounded-2xl border border-gray-100 bg-white p-5">
-        <h3 className="text-[15px] font-semibold text-ink">Tekne kimliği</h3>
+      <section className="mb-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-card">
+        <div>
+          <h3 className="text-[15px] font-semibold text-ink">Tekne kimliği</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
+            Bu bilgiler tüm sekmeler için ortaktır; bir kez doldurman yeterli.
+          </p>
+        </div>
         <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
           <div data-field="boatTypeKey">
             <Field label="Tekne tipi" error={fieldErrors.boatTypeKey}>
@@ -471,6 +454,28 @@ export function BoatTypeFeaturesStep({
           />
         </div>
       </section>
+
+      {tabGroups.length > 0 ? (
+        <Tabs
+          items={tabGroups.map((t) => ({
+            id: t.id,
+            label: t.label,
+            badge:
+              tabErrorCounts[t.id] && tabErrorCounts[t.id]! > 0 ? (
+                <span
+                  className="inline-flex h-2 w-2 rounded-full bg-danger-500"
+                  aria-label={`${tabErrorCounts[t.id]} hatalı alan`}
+                />
+              ) : undefined,
+          }))}
+          activeId={activeTab}
+          onChange={(id) => {
+            void flushFeaturesDraft();
+            setActiveTab(id as FeatureSubTabId);
+          }}
+          className="mb-6"
+        />
+      ) : null}
 
       {activeTab === "specs" ? (
         <p className="mb-1 text-[13px] leading-relaxed text-gray-500">{SPECS_NUMERIC_HINT}</p>
@@ -631,7 +636,7 @@ export function AmenitiesStep({
   return (
     <StepShell
       title="Donanımlar"
-      description="Teknende bulunan donanımları işaretle. Pakette zorunlu donanımlar seçilmeden devam edilemez."
+      description="Teknende bulunan donanımları işaretle. Olmayan donanımları boş bırakman yeterli — hiçbiri işaretlenmek zorunda değil."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -703,9 +708,16 @@ export function AmenitiesStep({
                 <div key={a.key} data-field={a.key} className="flex flex-wrap items-center gap-4">
                   <Checkbox
                     label={
-                      requiredAmenityKeys.includes(a.key)
-                        ? `${getFieldLabel(a)} *`
-                        : getFieldLabel(a)
+                      requiredAmenityKeys.includes(a.key) ? (
+                        <>
+                          {getFieldLabel(a)}
+                          <span className="ml-0.5 text-danger-500" aria-hidden>
+                            *
+                          </span>
+                        </>
+                      ) : (
+                        getFieldLabel(a)
+                      )
                     }
                     checked={st.included || st.isExtra}
                     onChange={(e) =>
@@ -1276,7 +1288,8 @@ export function PricingStep({
         {models.map((m) => (
           <div key={m.key} data-field={m.key}>
             <Field
-              label={`${getListingModelPriceLabel(m.key, m.label)} *`}
+              label={getListingModelPriceLabel(m.key, m.label)}
+              required
               error={fieldErrors[m.key]}
             >
               <div className="flex items-center gap-2">

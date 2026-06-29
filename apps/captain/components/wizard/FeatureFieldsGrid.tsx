@@ -80,7 +80,7 @@ export function CrewFieldsSection({
       <div data-field={CREW_FIELD_KEY}>
         <Field
           label="Toplam Mürettebat Sayısı"
-          hint={requiredKeys?.has(CREW_FIELD_KEY) && !crewError ? "Zorunlu" : undefined}
+          required={requiredKeys?.has(CREW_FIELD_KEY) ?? false}
           error={crewError}
         >
           <Input
@@ -98,11 +98,7 @@ export function CrewFieldsSection({
       <div data-field={CREW_INCLUDED_FIELD_KEY}>
         <Field
           label="Fiyata Dahil Mürettebat Sayısı"
-          hint={
-            requiredKeys?.has(CREW_INCLUDED_FIELD_KEY) && !crewIncludedError
-              ? "Zorunlu"
-              : undefined
-          }
+          required={requiredKeys?.has(CREW_INCLUDED_FIELD_KEY) ?? false}
           error={crewIncludedError}
         >
           <Input
@@ -168,7 +164,11 @@ export function FeatureFieldsGrid({
                   const fieldError = fieldErrors?.[f.key];
                   return (
                     <FieldShell key={f.key} fieldKey={f.key}>
-                      <Field label={getFieldLabel(f)} error={fieldError}>
+                      <Field
+                        label={getFieldLabel(f)}
+                        required={requiredKeys?.has(f.key) ?? false}
+                        error={fieldError}
+                      >
                         <Select
                           value={values[f.key] ?? ""}
                           error={!!fieldError}
@@ -191,7 +191,11 @@ export function FeatureFieldsGrid({
                   const fieldError = fieldErrors?.[f.key];
                   return (
                     <FieldShell key={f.key} fieldKey={f.key}>
-                      <Field label={getFieldLabel(f)} error={fieldError}>
+                      <Field
+                        label={getFieldLabel(f)}
+                        required={requiredKeys?.has(f.key) ?? false}
+                        error={fieldError}
+                      >
                         <Select
                           value={fuelValue}
                           error={!!fieldError}
@@ -252,7 +256,7 @@ export function FeatureFieldsGrid({
                   <FieldShell key={f.key} fieldKey={f.key}>
                     <Field
                       label={getFieldLabel(f)}
-                      hint={isRequired && !fieldError ? "Zorunlu" : undefined}
+                      required={isRequired}
                       error={fieldError}
                     >
                       <Input

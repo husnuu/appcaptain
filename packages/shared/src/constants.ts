@@ -12,7 +12,11 @@ export const STEP_ORDER: OnboardingStep[] = [
   OnboardingStep.DOCUMENTS,
 ];
 
-/** Every wizard step must be completed before submit (amenities included when in package). */
+/**
+ * Every wizard step must be completed (saved once) before submit. Note: the
+ * AMENITIES step is "completed" simply by saving it — no specific amenity needs
+ * to be checked, since a boat may genuinely lack any given equipment.
+ */
 export const REQUIRED_STEPS: OnboardingStep[] = [...STEP_ORDER];
 
 /** Supabase Storage bucket names. */

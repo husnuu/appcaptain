@@ -35,7 +35,7 @@ export default function BoatWizardPage({
 
   return (
     <Protected>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
         <TopBar />
         <Wizard key={id} boatId={id} />
       </div>

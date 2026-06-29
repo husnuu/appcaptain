@@ -109,7 +109,8 @@ function IncludedFeeField({
   return (
     <div key={group.includedKey} data-field={group.includedKey} className="space-y-3">
       <Field
-        label={requiredKeys?.has(group.includedKey) ? `${group.label} *` : group.label}
+        label={group.label}
+        required={requiredKeys?.has(group.includedKey) ?? false}
         error={fieldError}
       >
         <Select
@@ -141,12 +142,14 @@ function IncludedFeeField({
 function MinRentalDurationField({
   field,
   label,
+  required,
   value,
   onChange,
   fieldError,
 }: {
   field: OnboardingFieldDTO;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (key: string, value: string | boolean) => void;
   fieldError?: string;
@@ -155,7 +158,7 @@ function MinRentalDurationField({
 
   return (
     <div key={field.key} data-field={field.key}>
-      <Field label={label} error={fieldError}>
+      <Field label={label} required={required} error={fieldError}>
         <div className="flex max-w-md items-center gap-2">
           <Input
             type="number"
@@ -191,12 +194,14 @@ function MinRentalDurationField({
 function DailyAcUsageField({
   field,
   label,
+  required,
   value,
   onChange,
   fieldError,
 }: {
   field: OnboardingFieldDTO;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (key: string, value: string | boolean) => void;
   fieldError?: string;
@@ -205,7 +210,7 @@ function DailyAcUsageField({
 
   return (
     <div key={field.key} data-field={field.key}>
-      <Field label={label} error={fieldError}>
+      <Field label={label} required={required} error={fieldError}>
         <div className="flex max-w-md items-center gap-2">
           <Input
             type="number"
@@ -223,9 +228,8 @@ function DailyAcUsageField({
   );
 }
 
-function fieldLabel(label: string, key: string, requiredKeys?: ReadonlySet<string>): string {
-  if (requiredKeys?.has(key)) return `${label} *`;
-  return label;
+function isRequiredKey(key: string, requiredKeys?: ReadonlySet<string>): boolean {
+  return requiredKeys?.has(key) ?? false;
 }
 
 export function DynamicOnboardingFields({
@@ -268,7 +272,8 @@ export function DynamicOnboardingFields({
           );
         }
 
-        const label = fieldLabel(getFieldLabel(field), field.key, requiredKeys);
+        const label = getFieldLabel(field);
+        const required = isRequiredKey(field.key, requiredKeys);
         const fieldError = fieldErrors?.[field.key];
         const stringValue = String(values[field.key] ?? "");
 
@@ -276,7 +281,7 @@ export function DynamicOnboardingFields({
           return (
             <div key={field.key} className="space-y-3 border-t border-gray-100 pt-5">
               <div data-field={field.key}>
-                <Field label={label} error={fieldError}>
+                <Field label={label} required={required} error={fieldError}>
                   <Checkbox
                     label="Yakıt dahil değil — müşteri fiyat için bizimle iletişime geçsin"
                     checked={contactForFuelCost ?? false}
@@ -304,7 +309,7 @@ export function DynamicOnboardingFields({
           const checked = values[field.key] === true || values[field.key] === "true";
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Checkbox
                   label="Evet"
                   checked={checked}
@@ -321,7 +326,7 @@ export function DynamicOnboardingFields({
         ) {
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Textarea
                   rows={5}
                   value={stringValue}
@@ -336,7 +341,7 @@ export function DynamicOnboardingFields({
         if (isLongTextField(field)) {
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Textarea
                   rows={4}
                   value={stringValue}
@@ -352,7 +357,7 @@ export function DynamicOnboardingFields({
         if (field.key === "cancellation_policy" || field.key === "deposit_type_payment_before") {
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Select
                   value={stringValue}
                   error={!!fieldError}
@@ -381,7 +386,7 @@ export function DynamicOnboardingFields({
         if (TIME_FIELD_KEYS.has(field.key)) {
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Input
                   type="time"
                   value={toTimeInputValue(stringValue)}
@@ -400,6 +405,7 @@ export function DynamicOnboardingFields({
               key={field.key}
               field={field}
               label={label}
+              required={required}
               value={stringValue}
               onChange={onChange}
               fieldError={fieldError}
@@ -410,7 +416,7 @@ export function DynamicOnboardingFields({
         if (field.key === "weekly_check_in_out_day") {
           return (
             <div key={field.key} data-field={field.key}>
-              <Field label={label} error={fieldError}>
+              <Field label={label} required={required} error={fieldError}>
                 <Select
                   value={stringValue}
                   error={!!fieldError}
@@ -434,6 +440,7 @@ export function DynamicOnboardingFields({
               key={field.key}
               field={field}
               label={label}
+              required={required}
               value={stringValue}
               onChange={onChange}
               fieldError={fieldError}
@@ -443,7 +450,7 @@ export function DynamicOnboardingFields({
 
         return (
           <div key={field.key} data-field={field.key}>
-            <Field label={label} error={fieldError}>
+            <Field label={label} required={required} error={fieldError}>
               <Input
                 value={stringValue}
                 error={!!fieldError}

@@ -18,7 +18,7 @@ export function AppShell({
 }) {
   return (
     <Protected>
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex min-h-screen bg-white">
         <div className="hidden lg:block">
           <CaptainSidebar active={active} />
         </div>

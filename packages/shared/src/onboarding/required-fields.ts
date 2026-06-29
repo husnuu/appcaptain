@@ -154,15 +154,19 @@ export function getRequiredFeatureKeysForStep(
     .map((f) => f.key);
 }
 
-/** Pakette zorunlu olan donanımlar — işaretlenmeden adım kaydedilemez. */
+/**
+ * Donanımlarda "zorunlu" = "form'da GÖSTERİLMELİ" demek, "işaretli olmalı" değil.
+ * Bir teknede jeneratör/radar/jakuzi gibi donanımlar OLMAYABİLİR; kaptanı sahip
+ * olmadığı donanımı "var" demeye zorlamak yanlış. Bu yüzden hiçbir donanım
+ * işaretlenmek zorunda değil — pakete göre gösterim filtrelemesi yeterli.
+ * (Gösterim, listing-model'e göre amenity alanlarının config'e dahil edilmesiyle
+ * sağlanır; bu fonksiyon yalnızca işaretleme zorunluluğunu kontrol eder.)
+ */
 export function getRequiredAmenityKeys(
-  fields: OnboardingFieldDTO[],
-  listingModelKeys: string[]
+  _fields: OnboardingFieldDTO[],
+  _listingModelKeys: string[]
 ): string[] {
-  const scoped = filterFieldsByListingModels(fields, listingModelKeys);
-  return getFieldsForWizardStep(scoped, OnboardingStep.AMENITIES)
-    .filter((f) => f.type === "amenity")
-    .map((f) => f.key);
+  return [];
 }
 
 export function getRequiredDocumentKeys(
