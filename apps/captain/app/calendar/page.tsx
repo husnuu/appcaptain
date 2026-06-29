@@ -13,7 +13,6 @@ import {
   faArrowLeft,
   faArrowRight,
   faTrash,
-  faXmark,
 } from "@getyourboat/ui";
 import {
   BOOKING_MODEL_COLORS,
@@ -24,7 +23,6 @@ import type {
   AvailabilityMap,
   BlockResponseDTO,
   CalendarDay,
-  TimeSlot,
 } from "@getyourboat/shared";
 import { useAuth } from "../../components/auth-provider";
 import { AppShell } from "../../components/layout/AppShell";
@@ -77,85 +75,59 @@ function monthRange(year: number, month: number): { start: string; end: string }
 
 function DayCell({
   day,
+  isRangeStart,
+  isInHoverRange,
+  isRangeEnd,
   onClick,
+  onMouseEnter,
 }: {
   day: CalendarDay;
+  isRangeStart: boolean;
+  isInHoverRange: boolean;
+  isRangeEnd: boolean;
   onClick: (day: CalendarDay) => void;
+  onMouseEnter: () => void;
 }) {
   const isBlocked = day.status === "BLOCKED";
   const isBooked = day.status === "BOOKED";
   const dateNum = Number(day.date.slice(8));
 
+  let cls =
+    "flex h-10 w-full items-center justify-center rounded-lg text-sm font-medium transition-all ";
+  let style: { backgroundColor: string } | undefined;
+
+  if (isBlocked) {
+    cls += "text-white";
+    style = { backgroundColor: BLOCKED_COLOR };
+  } else if (isRangeStart || isRangeEnd) {
+    cls += "bg-white font-semibold text-gray-900";
+  } else if (isInHoverRange) {
+    cls += "bg-white/20 text-white";
+  } else if (isBooked) {
+    cls += "cursor-default bg-white/10 text-white/40";
+  } else {
+    cls += "bg-white/5 text-white hover:bg-white/15";
+  }
+
   return (
     <button
       onClick={() => onClick(day)}
-      className={[
-        "flex h-10 w-full items-center justify-center rounded-lg text-sm font-medium transition-all",
-        isBlocked
-          ? "text-white"
-          : isBooked
-            ? "cursor-default bg-white/10 text-white/40"
-            : "bg-white/5 text-white hover:bg-white/15",
-      ].join(" ")}
-      style={isBlocked ? { backgroundColor: BLOCKED_COLOR } : undefined}
+      onMouseEnter={onMouseEnter}
+      className={cls.trim()}
+      style={style}
       disabled={isBooked}
       title={
         isBlocked
-          ? `Blokeli — ${day.blockId}`
+          ? "Blokeli (tıkla → kaldır)"
           : isBooked
             ? "Rezervasyonlu"
-            : "Blokaj ekle"
+            : isRangeStart
+              ? "Başlangıç seçildi — bitiş gününe tıkla"
+              : "Tıkla → seç"
       }
     >
       {dateNum}
     </button>
-  );
-}
-
-// ─── Hourly slot grid ──────────────────────────────────────────────────────────
-
-function SlotGrid({
-  date: _date,
-  slots,
-  onBlock,
-  onDelete,
-}: {
-  date: string;
-  slots: TimeSlot[];
-  onBlock: (slot: TimeSlot) => void;
-  onDelete: (blockId: string) => void;
-}) {
-  return (
-    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {slots.map((slot) => {
-        const isBlocked = slot.status === "BLOCKED";
-        const isBooked = slot.status === "BOOKED";
-        return (
-          <button
-            key={`${slot.startTime}-${slot.endTime}`}
-            onClick={() =>
-              isBlocked && slot.blockId ? onDelete(slot.blockId) : onBlock(slot)
-            }
-            disabled={isBooked}
-            className={[
-              "rounded-lg px-3 py-2 text-xs font-medium transition-all",
-              isBlocked
-                ? "text-white"
-                : isBooked
-                  ? "cursor-default bg-white/10 text-white/40"
-                  : "bg-white/5 text-white hover:bg-white/15",
-            ].join(" ")}
-            style={isBlocked ? { backgroundColor: BLOCKED_COLOR } : undefined}
-            title={isBlocked ? "Tıkla → blokajı kaldır" : isBooked ? "Rezervasyonlu" : "Bloke et"}
-          >
-            {slot.startTime}–{slot.endTime}
-            {isBlocked && (
-              <FontAwesomeIcon icon={faXmark} className="ml-1 text-[10px]" />
-            )}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -165,18 +137,38 @@ function MonthCalendar({
   year,
   month,
   days,
+  rangePickStart,
+  hoverDate,
   onDayClick,
+  onDayHover,
 }: {
   year: number;
   month: number;
   days: CalendarDay[];
+  rangePickStart: string | null;
+  hoverDate: string | null;
   onDayClick: (day: CalendarDay) => void;
+  onDayHover: (date: string) => void;
 }) {
   const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
   // Monday-first: Sunday(0) → offset 6, Mon(1)→0, …
   const offset = firstDow === 0 ? 6 : firstDow - 1;
   const dayMap = Object.fromEntries(days.map((d) => [d.date, d]));
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+
+  // Resolve the visual range min/max for hover preview
+  const rangeMin =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate
+        ? rangePickStart
+        : hoverDate
+      : rangePickStart;
+  const rangeMax =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate
+        ? hoverDate
+        : rangePickStart
+      : null;
 
   const cells: (CalendarDay | null)[] = [
     ...Array(offset).fill(null),
@@ -198,7 +190,17 @@ function MonthCalendar({
       <div className="grid grid-cols-7 gap-1">
         {cells.map((cell, i) =>
           cell ? (
-            <DayCell key={cell.date} day={cell} onClick={onDayClick} />
+            <DayCell
+              key={cell.date}
+              day={cell}
+              isRangeStart={cell.date === rangePickStart}
+              isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
+              isInHoverRange={
+                !!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)
+              }
+              onClick={onDayClick}
+              onMouseEnter={() => onDayHover(cell.date)}
+            />
           ) : (
             <div key={`empty-${i}`} />
           )
@@ -237,27 +239,25 @@ function Legend({ model }: { model: BookingModel }) {
 function CreateBlockModal({
   boatId,
   model,
-  prefillDate,
-  prefillStartTime,
-  prefillEndTime,
+  prefillStartDate,
+  prefillEndDate,
   onClose,
   onCreated,
 }: {
   boatId: string;
   model: BookingModel;
-  prefillDate?: string;
-  prefillStartTime?: string;
-  prefillEndTime?: string;
+  prefillStartDate?: string;
+  prefillEndDate?: string;
   onClose: () => void;
   onCreated: (block: BlockResponseDTO) => void;
 }) {
   const isHourly = model === BookingModel.HOURLY;
   const [reason, setReason] = useState<string>(BlockReason.MANUAL);
   const [note, setNote] = useState("");
-  const [startDate, setStartDate] = useState(prefillDate ?? "");
-  const [endDate, setEndDate] = useState(prefillDate ?? "");
-  const [startTime, setStartTime] = useState(prefillStartTime ?? "09:00");
-  const [endTime, setEndTime] = useState(prefillEndTime ?? "13:00");
+  const [startDate, setStartDate] = useState(prefillStartDate ?? "");
+  const [endDate, setEndDate] = useState(prefillEndDate ?? "");
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("13:00");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -369,14 +369,13 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   const [loadingAvail, setLoadingAvail] = useState(false);
   const [availError, setAvailError] = useState<string | null>(null);
 
-  // Hourly drill-down
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-
-  // Create modal
-  const [createDay, setCreateDay] = useState<CalendarDay | null>(null);
-  const [createSlot, setCreateSlot] = useState<TimeSlot | null>(null);
+  // Two-click date range selection (Skyscanner-style)
+  const [rangePickStart, setRangePickStart] = useState<string | null>(null);
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
+  const [pendingRange, setPendingRange] = useState<{ start: string; end: string } | null>(null);
 
   const [actionError, setActionError] = useState<string | null>(null);
+  const [blockListKey, setBlockListKey] = useState(0);
 
   const { start, end } = monthRange(year, month);
 
@@ -395,7 +394,9 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
 
   useEffect(() => {
     void loadAvailability();
-    setSelectedDay(null);
+    // Reset range pick when model or month changes
+    setRangePickStart(null);
+    setHoverDate(null);
   }, [loadAvailability]);
 
   function prevMonth() {
@@ -412,19 +413,39 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
       if (day.blockId && window.confirm("Bu blokajı kaldırmak istiyor musun?")) {
         void deleteBlock(day.blockId);
       }
+      setRangePickStart(null);
+      setHoverDate(null);
       return;
     }
-    if (model === BookingModel.HOURLY) {
-      setSelectedDay(day.date === selectedDay ? null : day.date);
+    if (day.status === "BOOKED") return;
+
+    if (!rangePickStart) {
+      // First click — select start
+      setRangePickStart(day.date);
+      setHoverDate(day.date);
+    } else if (day.date === rangePickStart) {
+      // Clicked the same date again — deselect
+      setRangePickStart(null);
+      setHoverDate(null);
     } else {
-      setCreateDay(day);
+      // Second click — confirm range and open modal
+      const s = rangePickStart <= day.date ? rangePickStart : day.date;
+      const e = rangePickStart <= day.date ? day.date : rangePickStart;
+      setPendingRange({ start: s, end: e });
+      setRangePickStart(null);
+      setHoverDate(null);
     }
+  }
+
+  function handleDayHover(date: string) {
+    if (rangePickStart) setHoverDate(date);
   }
 
   async function deleteBlock(blockId: string) {
     setActionError(null);
     try {
       await api.deleteBlock(blockId);
+      setBlockListKey((k) => k + 1);
       await loadAvailability();
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Silinemedi");
@@ -432,14 +453,10 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   }
 
   function handleBlockCreated() {
-    setCreateDay(null);
-    setCreateSlot(null);
+    setPendingRange(null);
+    setBlockListKey((k) => k + 1);
     void loadAvailability();
   }
-
-  const selectedDaySlots = selectedDay
-    ? availability?.slots?.filter((s) => s.date === selectedDay) ?? []
-    : [];
 
   return (
     <div>
@@ -470,6 +487,13 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
         </div>
       )}
 
+      {/* Range selection hint */}
+      {rangePickStart && (
+        <p className="mb-3 text-sm text-white/60">
+          {rangePickStart} seçildi — bitiş gününe tıkla
+        </p>
+      )}
+
       {/* Month navigation */}
       <div className="flex items-center justify-between">
         <button onClick={prevMonth} className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white">
@@ -490,47 +514,30 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
       ) : availError ? (
         <Alert variant="danger" className="mt-4">{availError}</Alert>
       ) : availability ? (
-        <>
-          <MonthCalendar
-            year={year}
-            month={month}
-            days={availability.days ?? []}
-            onDayClick={handleDayClick}
-          />
-          <Legend model={model} />
-
-          {/* Hourly slot drill-down */}
-          {model === BookingModel.HOURLY && selectedDay && (
-            <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-semibold text-white">{selectedDay} — Saat Dilimleri</p>
-                <button onClick={() => setSelectedDay(null)} className="text-white/40 hover:text-white">
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
-              </div>
-              <SlotGrid
-                date={selectedDay}
-                slots={selectedDaySlots}
-                onBlock={(slot) => setCreateSlot(slot)}
-                onDelete={(blockId) => void deleteBlock(blockId)}
-              />
-            </div>
-          )}
-        </>
+        <MonthCalendar
+          year={year}
+          month={month}
+          days={availability.days ?? []}
+          rangePickStart={rangePickStart}
+          hoverDate={hoverDate}
+          onDayClick={handleDayClick}
+          onDayHover={handleDayHover}
+        />
       ) : null}
 
-      {/* Blocks list — shows all models */}
-      <BlockList boatId={boat.id} onRefresh={loadAvailability} />
+      <Legend model={model} />
 
-      {/* Create modals */}
-      {(createDay || createSlot) && (
+      {/* Blocks list — shows all blocks regardless of model */}
+      <BlockList boatId={boat.id} refreshKey={blockListKey} onRefresh={loadAvailability} />
+
+      {/* Create block modal — opens after second click confirms a range */}
+      {pendingRange && (
         <CreateBlockModal
           boatId={boat.id}
           model={model}
-          prefillDate={createDay?.date ?? createSlot?.date}
-          prefillStartTime={createSlot?.startTime}
-          prefillEndTime={createSlot?.endTime}
-          onClose={() => { setCreateDay(null); setCreateSlot(null); }}
+          prefillStartDate={pendingRange.start}
+          prefillEndDate={pendingRange.end}
+          onClose={() => setPendingRange(null)}
           onCreated={handleBlockCreated}
         />
       )}
@@ -542,9 +549,11 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
 
 function BlockList({
   boatId,
+  refreshKey,
   onRefresh,
 }: {
   boatId: string;
+  refreshKey: number;
   onRefresh: () => void;
 }) {
   const [blocks, setBlocks] = useState<BlockResponseDTO[] | null>(null);
@@ -562,7 +571,7 @@ function BlockList({
     }
   }, [boatId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); }, [load, refreshKey]);
 
   async function remove(id: string) {
     if (!window.confirm("Bu blokajı silmek istiyor musun?")) return;

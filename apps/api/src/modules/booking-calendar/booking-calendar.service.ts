@@ -106,14 +106,6 @@ function validateModelFields(input: CreateBlockInput): void {
     if (input.startDate > input.endDate) {
       throw badRequest("startDate must be on or before endDate");
     }
-    if (input.model === BookingModel.WEEKLY) {
-      const start = parseDate(input.startDate);
-      const end = parseDate(input.endDate);
-      const diffDays = Math.round((end.getTime() - start.getTime()) / 86_400_000);
-      if (diffDays !== 6) {
-        throw badRequest("Weekly model requires exactly 7 days (startDate to endDate inclusive)");
-      }
-    }
   }
 }
 
