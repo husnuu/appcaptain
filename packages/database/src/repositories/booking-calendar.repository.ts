@@ -14,7 +14,7 @@ export interface CreateBlockData {
 
 export interface UpdateBlockData {
   reason?: BlockReason;
-  note?: string;
+  note?: string | null;
   startDate?: Date;
   endDate?: Date;
   startTime?: string | null;

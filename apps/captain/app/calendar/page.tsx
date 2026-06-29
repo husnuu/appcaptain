@@ -139,7 +139,7 @@ function DayCell({
               ? `Rezervasyonlu (${isPast ? "geçmiş" : "diğer ay"})`
               : undefined
           : isBlocked
-            ? "Blokeli (tıkla → kaldır)"
+            ? "Blokeli — listeden kaldır"
             : isBooked
               ? "Rezervasyonlu"
               : isRangeStart

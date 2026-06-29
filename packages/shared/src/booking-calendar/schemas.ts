@@ -1,8 +1,18 @@
 import { z } from "zod";
 import { BlockReason, BookingModel } from "./enums.js";
 
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-const timeRegex = /^\d{2}:\d{2}$/;
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
+  (s) => !isNaN(Date.parse(s)),
+  "Invalid calendar date",
+);
+
+const timeString = z.string().regex(/^\d{2}:\d{2}$/).refine(
+  (s) => {
+    const [h, m] = s.split(":").map(Number);
+    return h! >= 0 && h! <= 23 && m! >= 0 && m! <= 59;
+  },
+  "Invalid time value",
+);
 
 export const createBlockSchema = z
   .object({
@@ -21,12 +31,12 @@ export const createBlockSchema = z
     ]),
     note: z.string().max(500).optional(),
     // Day-based fields:
-    startDate: z.string().regex(dateRegex).optional(),
-    endDate: z.string().regex(dateRegex).optional(),
+    startDate: dateString.optional(),
+    endDate: dateString.optional(),
     // Hourly fields:
-    date: z.string().regex(dateRegex).optional(),
-    startTime: z.string().regex(timeRegex).optional(),
-    endTime: z.string().regex(timeRegex).optional(),
+    date: dateString.optional(),
+    startTime: timeString.optional(),
+    endTime: timeString.optional(),
   })
   .refine(
     (data) => {
@@ -48,12 +58,12 @@ export const updateBlockSchema = z
         BlockReason.OTHER,
       ])
       .optional(),
-    note: z.string().max(500).optional(),
-    startDate: z.string().regex(dateRegex).optional(),
-    endDate: z.string().regex(dateRegex).optional(),
-    date: z.string().regex(dateRegex).optional(),
-    startTime: z.string().regex(timeRegex).optional(),
-    endTime: z.string().regex(timeRegex).optional(),
+    note: z.string().max(500).nullable().optional(),
+    startDate: dateString.optional(),
+    endDate: dateString.optional(),
+    date: dateString.optional(),
+    startTime: timeString.optional(),
+    endTime: timeString.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "En az bir alan güncellenmelidir",
@@ -66,8 +76,8 @@ export const getAvailabilitySchema = z.object({
     BookingModel.STAY_INCLUDED,
     BookingModel.WEEKLY,
   ]),
-  rangeStart: z.string().regex(dateRegex),
-  rangeEnd: z.string().regex(dateRegex),
+  rangeStart: dateString,
+  rangeEnd: dateString,
 });
 
 export type CreateBlockInput = z.infer<typeof createBlockSchema>;

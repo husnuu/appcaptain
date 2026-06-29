@@ -106,6 +106,11 @@ function validateModelFields(input: CreateBlockInput): void {
     if (input.startDate > input.endDate) {
       throw badRequest("startDate must be on or before endDate");
     }
+    const diffDays =
+      (parseDate(input.endDate).getTime() - parseDate(input.startDate).getTime()) / 86_400_000;
+    if (diffDays > 365) {
+      throw badRequest("Block duration cannot exceed 365 days");
+    }
   }
 }
 
@@ -133,6 +138,17 @@ async function checkOverlap(
 
   if (model === BookingModel.HOURLY && startTime && endTime) {
     const day = toDateString(startDate);
+
+    // Any non-HOURLY block spanning this day acts as a full-day block and must prevent HOURLY creation
+    const fullDayBlock = blocksToCheck.find(
+      (b) => b.model !== BookingModel.HOURLY && b.startDate <= day && b.endDate >= day,
+    );
+    if (fullDayBlock) {
+      throw conflict(
+        `A full-day block already covers this date (${fullDayBlock.startDate}–${fullDayBlock.endDate})`,
+      );
+    }
+
     for (const block of blocksToCheck) {
       if (block.model === BookingModel.HOURLY && block.startDate === day) {
         if (
@@ -349,7 +365,7 @@ export async function computeAvailability(
 
       for (const { startTime, endTime } of generated) {
         if (fullDayBlock) {
-          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BLOCKED, blockId: fullDayBlock.id });
+          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BLOCKED });
           continue;
         }
         const timeBlock = dayBlocks.find(
@@ -360,11 +376,11 @@ export async function computeAvailability(
             timeSlotsOverlap(startTime, endTime, b.startTime, b.endTime),
         );
         if (timeBlock) {
-          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BLOCKED, blockId: timeBlock.id });
+          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BLOCKED });
           continue;
         }
         if (dayBookings.length > 0) {
-          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BOOKED, bookingId: dayBookings[0]!.id });
+          daySlots.push({ date: day, startTime, endTime, status: SlotStatus.BOOKED });
           continue;
         }
         daySlots.push({ date: day, startTime, endTime, status: SlotStatus.AVAILABLE });
@@ -375,9 +391,9 @@ export async function computeAvailability(
     const days: CalendarDay[] = eachDayInRange(start, end).map((day) => {
       const slotsForDay = daySlots.filter((s) => s.date === day);
       const blocked = slotsForDay.find((s) => s.status === SlotStatus.BLOCKED);
-      if (blocked) return { date: day, status: SlotStatus.BLOCKED, blockId: blocked.blockId };
+      if (blocked) return { date: day, status: SlotStatus.BLOCKED };
       const booked = slotsForDay.find((s) => s.status === SlotStatus.BOOKED);
-      if (booked) return { date: day, status: SlotStatus.BOOKED, bookingId: booked.bookingId };
+      if (booked) return { date: day, status: SlotStatus.BOOKED };
       return { date: day, status: SlotStatus.AVAILABLE };
     });
 
@@ -390,13 +406,13 @@ export async function computeAvailability(
       (b) => b.startDate <= day && b.endDate >= day,
     );
     if (block) {
-      return { date: day, status: SlotStatus.BLOCKED, blockId: block.id };
+      return { date: day, status: SlotStatus.BLOCKED };
     }
     const booking = bookings.find(
       (bk) => toDateString(bk.startDate) <= day && toDateString(bk.endDate) >= day,
     );
     if (booking) {
-      return { date: day, status: SlotStatus.BOOKED, bookingId: booking.id };
+      return { date: day, status: SlotStatus.BOOKED };
     }
     return { date: day, status: SlotStatus.AVAILABLE };
   });

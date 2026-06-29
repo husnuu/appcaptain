@@ -24,6 +24,13 @@ export async function bookingCalendarRoutes(app: FastifyInstance) {
     if (query.rangeStart > query.rangeEnd) {
       throw badRequest("rangeStart must be on or before rangeEnd");
     }
+    const diffDays =
+      (new Date(`${query.rangeEnd}T00:00:00Z`).getTime() -
+        new Date(`${query.rangeStart}T00:00:00Z`).getTime()) /
+      86_400_000;
+    if (diffDays > 62) {
+      throw badRequest("Range cannot exceed 62 days");
+    }
 
     return service.computeAvailability(bid, query.model as BookingModel, query.rangeStart, query.rangeEnd);
   });
@@ -48,8 +55,12 @@ export async function bookingCalendarRoutes(app: FastifyInstance) {
     { onRequest: [app.requireAuth] },
     async (req, reply) => {
       await loadBoatForCalendar(boatId(req), req.authUser!);
+      const rawBody =
+        req.body !== null && typeof req.body === "object"
+          ? (req.body as Record<string, unknown>)
+          : {};
       const body = parseDetailed(createBlockSchema, {
-        ...(req.body as object),
+        ...rawBody,
         boatId: boatId(req),
       });
       const block = await service.createBlock(body, req.authUser!);
