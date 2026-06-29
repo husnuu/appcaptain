@@ -182,15 +182,8 @@ export const LISTING_MODEL_PRICE_LABELS: Record<string, string> = {
   weekly_charter: "Haftalık Kiralama Ücreti",
 };
 
-/** Optional in Fiyat adımı — doldurulmasa da kaydedilebilir. */
-export const OPTIONAL_PRICING_FIELD_KEYS = new Set([
-  "boat_rules_and_policies",
-  "alcohol_allowed",
-  "outside_food_drink_allowed",
-  "services_dj_photoshoot_decoration_birthday_laser_show_etc",
-  "weekly_check_in_out_day",
-  "daily_a_c_usage",
-]);
+/** @deprecated Paket bazlı zorunluluk seed + getRequiredPricingFieldKeys ile yönetilir. */
+export const OPTIONAL_PRICING_FIELD_KEYS = new Set<string>();
 
 export const BOOLEAN_BOOKING_FIELD_KEYS = new Set([
   "alcohol_allowed",

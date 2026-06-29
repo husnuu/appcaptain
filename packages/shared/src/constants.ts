@@ -12,10 +12,8 @@ export const STEP_ORDER: OnboardingStep[] = [
   OnboardingStep.DOCUMENTS,
 ];
 
-/** Amenities is optional; every other step is required before submitting. */
-export const REQUIRED_STEPS: OnboardingStep[] = STEP_ORDER.filter(
-  (s) => s !== OnboardingStep.AMENITIES
-);
+/** Every wizard step must be completed before submit (amenities included when in package). */
+export const REQUIRED_STEPS: OnboardingStep[] = [...STEP_ORDER];
 
 /** Supabase Storage bucket names. */
 export const STORAGE_BUCKETS = {

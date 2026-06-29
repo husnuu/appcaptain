@@ -61,3 +61,15 @@ export function getFieldLabel(field: Pick<OnboardingFieldDTO, "key" | "label">):
 export function isOwnerInputField(key: string): boolean {
   return getFieldBehavior(key).ownerInput;
 }
+
+/** Belgede çelişkili veya bilinçli opsiyonel tutulan alanlar — pakette olsa da zorunlu sayılmaz. */
+export const ALWAYS_OPTIONAL_FIELD_KEYS = new Set<string>([
+  "boat_plan",
+]);
+
+/** Evcil hayvan politikası — en az biri seçilmeli (üçü birden zorunlu değil). */
+export const PET_POLICY_FIELD_KEYS = [
+  "not_permitted",
+  "welcome_at_additional_charge",
+  "welcome_at_no_additional_charge",
+] as const;

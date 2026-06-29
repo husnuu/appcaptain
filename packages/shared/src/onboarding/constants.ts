@@ -18,6 +18,24 @@ export type OnboardingPackageKey = (typeof ONBOARDING_PACKAGE_KEYS)[number];
 const HOURLY_MODELS = new Set<ListingModelKey>(["hourly", "daily"]);
 const STAY_MODELS = new Set<ListingModelKey>(["overnight", "weekly_charter"]);
 
+export const ONBOARDING_PACKAGE_LABELS: Record<OnboardingPackageKey, string> = {
+  seahub_hourly: "Saatlik paket (Hourly / Daily)",
+  seahub_stay_included: "Konaklamalı paket (Overnight / Weekly)",
+};
+
+/** Kiralama modeli seçimine göre kaptana gösterilecek kısa açıklama. */
+export function describeListingModelPackages(listingModelKeys: string[]): string | null {
+  const packages = resolvePackagesFromListingModels(listingModelKeys);
+  if (packages.length === 0) return null;
+  if (packages.length === 2) {
+    return "Her iki paket birleştirilir: saatlik ve konaklamalı zorunlu alanların tamamı geçerli olur.";
+  }
+  if (packages[0] === "seahub_hourly") {
+    return "Saatlik paket: daha az zorunlu alan (ör. kabin detayları ve check-in/out opsiyonel).";
+  }
+  return "Konaklamalı paket: kabin, banyo, check-in/out, ek donanımlar ve belgeler daha kapsamlı zorunlu.";
+}
+
 export function resolvePackagesFromListingModels(
   listingModelKeys: string[]
 ): OnboardingPackageKey[] {
@@ -32,3 +50,5 @@ export function resolvePackagesFromListingModels(
 export function isListingModelKey(key: string): key is ListingModelKey {
   return (LISTING_MODEL_KEYS as readonly string[]).includes(key);
 }
+
+export { HOURLY_MODELS, STAY_MODELS };

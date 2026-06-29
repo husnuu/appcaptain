@@ -111,8 +111,8 @@ export function getFeatureGroupLabel(groupKey: string, fallback: string): string
 export const SPECS_NUMERIC_HINT =
   "Bu alanlara sayısal değer girin (örn. 12, 2018, 9.5).";
 
-/** @deprecated Use CABINS_REQUIRED_HINT */
 export const CABINS_OPTIONAL_HINT =
-  "Kabin + Tuvalet sekmesindeki zorunlu alanları doldur. Kaydet & Devam etmeden önce tüm zorunlu alanlar tamamlanmalıdır.";
+  "Konaklamalı pakette kabin ve banyo alanları zorunludur. Saatlik pakette opsiyoneldir.";
 
-export const CABINS_REQUIRED_HINT = CABINS_OPTIONAL_HINT;
+export const CABINS_REQUIRED_HINT =
+  "Kabin ve banyo alanlarını doldur. Kiralama paketine göre bazı alanlar zorunludur.";

@@ -199,7 +199,10 @@ export function buildLocationSchema(requiredLocationKeys: string[]) {
 export type LocationInput = z.infer<ReturnType<typeof buildLocationSchema>>;
 
 /* Step — Description & rules (dynamic) */
-export function buildDescriptionRulesSchema(requiredFieldKeys: string[]) {
+export function buildDescriptionRulesSchema(
+  requiredFieldKeys: string[],
+  petPolicyKeys: string[] = []
+) {
   const needsTitle = requiredFieldKeys.includes("listing_title");
 
   return z
@@ -215,6 +218,17 @@ export function buildDescriptionRulesSchema(requiredFieldKeys: string[]) {
         description: data.description,
       };
       assertRequiredFieldValues(merged, requiredFieldKeys, ctx, "fieldValues");
+
+      if (petPolicyKeys.length > 0) {
+        const selected = petPolicyKeys.some((key) => merged[key] === true);
+        if (!selected) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Evcil hayvan politikasını seçin",
+            path: ["fieldValues", petPolicyKeys[0]!],
+          });
+        }
+      }
     });
 }
 

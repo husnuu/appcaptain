@@ -32,7 +32,10 @@ import {
   filterFeatureGroupsBySubTab,
   getFieldLabel,
   getListingModelPriceLabel,
+  describeListingModelPackages,
+  getRequiredAmenityKeys,
   getRequiredDescriptionFieldKeys,
+  getPetPolicyFieldKeys,
   getRequiredFeatureKeysForStep,
   getRequiredPricingFieldKeys,
   isGuletBoatType,
@@ -176,10 +179,15 @@ export function ListingModelStep({
     scheduleSave(true);
   }
 
+  const packageHint = useMemo(
+    () => describeListingModelPackages(selected),
+    [selected]
+  );
+
   return (
     <StepShell
       title="Kiralama Modeli"
-      description="Bu tekneyi nasıl kiraya vereceksin? Birden fazla seçebilirsin."
+      description="Saatlik (Hourly/Daily) ve konaklamalı (Overnight/Weekly) modeller farklı zorunlu alan setleri kullanır. Birden fazla seçersen kurallar birleşir."
       footer={
         <>
           <BackButton onClick={goBack} show={false} />
@@ -195,6 +203,11 @@ export function ListingModelStep({
       }
     >
       <StepValidationAlert fieldErrors={fieldErrors} errorSummary={errorSummary} />
+      {packageHint ? (
+        <Alert variant="info" className="mb-4">
+          {packageHint}
+        </Alert>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2" data-field="listingModelKeys">
         {config.listingModels.map((m) => {
           const isSelected = selected.includes(m.key);
@@ -541,6 +554,11 @@ export function AmenitiesStep({
   }, [boat.amenities]);
 
   const categories = config.amenityCategories;
+  const modelKeys = useMemo(() => boat.listingModels.map((m) => m.key), [boat.listingModels]);
+  const requiredAmenityKeys = useMemo(() => {
+    if (!isResolvedConfig(config)) return [];
+    return getRequiredAmenityKeys(config.fields, modelKeys);
+  }, [config, modelKeys]);
   const amenityLabels = useMemo(() => {
     const map: Record<string, string> = {};
     for (const cat of categories) {
@@ -599,7 +617,7 @@ export function AmenitiesStep({
   function save() {
     const payload = buildSavePayload();
 
-    const result = buildAmenitiesSchema([]).safeParse(payload);
+    const result = buildAmenitiesSchema(requiredAmenityKeys).safeParse(payload);
     if (!result.success) {
       const { fields, message } = buildValidationErrorResponse(result.error);
       return Promise.reject(
@@ -613,7 +631,7 @@ export function AmenitiesStep({
   return (
     <StepShell
       title="Donanımlar"
-      description="Teknende bulunan donanımları işaretle. Hiçbirini seçmeden de devam edebilirsin."
+      description="Teknende bulunan donanımları işaretle. Pakette zorunlu donanımlar seçilmeden devam edilemez."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -684,7 +702,11 @@ export function AmenitiesStep({
               return (
                 <div key={a.key} data-field={a.key} className="flex flex-wrap items-center gap-4">
                   <Checkbox
-                    label={getFieldLabel(a)}
+                    label={
+                      requiredAmenityKeys.includes(a.key)
+                        ? `${getFieldLabel(a)} *`
+                        : getFieldLabel(a)
+                    }
                     checked={st.included || st.isExtra}
                     onChange={(e) =>
                       set(a.key, {
@@ -888,11 +910,10 @@ export function DescriptionRulesStep({
     };
 
     if (isResolvedConfig(config)) {
-      const required = getRequiredDescriptionFieldKeys(
-        config.fields,
-        boat.listingModels.map((m) => m.key)
-      );
-      const result = buildDescriptionRulesSchema(required).safeParse(payload);
+      const modelKeys = boat.listingModels.map((m) => m.key);
+      const required = getRequiredDescriptionFieldKeys(config.fields, modelKeys);
+      const petPolicyKeys = getPetPolicyFieldKeys(config.fields, modelKeys);
+      const result = buildDescriptionRulesSchema(required, petPolicyKeys).safeParse(payload);
       if (!result.success) {
         const { fields, message } = buildValidationErrorResponse(result.error);
         return Promise.reject(
@@ -912,7 +933,7 @@ export function DescriptionRulesStep({
   return (
     <StepShell
       title="Açıklama"
-      description="İlan başlığı ve açıklama metnini gir. Kural seçenekleri opsiyoneldir."
+      description="İlan başlığı, açıklama ve evcil hayvan politikasını gir. Alanlar kiralama paketine göre zorunlu olabilir."
       footer={
         <>
           <BackButton onClick={goBack} show />

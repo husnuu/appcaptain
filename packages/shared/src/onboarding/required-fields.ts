@@ -10,8 +10,12 @@ import {
   isLocationFieldKey,
   type FeatureSubTabId,
 } from "./feature-subtabs";
-import { isOwnerInputField } from "./field-metadata";
-import { INCLUDED_FEE_SKIP_KEYS, OPTIONAL_PRICING_FIELD_KEYS } from "./pricing-fields";
+import {
+  ALWAYS_OPTIONAL_FIELD_KEYS,
+  isOwnerInputField,
+  PET_POLICY_FIELD_KEYS,
+} from "./field-metadata";
+import { INCLUDED_FEE_SKIP_KEYS } from "./pricing-fields";
 import { resolvePackagesFromListingModels, type OnboardingPackageKey } from "./constants";
 import { fieldToWizardStep } from "./step-layout";
 
@@ -105,7 +109,7 @@ export function getRequiredLocationKeys(
   return [...keys, "latitude", "longitude"];
 }
 
-/** Only core listing copy is required; rule toggles (pets, policies) are optional. */
+/** Listing copy (title, description) — evcil hayvan kuralları ayrı doğrulanır. */
 export function getRequiredDescriptionFieldKeys(
   fields: OnboardingFieldDTO[],
   listingModelKeys: string[]
@@ -113,7 +117,20 @@ export function getRequiredDescriptionFieldKeys(
   const scoped = filterFieldsByListingModels(fields, listingModelKeys);
   return getFieldsForWizardStep(scoped, OnboardingStep.DESCRIPTION_RULES)
     .filter((f) => f.type === "media_description")
+    .filter((f) => !ALWAYS_OPTIONAL_FIELD_KEYS.has(f.key))
     .map((f) => f.key);
+}
+
+/** Aktif paketlerde gösterilen evcil hayvan seçenekleri (en az biri işaretlenmeli). */
+export function getPetPolicyFieldKeys(
+  fields: OnboardingFieldDTO[],
+  listingModelKeys: string[]
+): string[] {
+  const scoped = filterFieldsByListingModels(fields, listingModelKeys);
+  const visible = new Set(
+    getFieldsForWizardStep(scoped, OnboardingStep.DESCRIPTION_RULES).map((f) => f.key)
+  );
+  return PET_POLICY_FIELD_KEYS.filter((key) => visible.has(key));
 }
 
 export function getRequiredPricingFieldKeys(
@@ -123,8 +140,7 @@ export function getRequiredPricingFieldKeys(
   const scoped = filterFieldsByListingModels(fields, listingModelKeys);
   return getFieldsForWizardStep(scoped, OnboardingStep.PRICING)
     .map((f) => f.key)
-    .filter((key) => !INCLUDED_FEE_SKIP_KEYS.has(key))
-    .filter((key) => !OPTIONAL_PRICING_FIELD_KEYS.has(key));
+    .filter((key) => !INCLUDED_FEE_SKIP_KEYS.has(key));
 }
 
 export function getRequiredFeatureKeysForStep(
@@ -138,15 +154,15 @@ export function getRequiredFeatureKeysForStep(
     .map((f) => f.key);
 }
 
-/**
- * Amenities are optional "mark if present" checkboxes — none block save or submit.
- * Package inclusions only control which amenities appear in the UI (see filterAmenityCategories).
- */
+/** Pakette zorunlu olan donanımlar — işaretlenmeden adım kaydedilemez. */
 export function getRequiredAmenityKeys(
-  _fields: OnboardingFieldDTO[],
-  _listingModelKeys: string[]
+  fields: OnboardingFieldDTO[],
+  listingModelKeys: string[]
 ): string[] {
-  return [];
+  const scoped = filterFieldsByListingModels(fields, listingModelKeys);
+  return getFieldsForWizardStep(scoped, OnboardingStep.AMENITIES)
+    .filter((f) => f.type === "amenity")
+    .map((f) => f.key);
 }
 
 export function getRequiredDocumentKeys(

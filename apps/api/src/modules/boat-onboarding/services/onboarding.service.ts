@@ -14,6 +14,7 @@ import {
   computeProgress,
   getRequiredAmenityKeys,
   getRequiredDescriptionFieldKeys,
+  getPetPolicyFieldKeys,
   getRequiredFeatureKeysForStep,
   getRequiredLocationKeys,
   getRequiredPricingFieldKeys,
@@ -101,7 +102,8 @@ export async function buildDescriptionRulesSchemaForBoat(boatId: string) {
   if (modelKeys.length === 0) return buildDescriptionRulesSchema(["listing_title"]);
   const fields = await onboardingLookupRepository.getAllFields();
   const required = getRequiredDescriptionFieldKeys(fields, modelKeys);
-  return buildDescriptionRulesSchema(required);
+  const petPolicyKeys = getPetPolicyFieldKeys(fields, modelKeys);
+  return buildDescriptionRulesSchema(required, petPolicyKeys);
 }
 
 export async function buildPricingSchemaForBoat(boatId: string) {
