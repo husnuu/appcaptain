@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OnboardingStep } from "@getyourboat/shared";
-import { api } from "../api";
+import { api, ApiError } from "../api";
 import type { SerializedBoat } from "../types";
 
 export type AutosaveStatus = "idle" | "saving" | "saved" | "error";
@@ -66,10 +66,15 @@ export function useAutosaveDraft({
         clearTimeout(retryRef.current);
         retryRef.current = null;
       }
-    } catch {
-      setHasPending(true);
+    } catch (err) {
+      // A 4xx is a permanent validation/permission error — retrying the same
+      // payload won't help, so surface it and stop the loop. Only auto-retry
+      // transient failures (network drop / 5xx).
+      const status = err instanceof ApiError ? err.status : undefined;
+      const isClientError = status !== undefined && status >= 400 && status < 500;
+      setHasPending(!isClientError);
       setStatusSafe("error");
-      if (!retryRef.current) {
+      if (!isClientError && !retryRef.current) {
         retryRef.current = setTimeout(() => {
           retryRef.current = null;
           void save();
