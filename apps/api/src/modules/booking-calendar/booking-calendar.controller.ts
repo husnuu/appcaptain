@@ -12,6 +12,7 @@ import { badRequest } from "../../lib/errors.js";
 
 const boatId = (req: FastifyRequest) => (req.params as { boatId: string }).boatId;
 const blockId = (req: FastifyRequest) => (req.params as { id: string }).id;
+const mockId = (req: FastifyRequest) => (req.params as { id: string }).id;
 
 export async function bookingCalendarRoutes(app: FastifyInstance) {
   // ------------------------------------------------------------------
@@ -88,6 +89,49 @@ export async function bookingCalendarRoutes(app: FastifyInstance) {
     { onRequest: [app.requireAuth] },
     async (req, reply) => {
       await service.deleteBlock(blockId(req), req.authUser!);
+      return reply.code(204).send();
+    },
+  );
+
+  // ------------------------------------------------------------------
+  // GET /boats/:boatId/calendar/mock-reservations  — captain/admin only
+  // ------------------------------------------------------------------
+  app.get(
+    "/boats/:boatId/calendar/mock-reservations",
+    { onRequest: [app.requireAuth] },
+    async (req) => {
+      return service.listMockReservations(boatId(req), req.authUser!);
+    },
+  );
+
+  // ------------------------------------------------------------------
+  // POST /boats/:boatId/calendar/mock-reservations  — captain/admin only
+  // ------------------------------------------------------------------
+  app.post(
+    "/boats/:boatId/calendar/mock-reservations",
+    { onRequest: [app.requireAuth] },
+    async (req, reply) => {
+      const rawBody =
+        req.body !== null && typeof req.body === "object"
+          ? (req.body as Record<string, unknown>)
+          : {};
+      const res = await service.createMockReservation(
+        boatId(req),
+        rawBody as { startDate: string; endDate: string; guestName: string; note?: string },
+        req.authUser!,
+      );
+      return reply.code(201).send(res);
+    },
+  );
+
+  // ------------------------------------------------------------------
+  // DELETE /calendar/mock-reservations/:id  — captain/admin only
+  // ------------------------------------------------------------------
+  app.delete(
+    "/calendar/mock-reservations/:id",
+    { onRequest: [app.requireAuth] },
+    async (req, reply) => {
+      await service.deleteMockReservation(mockId(req), req.authUser!);
       return reply.code(204).send();
     },
   );

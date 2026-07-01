@@ -341,6 +341,23 @@ export const api = {
   deleteBlock: (id: string) =>
     request<void>(`/calendar/blocks/${id}`, { method: "DELETE" }),
 
+  listMockReservations: (boatId: string) =>
+    request<import("@getyourboat/shared").MockReservationDTO[]>(
+      `/boats/${boatId}/calendar/mock-reservations`
+    ),
+
+  createMockReservation: (
+    boatId: string,
+    body: { startDate: string; endDate: string; guestName?: string; note?: string }
+  ) =>
+    request<import("@getyourboat/shared").MockReservationDTO>(
+      `/boats/${boatId}/calendar/mock-reservations`,
+      { method: "POST", body }
+    ),
+
+  deleteMockReservation: (id: string) =>
+    request<void>(`/calendar/mock-reservations/${id}`, { method: "DELETE" }),
+
   // ---- Boat brands ----
   listBoatBrands: (boatTypeKey: string) => {
     const category = boatTypeToBrandCategory(boatTypeKey);

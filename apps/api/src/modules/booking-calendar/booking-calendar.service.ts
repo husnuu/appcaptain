@@ -1,5 +1,5 @@
 import { bookingCalendarRepository } from "@getyourboat/database";
-import type { CreateBlockData, UpdateBlockData } from "@getyourboat/database";
+import type { CreateBlockData, CreateMockReservationData, MockReservationRow, UpdateBlockData } from "@getyourboat/database";
 import {
   BookingModel,
   SlotStatus,
@@ -14,6 +14,7 @@ import type {
 } from "@getyourboat/shared";
 import { badRequest, conflict, forbidden, notFound } from "../../lib/errors.js";
 import type { AuthUser } from "../../plugins/captain-auth.js";
+import { loadBoatForCalendar } from "./authorization.js";
 
 // Default operating window for hourly boats.
 // TODO: make this configurable per boat via boat settings.
@@ -418,4 +419,46 @@ export async function computeAvailability(
   });
 
   return { boatId, model, rangeStart, rangeEnd, days };
+}
+
+// -------------------------------------------------------------------
+// Mock reservations (test tool — captain panel only)
+// -------------------------------------------------------------------
+
+export async function createMockReservation(
+  boatId: string,
+  input: { startDate: string; endDate: string; guestName: string; note?: string },
+  user: AuthUser,
+): Promise<MockReservationRow> {
+  await loadBoatForCalendar(boatId, user);
+  if (input.startDate > input.endDate) {
+    throw badRequest("startDate must be on or before endDate");
+  }
+  const data: CreateMockReservationData = {
+    boatId,
+    startDate: parseDate(input.startDate),
+    endDate: parseDate(input.endDate),
+    guestName: input.guestName || "Test Misafiri",
+    note: input.note,
+  };
+  return bookingCalendarRepository.createMockReservation(data);
+}
+
+export async function listMockReservations(
+  boatId: string,
+  user: AuthUser,
+): Promise<MockReservationRow[]> {
+  await loadBoatForCalendar(boatId, user);
+  const start = new Date();
+  start.setUTCFullYear(start.getUTCFullYear() - 1);
+  const end = new Date();
+  end.setUTCFullYear(end.getUTCFullYear() + 2);
+  return bookingCalendarRepository.listMockReservations(boatId, start, end);
+}
+
+export async function deleteMockReservation(id: string, user: AuthUser): Promise<void> {
+  const existing = await bookingCalendarRepository.getMockReservationById(id);
+  if (!existing) throw notFound("Mock reservation not found");
+  await loadBoatForCalendar(existing.boatId, user);
+  await bookingCalendarRepository.deleteMockReservation(id);
 }

@@ -47,3 +47,13 @@ export interface GetAvailabilityRequestDTO {
   rangeStart: string; // 'YYYY-MM-DD'
   rangeEnd: string;   // 'YYYY-MM-DD'
 }
+
+export interface MockReservationDTO {
+  id: string;
+  boatId: string;
+  startDate: string; // 'YYYY-MM-DD'
+  endDate: string;   // 'YYYY-MM-DD'
+  guestName: string;
+  note: string | null;
+  createdAt: string;
+}

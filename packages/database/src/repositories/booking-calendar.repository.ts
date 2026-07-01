@@ -28,6 +28,44 @@ export interface ReservationDateRange {
   endDate: Date;
 }
 
+export interface CreateMockReservationData {
+  boatId: string;
+  startDate: Date;
+  endDate: Date;
+  guestName: string;
+  note?: string;
+}
+
+export interface MockReservationRow {
+  id: string;
+  boatId: string;
+  startDate: string;
+  endDate: string;
+  guestName: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export function toMockReservationRow(row: {
+  id: string;
+  boatId: string;
+  startDate: Date;
+  endDate: Date;
+  guestName: string;
+  note: string | null;
+  createdAt: Date;
+}): MockReservationRow {
+  return {
+    id: row.id,
+    boatId: row.boatId,
+    startDate: row.startDate.toISOString().slice(0, 10),
+    endDate: row.endDate.toISOString().slice(0, 10),
+    guestName: row.guestName,
+    note: row.note,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 export interface BookingCalendarRepository {
   createBlock(data: CreateBlockData): Promise<BlockResponseDTO>;
   updateBlock(id: string, data: UpdateBlockData): Promise<BlockResponseDTO>;
@@ -45,6 +83,10 @@ export interface BookingCalendarRepository {
   ): Promise<ReservationDateRange[]>;
   getBoatListingModelKeys(boatId: string): Promise<string[]>;
   getBoatOwnerById(boatId: string): Promise<string | null>;
+  createMockReservation(data: CreateMockReservationData): Promise<MockReservationRow>;
+  listMockReservations(boatId: string, start: Date, end: Date): Promise<MockReservationRow[]>;
+  deleteMockReservation(id: string): Promise<void>;
+  getMockReservationById(id: string): Promise<MockReservationRow | null>;
 }
 
 export function toBlockResponseDTO(row: CalendarBlockRow): BlockResponseDTO {

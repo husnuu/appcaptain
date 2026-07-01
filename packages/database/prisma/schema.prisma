@@ -499,7 +499,8 @@ model Boat {
   reviews       Review[]
 
   // Booking calendar
-  calendarBlocks CalendarBlock[]
+  calendarBlocks            CalendarBlock[]
+  calendarMockReservations  CalendarMockReservation[]
 
   @@index([ownerId])
   @@index([status])
@@ -845,4 +846,18 @@ model CalendarBlock {
 
   @@index([boatId, startDate, endDate])
   @@map("calendar_blocks")
+}
+
+model CalendarMockReservation {
+  id        String   @id @default(cuid())
+  boatId    String
+  boat      Boat     @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  guestName String   @default("Test Misafiri")
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([boatId])
+  @@map("calendar_mock_reservations")
 }
