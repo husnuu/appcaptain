@@ -348,7 +348,7 @@ export const api = {
 
   createMockReservation: (
     boatId: string,
-    body: { startDate: string; endDate: string; guestName?: string; note?: string }
+    body: { model: import("@getyourboat/shared").BookingModel; startDate: string; endDate: string; guestName?: string; note?: string }
   ) =>
     request<import("@getyourboat/shared").MockReservationDTO>(
       `/boats/${boatId}/calendar/mock-reservations`,

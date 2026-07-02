@@ -427,7 +427,7 @@ export async function computeAvailability(
 
 export async function createMockReservation(
   boatId: string,
-  input: { startDate: string; endDate: string; guestName: string; note?: string },
+  input: { model: BookingModel; startDate: string; endDate: string; guestName: string; note?: string },
   user: AuthUser,
 ): Promise<MockReservationRow> {
   await loadBoatForCalendar(boatId, user);
@@ -436,6 +436,7 @@ export async function createMockReservation(
   }
   const data: CreateMockReservationData = {
     boatId,
+    model: input.model,
     startDate: parseDate(input.startDate),
     endDate: parseDate(input.endDate),
     guestName: input.guestName || "Test Misafiri",

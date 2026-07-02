@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Alert,
   Button,
@@ -69,11 +69,12 @@ const MONTH_NAMES = [
 
 type ViewMode = "monthly" | "weekly" | "daily";
 
-// Day cell data enriched with block model for coloring
+// Day cell data enriched with block/reservation model for coloring
 type RichDay = {
   date: string;
   status: "AVAILABLE" | "BLOCKED" | "BOOKED";
-  blockModel?: BookingModel;
+  blockModel?: BookingModel;   // set for BLOCKED days
+  bookedModel?: BookingModel;  // set for BOOKED days (mock reservation model)
 };
 
 function toYMD(d: Date): string {
@@ -124,7 +125,7 @@ function buildDayMap(
     const end = parseDate(res.endDate);
     while (cur <= end) {
       const d = toYMD(cur);
-      if (!map[d]) map[d] = { date: d, status: "BOOKED" };
+      if (!map[d]) map[d] = { date: d, status: "BOOKED", bookedModel: res.model as BookingModel };
       cur.setUTCDate(cur.getUTCDate() + 1);
     }
   }
@@ -159,15 +160,17 @@ function DayCell({
 
   let cls =
     "flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-lg text-sm font-medium transition-all ";
-  let style: { backgroundColor: string } | undefined;
+  let style: React.CSSProperties | undefined;
 
   if (isBlocked) {
     const color = day.blockModel ? BOOKING_MODEL_COLORS[day.blockModel] : "#EF4444";
     cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
     style = { backgroundColor: color };
   } else if (isBooked) {
+    const base = day.bookedModel ? BOOKING_MODEL_COLORS[day.bookedModel] : BOOKED_COLOR;
     cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
-    style = { backgroundColor: BOOKED_COLOR };
+    // Reservations use the model color at 70% opacity to distinguish from blocks
+    style = { backgroundColor: base, opacity: isPast ? 0.5 : 0.7 };
   } else if (isPast) {
     cls += "cursor-default text-white/20";
   } else if (isRangeStart || isRangeEnd) {
@@ -191,7 +194,7 @@ function DayCell({
         isBlocked
           ? `Blokeli${day.blockModel ? ` (${MODEL_LABELS[day.blockModel]})` : ""} — listeden kaldır`
           : isBooked
-            ? "Rezervasyonlu (Mock)"
+            ? `${day.bookedModel ? `${MODEL_LABELS[day.bookedModel]} ` : ""}Rezervasyon (Test)`
             : isRangeStart
               ? "Başlangıç seçildi — bitiş gününe tıkla (aynı güne tıkla → tek gün)"
               : undefined
@@ -425,18 +428,23 @@ function Legend({ models }: { models: BookingModel[] }) {
         Müsait
       </span>
       {models.map((m) => (
-        <span key={m} className="flex items-center gap-1.5">
+        <span key={`block-${m}`} className="flex items-center gap-1.5">
           <span
             className="inline-block h-3 w-3 rounded-sm"
             style={{ backgroundColor: BOOKING_MODEL_COLORS[m] }}
           />
-          {MODEL_LABELS[m]} Blokaj
+          {MODEL_LABELS[m]} Blokajı
         </span>
       ))}
-      <span className="flex items-center gap-1.5">
-        <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: BOOKED_COLOR }} />
-        Rezervasyon (Mock)
-      </span>
+      {models.map((m) => (
+        <span key={`res-${m}`} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-3 w-3 rounded-sm opacity-70"
+            style={{ backgroundColor: BOOKING_MODEL_COLORS[m] }}
+          />
+          {MODEL_LABELS[m]} Rezervasyonu
+        </span>
+      ))}
     </div>
   );
 }
@@ -654,15 +662,18 @@ function PricingPanel({ boat }: { boat: SerializedBoat }) {
 
 function MockReservationPanel({
   boatId,
+  availableModels,
   reservations,
   onCreated,
   onDeleted,
 }: {
   boatId: string;
+  availableModels: BookingModel[];
   reservations: MockReservationDTO[];
   onCreated: (r: MockReservationDTO) => void;
   onDeleted: (id: string) => void;
 }) {
+  const [model, setModel] = useState<BookingModel>(availableModels[0] ?? BookingModel.DAILY);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [guestName, setGuestName] = useState("");
@@ -676,6 +687,7 @@ function MockReservationPanel({
     setError(null);
     try {
       const res = await api.createMockReservation(boatId, {
+        model,
         startDate,
         endDate,
         guestName: guestName || "Test Misafiri",
@@ -712,6 +724,11 @@ function MockReservationPanel({
       {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
 
       <div className="flex flex-wrap gap-2">
+        <Select value={model} onChange={(e) => setModel(e.target.value as BookingModel)} className="w-auto">
+          {availableModels.map((m) => (
+            <option key={m} value={m}>{MODEL_LABELS[m]} Rezervasyonu</option>
+          ))}
+        </Select>
         <input
           type="date"
           className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
@@ -744,11 +761,19 @@ function MockReservationPanel({
               key={r.id}
               className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
             >
-              <div>
-                <span className="text-sm font-medium text-white">
-                  {r.startDate === r.endDate ? r.startDate : `${r.startDate} – ${r.endDate}`}
-                </span>
-                <p className="mt-0.5 text-caption text-white/50">{r.guestName}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full opacity-70"
+                  style={{ backgroundColor: BOOKING_MODEL_COLORS[r.model as BookingModel] ?? BOOKED_COLOR }}
+                />
+                <div>
+                  <span className="text-sm font-medium text-white">
+                    {MODEL_LABELS[r.model as BookingModel] ?? r.model} Rezervasyonu
+                    {" · "}
+                    {r.startDate === r.endDate ? r.startDate : `${r.startDate} – ${r.endDate}`}
+                  </span>
+                  <p className="mt-0.5 text-caption text-white/50">{r.guestName}</p>
+                </div>
               </div>
               <Button
                 size="sm"
@@ -1047,6 +1072,7 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
       {/* Mock reservation panel */}
       <MockReservationPanel
         boatId={boat.id}
+        availableModels={availableModels}
         reservations={mockReservations}
         onCreated={handleMockCreated}
         onDeleted={handleMockDeleted}

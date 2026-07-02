@@ -96,6 +96,7 @@ export class PrismaBookingCalendarRepository
     const row = await prisma.calendarMockReservation.create({
       data: {
         boatId: data.boatId,
+        model: data.model,
         startDate: data.startDate,
         endDate: data.endDate,
         guestName: data.guestName,

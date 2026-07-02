@@ -30,6 +30,7 @@ export interface ReservationDateRange {
 
 export interface CreateMockReservationData {
   boatId: string;
+  model: BookingModel;
   startDate: Date;
   endDate: Date;
   guestName: string;
@@ -39,6 +40,7 @@ export interface CreateMockReservationData {
 export interface MockReservationRow {
   id: string;
   boatId: string;
+  model: string;
   startDate: string;
   endDate: string;
   guestName: string;
@@ -49,6 +51,7 @@ export interface MockReservationRow {
 export function toMockReservationRow(row: {
   id: string;
   boatId: string;
+  model: string;
   startDate: Date;
   endDate: Date;
   guestName: string;
@@ -58,6 +61,7 @@ export function toMockReservationRow(row: {
   return {
     id: row.id,
     boatId: row.boatId,
+    model: row.model,
     startDate: row.startDate.toISOString().slice(0, 10),
     endDate: row.endDate.toISOString().slice(0, 10),
     guestName: row.guestName,

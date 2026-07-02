@@ -115,9 +115,16 @@ export async function bookingCalendarRoutes(app: FastifyInstance) {
         req.body !== null && typeof req.body === "object"
           ? (req.body as Record<string, unknown>)
           : {};
+      const model = rawBody["model"];
+      if (
+        typeof model !== "string" ||
+        !Object.values(BookingModel).includes(model as BookingModel)
+      ) {
+        throw badRequest("model is required and must be a valid BookingModel");
+      }
       const res = await service.createMockReservation(
         boatId(req),
-        rawBody as { startDate: string; endDate: string; guestName: string; note?: string },
+        rawBody as { model: BookingModel; startDate: string; endDate: string; guestName: string; note?: string },
         req.authUser!,
       );
       return reply.code(201).send(res);

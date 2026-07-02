@@ -51,6 +51,7 @@ export interface GetAvailabilityRequestDTO {
 export interface MockReservationDTO {
   id: string;
   boatId: string;
+  model: BookingModel;
   startDate: string; // 'YYYY-MM-DD'
   endDate: string;   // 'YYYY-MM-DD'
   guestName: string;
