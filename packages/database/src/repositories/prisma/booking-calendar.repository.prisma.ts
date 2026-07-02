@@ -92,6 +92,14 @@ export class PrismaBookingCalendarRepository
     return boat?.ownerId ?? null;
   }
 
+  async updateModelPrice(boatId: string, listingModelKey: string, price: number, currency: string) {
+    await prisma.boatPricing.upsert({
+      where: { boatId_listingModelKey: { boatId, listingModelKey } },
+      update: { price, currency },
+      create: { boatId, listingModelKey, price, currency },
+    });
+  }
+
   async createMockReservation(data: CreateMockReservationData) {
     const row = await prisma.calendarMockReservation.create({
       data: {

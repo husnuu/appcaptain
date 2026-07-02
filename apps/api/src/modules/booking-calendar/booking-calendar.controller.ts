@@ -94,6 +94,35 @@ export async function bookingCalendarRoutes(app: FastifyInstance) {
   );
 
   // ------------------------------------------------------------------
+  // PATCH /boats/:boatId/calendar/pricing  — captain/admin only
+  // ------------------------------------------------------------------
+  app.patch(
+    "/boats/:boatId/calendar/pricing",
+    { onRequest: [app.requireAuth] },
+    async (req, reply) => {
+      const rawBody =
+        req.body !== null && typeof req.body === "object"
+          ? (req.body as Record<string, unknown>)
+          : {};
+      const listingModelKey = rawBody["listingModelKey"];
+      const price = rawBody["price"];
+      const currency = typeof rawBody["currency"] === "string" ? rawBody["currency"] : "TRY";
+      if (typeof listingModelKey !== "string" || !listingModelKey) {
+        throw badRequest("listingModelKey is required");
+      }
+      if (typeof price !== "number" || price <= 0) {
+        throw badRequest("price must be a positive number");
+      }
+      await service.updateCalendarPrice(
+        boatId(req),
+        { listingModelKey, price, currency },
+        req.authUser!,
+      );
+      return reply.code(204).send();
+    },
+  );
+
+  // ------------------------------------------------------------------
   // GET /boats/:boatId/calendar/mock-reservations  — captain/admin only
   // ------------------------------------------------------------------
   app.get(

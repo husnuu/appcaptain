@@ -341,6 +341,12 @@ export const api = {
   deleteBlock: (id: string) =>
     request<void>(`/calendar/blocks/${id}`, { method: "DELETE" }),
 
+  updateCalendarPrice: (
+    boatId: string,
+    body: { listingModelKey: string; price: number; currency: string }
+  ) =>
+    request<void>(`/boats/${boatId}/calendar/pricing`, { method: "PATCH", body }),
+
   listMockReservations: (boatId: string) =>
     request<import("@getyourboat/shared").MockReservationDTO[]>(
       `/boats/${boatId}/calendar/mock-reservations`

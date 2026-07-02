@@ -87,6 +87,8 @@ export interface BookingCalendarRepository {
   ): Promise<ReservationDateRange[]>;
   getBoatListingModelKeys(boatId: string): Promise<string[]>;
   getBoatOwnerById(boatId: string): Promise<string | null>;
+  /** Upserts the price for a single listing model without touching other models. */
+  updateModelPrice(boatId: string, listingModelKey: string, price: number, currency: string): Promise<void>;
   createMockReservation(data: CreateMockReservationData): Promise<MockReservationRow>;
   listMockReservations(boatId: string, start: Date, end: Date): Promise<MockReservationRow[]>;
   deleteMockReservation(id: string): Promise<void>;

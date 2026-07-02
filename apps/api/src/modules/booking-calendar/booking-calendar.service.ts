@@ -422,6 +422,31 @@ export async function computeAvailability(
 }
 
 // -------------------------------------------------------------------
+// Calendar pricing (lightweight price update — no onboarding validation)
+// -------------------------------------------------------------------
+
+export async function updateCalendarPrice(
+  boatId: string,
+  input: { listingModelKey: string; price: number; currency: string },
+  user: AuthUser,
+): Promise<void> {
+  await loadBoatForCalendar(boatId, user);
+  if (!Number.isFinite(input.price) || input.price <= 0) {
+    throw badRequest("price must be a positive number");
+  }
+  const enabledKeys = await bookingCalendarRepository.getBoatListingModelKeys(boatId);
+  if (!enabledKeys.includes(input.listingModelKey)) {
+    throw badRequest(`Listing model ${input.listingModelKey} is not enabled for this boat`);
+  }
+  await bookingCalendarRepository.updateModelPrice(
+    boatId,
+    input.listingModelKey,
+    input.price,
+    input.currency || "TRY",
+  );
+}
+
+// -------------------------------------------------------------------
 // Mock reservations (test tool — captain panel only)
 // -------------------------------------------------------------------
 

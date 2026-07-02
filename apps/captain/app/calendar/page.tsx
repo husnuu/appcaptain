@@ -36,6 +36,13 @@ const KEY_TO_MODEL: Record<string, BookingModel> = {
   weekly_charter: BookingModel.WEEKLY,
 };
 
+const MODEL_TO_KEY: Record<BookingModel, string> = {
+  [BookingModel.HOURLY]:        "hourly",
+  [BookingModel.DAILY]:         "daily",
+  [BookingModel.STAY_INCLUDED]: "overnight",
+  [BookingModel.WEEKLY]:        "weekly_charter",
+};
+
 const MODEL_LABELS: Record<BookingModel, string> = {
   HOURLY: "Saatlik",
   DAILY: "Günlük",
@@ -151,7 +158,8 @@ function DayCell({
   isRangeStart,
   isInHoverRange,
   isRangeEnd,
-  price,
+  pricingMap,
+  primaryModelKey,
   onClick,
   onMouseEnter,
 }: {
@@ -160,7 +168,8 @@ function DayCell({
   isRangeStart: boolean;
   isInHoverRange: boolean;
   isRangeEnd: boolean;
-  price?: string;
+  pricingMap: PricingMap;
+  primaryModelKey: string | undefined;
   onClick: (day: RichDay) => void;
   onMouseEnter: () => void;
 }) {
@@ -189,7 +198,19 @@ function DayCell({
     cls += "bg-white/5 text-white hover:bg-white/15";
   }
 
-  const showPrice = price && !isBlocked && !isBooked && !isPast;
+  // Pick the price for this cell: use the cell's own model when blocked/booked,
+  // otherwise fall back to the primary (first) model's price
+  const cellModelKey = isBlocked
+    ? (day.blockModel ? MODEL_TO_KEY[day.blockModel] : primaryModelKey)
+    : isBooked
+      ? (day.bookedModel ? MODEL_TO_KEY[day.bookedModel] : primaryModelKey)
+      : primaryModelKey;
+  const cellPriceEntry = cellModelKey ? pricingMap[cellModelKey] : undefined;
+  const cellPrice =
+    cellPriceEntry && cellPriceEntry.price > 0
+      ? formatPrice(cellPriceEntry.price, cellPriceEntry.currency)
+      : undefined;
+  const showPrice = cellPrice && !isPast;
 
   return (
     <button
@@ -210,7 +231,7 @@ function DayCell({
     >
       <span>{dateNum}</span>
       {showPrice && (
-        <span className="text-[9px] font-normal leading-none text-white/60">{price}</span>
+        <span className="text-[9px] font-normal leading-none text-white/70">{cellPrice}</span>
       )}
     </button>
   );
@@ -224,7 +245,8 @@ function MonthCalendar({
   dayMap,
   rangePickStart,
   hoverDate,
-  price,
+  pricingMap,
+  primaryModelKey,
   onDayClick,
   onDayHover,
 }: {
@@ -233,7 +255,8 @@ function MonthCalendar({
   dayMap: Record<string, RichDay>;
   rangePickStart: string | null;
   hoverDate: string | null;
-  price?: string;
+  pricingMap: PricingMap;
+  primaryModelKey: string | undefined;
   onDayClick: (day: RichDay) => void;
   onDayHover: (date: string) => void;
 }) {
@@ -281,7 +304,8 @@ function MonthCalendar({
             isRangeStart={cell.date === rangePickStart}
             isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
             isInHoverRange={!!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)}
-            price={price}
+            pricingMap={pricingMap}
+            primaryModelKey={primaryModelKey}
             onClick={onDayClick}
             onMouseEnter={() => cell.date >= today && !isOverflow && onDayHover(cell.date)}
           />
@@ -298,7 +322,8 @@ function WeekCalendar({
   dayMap,
   rangePickStart,
   hoverDate,
-  price,
+  pricingMap,
+  primaryModelKey,
   onDayClick,
   onDayHover,
 }: {
@@ -306,7 +331,8 @@ function WeekCalendar({
   dayMap: Record<string, RichDay>;
   rangePickStart: string | null;
   hoverDate: string | null;
-  price?: string;
+  pricingMap: PricingMap;
+  primaryModelKey: string | undefined;
   onDayClick: (day: RichDay) => void;
   onDayHover: (date: string) => void;
 }) {
@@ -342,7 +368,8 @@ function WeekCalendar({
                 isRangeStart={date === rangePickStart}
                 isRangeEnd={!!rangeMax && date === rangeMax && date !== rangePickStart}
                 isInHoverRange={!!(rangeMin && rangeMax && date > rangeMin && date < rangeMax)}
-                price={price}
+                pricingMap={pricingMap}
+            primaryModelKey={primaryModelKey}
                 onClick={onDayClick}
                 onMouseEnter={() => date >= today && onDayHover(date)}
               />
@@ -564,39 +591,39 @@ function CreateBlockModal({
   );
 }
 
+type PricingMap = Record<string, { price: number; currency: string }>;
+
 // ─── Pricing panel ─────────────────────────────────────────────────────────────
 
-function PricingPanel({ boat }: { boat: SerializedBoat }) {
+function PricingPanel({
+  boat,
+  pricingMap,
+  onPricingChange,
+}: {
+  boat: SerializedBoat;
+  pricingMap: PricingMap;
+  onPricingChange: (key: string, price: number, currency: string) => void;
+}) {
   const [editing, setEditing] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const [localPricing, setLocalPricing] = useState(() =>
-    Object.fromEntries(boat.pricing.map((p) => [p.listingModelKey, { price: p.price, currency: p.currency }]))
-  );
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const models = boat.listingModels;
 
   async function save(modelKey: string) {
     const newPrice = parseFloat(editValue.replace(",", "."));
     if (isNaN(newPrice) || newPrice <= 0) return;
+    const currency = pricingMap[modelKey]?.currency ?? "TRY";
+    // Optimistic update — cells reflect the new price immediately
+    onPricingChange(modelKey, newPrice, currency);
+    setEditing(null);
     setSaving(true);
+    setSaveError(null);
     try {
-      const updatedPricing = models.map((m) => {
-        const existing = localPricing[m.key];
-        return {
-          listingModelKey: m.key,
-          price: m.key === modelKey ? newPrice : (existing?.price ?? 0),
-          currency: existing?.currency ?? "TRY",
-        };
-      });
-      await api.updatePricing(boat.id, { pricing: updatedPricing });
-      setLocalPricing((prev) => ({
-        ...prev,
-        [modelKey]: { price: newPrice, currency: prev[modelKey]?.currency ?? "TRY" },
-      }));
-      setEditing(null);
-    } catch {
-      // ignore — pricing is secondary to calendar
+      await api.updateCalendarPrice(boat.id, { listingModelKey: modelKey, price: newPrice, currency });
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.message : "Fiyat kaydedilemedi");
     } finally {
       setSaving(false);
     }
@@ -607,10 +634,11 @@ function PricingPanel({ boat }: { boat: SerializedBoat }) {
   return (
     <div className="mt-6">
       <h4 className="mb-3 text-sm font-semibold text-white/70">Temel Fiyatlar</h4>
+      {saveError && <Alert variant="danger" className="mb-2">{saveError}</Alert>}
       <div className="space-y-2">
         {models.map((m) => {
           const bm = KEY_TO_MODEL[m.key];
-          const p = localPricing[m.key];
+          const p = pricingMap[m.key];
           const isEditing = editing === m.key;
           return (
             <div
@@ -879,6 +907,15 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
+  // Pricing state — lifted here so cell price updates immediately after PricingPanel saves
+  const [pricingMap, setPricingMap] = useState<PricingMap>(() =>
+    Object.fromEntries(boat.pricing.map((p) => [p.listingModelKey, { price: p.price, currency: p.currency }]))
+  );
+
+  function handlePricingChange(key: string, price: number, currency: string) {
+    setPricingMap((prev) => ({ ...prev, [key]: { price, currency } }));
+  }
+
   // Range selection
   const [rangePickStart, setRangePickStart] = useState<string | null>(null);
   const [hoverDate, setHoverDate] = useState<string | null>(null);
@@ -906,15 +943,15 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
   // Build universal day status map
   const dayMap = useMemo(() => buildDayMap(blocks, mockReservations), [blocks, mockReservations]);
 
-  // Primary display price (first model with pricing)
-  const primaryPrice = useMemo(() => {
+  // The listing model key of the first available model — used as the fallback
+  // price for available cells when no specific model can be inferred
+  const primaryModelKey = useMemo(() => {
     for (const m of availableModels) {
-      const key = Object.entries(KEY_TO_MODEL).find(([, v]) => v === m)?.[0];
-      const p = boat.pricing.find((bp) => bp.listingModelKey === key);
-      if (p) return formatPrice(p.price, p.currency);
+      const key = MODEL_TO_KEY[m];
+      if (key) return key;
     }
     return undefined;
-  }, [availableModels, boat.pricing]);
+  }, [availableModels]);
 
   const today = toYMD(new Date());
 
@@ -1045,7 +1082,8 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
           dayMap={dayMap}
           rangePickStart={rangePickStart}
           hoverDate={hoverDate}
-          price={primaryPrice}
+          pricingMap={pricingMap}
+          primaryModelKey={primaryModelKey}
           onDayClick={handleDayClick}
           onDayHover={handleDayHover}
         />
@@ -1055,7 +1093,8 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
           dayMap={dayMap}
           rangePickStart={rangePickStart}
           hoverDate={hoverDate}
-          price={primaryPrice}
+          pricingMap={pricingMap}
+          primaryModelKey={primaryModelKey}
           onDayClick={handleDayClick}
           onDayHover={handleDayHover}
         />
@@ -1066,7 +1105,7 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
       <Legend models={availableModels} />
 
       {/* Pricing panel */}
-      <PricingPanel boat={boat} />
+      <PricingPanel boat={boat} pricingMap={pricingMap} onPricingChange={handlePricingChange} />
 
       {/* Block list */}
       <BlockList blocks={blocks} onDelete={handleBlockDeleted} />
