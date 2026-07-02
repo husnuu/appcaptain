@@ -15,7 +15,6 @@ import {
   faTrash,
 } from "@getyourboat/ui";
 import {
-  BOOKING_MODEL_COLORS,
   BlockReason,
   BookingModel,
 } from "@getyourboat/shared";
@@ -58,7 +57,18 @@ const REASON_LABELS: Record<string, string> = {
   OTHER: "Diğer",
 };
 
-// Booked (mock reservation) color
+// Orange for all owner-created blocks (maintenance, personal use, etc.)
+const BLOCK_COLOR = "#F97316";
+
+// Distinct per-model colors for customer reservations
+const RESERVATION_COLORS: Record<BookingModel, string> = {
+  [BookingModel.HOURLY]:        "#F87171", // pastel red
+  [BookingModel.DAILY]:         "#3B82F6", // blue
+  [BookingModel.STAY_INCLUDED]: "#A855F7", // purple
+  [BookingModel.WEEKLY]:        "#10B981", // green
+};
+
+// Fallback for unknown model
 const BOOKED_COLOR = "#6366F1";
 
 const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
@@ -163,14 +173,12 @@ function DayCell({
   let style: React.CSSProperties | undefined;
 
   if (isBlocked) {
-    const color = day.blockModel ? BOOKING_MODEL_COLORS[day.blockModel] : "#EF4444";
     cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
-    style = { backgroundColor: color };
+    style = { backgroundColor: BLOCK_COLOR };
   } else if (isBooked) {
-    const base = day.bookedModel ? BOOKING_MODEL_COLORS[day.bookedModel] : BOOKED_COLOR;
+    const color = day.bookedModel ? RESERVATION_COLORS[day.bookedModel] : BOOKED_COLOR;
     cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
-    // Reservations use the model color at 70% opacity to distinguish from blocks
-    style = { backgroundColor: base, opacity: isPast ? 0.5 : 0.7 };
+    style = { backgroundColor: color, opacity: isPast ? 0.5 : 0.75 };
   } else if (isPast) {
     cls += "cursor-default text-white/20";
   } else if (isRangeStart || isRangeEnd) {
@@ -394,7 +402,6 @@ function DailyCalendar({
     <div className="mt-4 space-y-0.5">
       {slots.map(({ startTime, endTime, status, model }) => {
         const isBlocked = status === "BLOCKED";
-        const color = model ? BOOKING_MODEL_COLORS[model] : undefined;
         return (
           <div
             key={startTime}
@@ -402,7 +409,7 @@ function DailyCalendar({
               "flex items-center gap-3 rounded px-3 py-2 text-sm",
               isBlocked ? "text-white" : isPastDay ? "text-white/20" : "bg-white/5 text-white/70",
             ].join(" ")}
-            style={isBlocked && color ? { backgroundColor: color } : undefined}
+            style={isBlocked ? { backgroundColor: BLOCK_COLOR } : undefined}
           >
             <span className="w-12 shrink-0 text-xs font-mono opacity-70">{startTime}</span>
             <span className="text-xs">
@@ -427,20 +434,15 @@ function Legend({ models }: { models: BookingModel[] }) {
         <span className="inline-block h-3 w-3 rounded-sm bg-white/10" />
         Müsait
       </span>
-      {models.map((m) => (
-        <span key={`block-${m}`} className="flex items-center gap-1.5">
-          <span
-            className="inline-block h-3 w-3 rounded-sm"
-            style={{ backgroundColor: BOOKING_MODEL_COLORS[m] }}
-          />
-          {MODEL_LABELS[m]} Blokajı
-        </span>
-      ))}
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: BLOCK_COLOR }} />
+        Blokaj
+      </span>
       {models.map((m) => (
         <span key={`res-${m}`} className="flex items-center gap-1.5">
           <span
-            className="inline-block h-3 w-3 rounded-sm opacity-70"
-            style={{ backgroundColor: BOOKING_MODEL_COLORS[m] }}
+            className="inline-block h-3 w-3 rounded-sm opacity-75"
+            style={{ backgroundColor: RESERVATION_COLORS[m] }}
           />
           {MODEL_LABELS[m]} Rezervasyonu
         </span>
@@ -618,7 +620,7 @@ function PricingPanel({ boat }: { boat: SerializedBoat }) {
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: bm ? BOOKING_MODEL_COLORS[bm] : "#fff" }}
+                  style={{ backgroundColor: bm ? RESERVATION_COLORS[bm] : "#fff" }}
                 />
                 <span className="text-sm font-medium text-white">{m.label ?? MODEL_LABELS[bm ?? BookingModel.DAILY]}</span>
                 {bm && <span className="text-xs text-white/40">{MODEL_UNIT[bm]}</span>}
@@ -763,8 +765,8 @@ function MockReservationPanel({
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full opacity-70"
-                  style={{ backgroundColor: BOOKING_MODEL_COLORS[r.model as BookingModel] ?? BOOKED_COLOR }}
+                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full opacity-75"
+                  style={{ backgroundColor: RESERVATION_COLORS[r.model as BookingModel] ?? BOOKED_COLOR }}
                 />
                 <div>
                   <span className="text-sm font-medium text-white">
@@ -827,7 +829,7 @@ function BlockList({
             <div className="flex items-center gap-3">
               <span
                 className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: BOOKING_MODEL_COLORS[b.model as BookingModel] ?? "#fff" }}
+                style={{ backgroundColor: BLOCK_COLOR }}
               />
               <div>
                 <span className="text-sm font-medium text-white">
