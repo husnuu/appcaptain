@@ -31,6 +31,11 @@ export function useAutosaveDraft({
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const getPayloadRef = useRef(getPayload);
   const savingRef = useRef(false);
+  // Serialized snapshot of the last payload we actually sent. Used to skip a
+  // PATCH when nothing really changed — otherwise deps that get a new object/
+  // array reference on every re-render (e.g. boat.listingModels after setBoat)
+  // retrigger the debounce forever, causing the "saved" badge to flash in a loop.
+  const lastSavedPayloadRef = useRef<string | null>(null);
 
   getPayloadRef.current = getPayload;
 
@@ -51,14 +56,24 @@ export function useAutosaveDraft({
 
   const save = useCallback(async () => {
     if (!enabled || savingRef.current) return;
+    const payload = getPayloadRef.current();
+    const serialized = JSON.stringify(payload);
+    // Values are identical to the last successful save → skip the network call
+    // so we don't loop on reference-only dependency changes.
+    if (serialized === lastSavedPayloadRef.current) {
+      clearTimer();
+      setHasPending(false);
+      return;
+    }
     savingRef.current = true;
     clearTimer();
     setStatusSafe("saving");
     try {
       const updated = await api.patchBoatDraft(boatId, {
         step,
-        data: getPayloadRef.current(),
+        data: payload,
       });
+      lastSavedPayloadRef.current = serialized;
       onSaved?.(updated);
       setHasPending(false);
       setStatusSafe("saved");

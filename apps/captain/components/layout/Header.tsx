@@ -240,7 +240,7 @@ export function Header() {
               Profil ayarları
             </Link>
             <a
-              href="mailto:destek@getyourboat.com?subject=GetYourBoat%20Kaptan%20Destek"
+              href="mailto:destek@getyourboat.com?subject=SEAHUB%20Kaptan%20Destek"
               onClick={closeMenus}
               className="block border-t border-gray-100 px-3 py-2 text-body-sm text-brand-600 hover:bg-gray-50"
             >

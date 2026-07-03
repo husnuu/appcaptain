@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import type { AnnouncementDTO, DashboardStatsDTO } from "@getyourboat/shared";
-import { announcementsMock, dashboardStatsMock } from "../mock/dashboard.mock";
+import {
+  announcementsMock,
+  dashboardStatsMock,
+  reservationSeriesMock,
+  type DashboardRange,
+  type ReservationPoint,
+} from "../mock/dashboard.mock";
 
 // Data-fetching layer. Replace the queryFn bodies with real API calls
 // (e.g. GET /dashboard/stats) without touching the screens.
@@ -12,6 +18,13 @@ export function useDashboardStats() {
   return useQuery<DashboardStatsDTO>({
     queryKey: ["dashboard", "stats"],
     queryFn: () => delay(dashboardStatsMock),
+  });
+}
+
+export function useReservationSeries(range: DashboardRange) {
+  return useQuery<ReservationPoint[]>({
+    queryKey: ["dashboard", "reservations", range],
+    queryFn: () => delay(reservationSeriesMock[range], 300),
   });
 }
 

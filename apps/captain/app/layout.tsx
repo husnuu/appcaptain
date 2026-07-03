@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GetYourBoat — Captain",
+  title: "SEAHUB Captain",
   description: "Manage your boats, reservations and earnings.",
 };
 

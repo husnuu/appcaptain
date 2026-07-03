@@ -20,15 +20,16 @@
     "next": "^15.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "recharts": "^3.9.1",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@getyourboat/config": "workspace:*",
     "@types/node": "^22.10.2",
-    "dotenv": "^16.4.7",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.1.2",
     "postcss": "^8.4.49",

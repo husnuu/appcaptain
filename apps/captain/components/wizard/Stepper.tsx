@@ -8,6 +8,8 @@ export interface StepperItem {
   icon?: IconDefinition;
   done: boolean;
   reachable: boolean;
+  /** Tooltip shown when the step is locked (not reachable). */
+  lockedHint?: string;
 }
 
 export function Stepper({
@@ -28,6 +30,7 @@ export function Stepper({
             <button
               type="button"
               disabled={!step.reachable}
+              title={!step.reachable ? step.lockedHint : undefined}
               onClick={() => step.reachable && onSelect(step.id)}
               aria-current={isActive ? "step" : undefined}
               className={cn(

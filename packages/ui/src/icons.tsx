@@ -60,4 +60,6 @@ export {
   faSatellite,
   faStar,
   faGaugeSimpleHigh,
+  faPlus,
+  faMinus,
 } from "@fortawesome/free-solid-svg-icons";

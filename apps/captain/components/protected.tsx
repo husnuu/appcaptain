@@ -14,7 +14,7 @@ export function TopBar() {
     <header className="sticky top-0 z-10 bg-ink-800 text-white">
       <div className="mx-auto flex max-w-content items-center justify-between px-4 py-3">
         <Link href="/" className="text-subheading font-bold text-white">
-          GetYourBoat <span className="text-brand-500">Captain</span>
+          SEAHUB <span className="text-brand-500">Captain</span>
         </Link>
         <div className="flex items-center gap-3 text-body-sm text-gray-300">
           {isAuthenticated && user?.email ? (

@@ -367,6 +367,23 @@ export class PrismaBoatRepository implements BoatRepository {
       structuredRules?: Record<string, string | boolean | number | null>;
     }
   ): Promise<void> {
+    // Merge (not replace) the structuredRules JSON so saving the description
+    // step never wipes rules owned by other steps (pricing fees/cancellation,
+    // boat_plan URL, etc.).
+    let structuredRules: Record<string, string | boolean | number | null> | undefined;
+    if (input.structuredRules !== undefined) {
+      const existing = await prisma.boat.findUnique({
+        where: { id: boatId },
+        select: { structuredRules: true },
+      });
+      const current =
+        (existing?.structuredRules as Record<
+          string,
+          string | boolean | number | null
+        > | null) ?? {};
+      structuredRules = { ...current, ...input.structuredRules };
+    }
+
     await prisma.boat.update({
       where: { id: boatId },
       data: {
@@ -375,7 +392,7 @@ export class PrismaBoatRepository implements BoatRepository {
         rulesText: input.rulesText ?? null,
         checkInNotes: input.checkInNotes ?? null,
         checkOutNotes: input.checkOutNotes ?? null,
-        structuredRules: input.structuredRules ?? undefined,
+        structuredRules: structuredRules ?? undefined,
       },
     });
   }

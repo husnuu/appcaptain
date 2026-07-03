@@ -33,6 +33,8 @@ import {
   getFieldLabel,
   getListingModelPriceLabel,
   describeListingModelPackages,
+  LISTING_MODEL_BRIEFS,
+  amenityCategoryAllowsExtra,
   getRequiredAmenityKeys,
   getRequiredDescriptionFieldKeys,
   getPetPolicyFieldKeys,
@@ -40,6 +42,8 @@ import {
   getRequiredPricingFieldKeys,
   isGuletBoatType,
   OnboardingStep,
+  PET_POLICY_FIELD_KEYS,
+  PET_POLICY_LABELS,
   PRICING_REQUIRED_HINT,
   readFieldValues,
   toBoatDetailViewModel,
@@ -59,7 +63,7 @@ import {
 import { useStepDraftAutosave } from "../../lib/hooks/useAutosaveDraft";
 import { prefetchBrandCatalog } from "../../lib/brand-catalog";
 import type { OnboardingConfig, ResolvedOnboardingConfig, SerializedBoat } from "../../lib/types";
-import { Alert, Checkbox, Field, Input, Select, Spinner } from "../ui";
+import { Alert, Checkbox, Field, Input, Modal, Select, Spinner, Textarea } from "../ui";
 import {
   DynamicOnboardingFields,
   FeatureFieldsGrid,
@@ -215,7 +219,7 @@ export function ListingModelStep({
             <label
               key={m.key}
               className={cn(
-                "relative flex cursor-pointer items-center gap-3 rounded-2xl border p-4 text-sm transition",
+                "relative flex cursor-pointer items-start gap-3 rounded-2xl border p-4 text-sm transition",
                 isSelected
                   ? "border-brand-500 bg-brand-500/[0.06] shadow-sm"
                   : "border-gray-200 bg-gray-50/60 hover:border-gray-300 hover:bg-gray-50"
@@ -239,8 +243,20 @@ export function ListingModelStep({
                   aria-hidden
                 />
               </span>
-              <span className={cn("font-medium", isSelected ? "text-ink" : "text-gray-700")}>
-                {m.label}
+              <span className="min-w-0 pr-6">
+                <span
+                  className={cn(
+                    "block font-medium",
+                    isSelected ? "text-ink" : "text-gray-700"
+                  )}
+                >
+                  {m.label}
+                </span>
+                {LISTING_MODEL_BRIEFS[m.key as keyof typeof LISTING_MODEL_BRIEFS] ? (
+                  <span className="mt-1 block text-[12px] leading-relaxed text-gray-500">
+                    {LISTING_MODEL_BRIEFS[m.key as keyof typeof LISTING_MODEL_BRIEFS]}
+                  </span>
+                ) : null}
               </span>
               {isSelected ? (
                 <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white">
@@ -574,7 +590,26 @@ export function AmenitiesStep({
 
   const [activeCategory, setActiveCategory] = useState(categories[0]?.key ?? "");
   const [state, setState] = useState<Record<string, AmenityState>>(initial);
+  const [showSummary, setShowSummary] = useState(false);
   const { busy, fieldErrors, errorSummary, run } = useStepSaver(onSaved);
+
+  const selectedByCategory = useMemo(
+    () =>
+      categories
+        .map((cat) => ({
+          key: cat.key,
+          label: cat.label,
+          items: cat.amenities.filter(
+            (a) => state[a.key]?.included || state[a.key]?.isExtra
+          ),
+        }))
+        .filter((c) => c.items.length > 0),
+    [categories, state]
+  );
+  const totalSelected = useMemo(
+    () => Object.values(state).filter((v) => v.included || v.isExtra).length,
+    [state]
+  );
 
   const buildSavePayload = useCallback(
     () => ({
@@ -585,7 +620,7 @@ export function AmenitiesStep({
           isIncluded: v.included && !v.isExtra,
           isExtra: v.isExtra,
           extraPrice: v.isExtra ? Number(v.extraPrice || 0) : null,
-          currency: v.isExtra ? "EUR" : null,
+          currency: v.isExtra ? "TRY" : null,
         })),
     }),
     [state]
@@ -642,16 +677,7 @@ export function AmenitiesStep({
           <BackButton onClick={goBack} show />
           <Button
             disabled={busy || boat.listingModels.length === 0}
-            onClick={() =>
-              run(save, {
-                onValidation: (errors) => {
-                  const firstKey = Object.keys(errors)[0];
-                  if (!firstKey) return;
-                  const cat = categories.find((c) => c.amenities.some((a) => a.key === firstKey));
-                  if (cat) setActiveCategory(cat.key);
-                },
-              })
-            }
+            onClick={() => setShowSummary(true)}
           >
             <SaveLabel busy={busy} />
           </Button>
@@ -730,7 +756,9 @@ export function AmenitiesStep({
                   {fieldErrors[a.key] ? (
                     <p className="w-full text-caption text-danger-600">{fieldErrors[a.key]}</p>
                   ) : null}
-                  {a.canBeExtra && (st.included || st.isExtra) ? (
+                  {a.canBeExtra &&
+                  amenityCategoryAllowsExtra(cat.key) &&
+                  (st.included || st.isExtra) ? (
                     <>
                       <Checkbox
                         label="Ekstra ücretli"
@@ -748,7 +776,7 @@ export function AmenitiesStep({
                             className="h-8 w-24"
                             placeholder="Fiyat"
                           />
-                          <span className="text-xs text-slate-500">EUR</span>
+                          <span className="text-xs text-slate-500">₺</span>
                         </div>
                       ) : null}
                     </>
@@ -759,6 +787,70 @@ export function AmenitiesStep({
           </div>
         </section>
       ))}
+
+      <Modal
+        open={showSummary}
+        onClose={() => setShowSummary(false)}
+        title="Seçilen Donanımlar — Özet"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowSummary(false)}>
+              Geri Dön, Düzenle
+            </Button>
+            <Button
+              disabled={busy}
+              onClick={() => {
+                setShowSummary(false);
+                run(save, {
+                  onValidation: (errors) => {
+                    const firstKey = Object.keys(errors)[0];
+                    if (!firstKey) return;
+                    const cat = categories.find((c) =>
+                      c.amenities.some((a) => a.key === firstKey)
+                    );
+                    if (cat) setActiveCategory(cat.key);
+                  },
+                });
+              }}
+            >
+              Onayla &amp; Devam
+            </Button>
+          </>
+        }
+      >
+        {totalSelected === 0 ? (
+          <p className="text-body-sm text-gray-500">
+            Henüz donanım seçmedin. Teknende bulunan donanımları işaretlemen önerilir; yine
+            de bu adımı boş geçebilirsin.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-body-sm text-gray-500">
+              Toplam {totalSelected} donanım seçtin. Devam etmeden önce kontrol et.
+            </p>
+            {selectedByCategory.map((cat) => (
+              <div key={cat.key}>
+                <h4 className="mb-2 text-caption font-semibold uppercase tracking-wide text-gray-400">
+                  {cat.label}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {cat.items.map((a) => (
+                    <span
+                      key={a.key}
+                      className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700"
+                    >
+                      {getFieldLabel(a)}
+                      {state[a.key]?.isExtra ? (
+                        <span className="text-brand-500">· ekstra</span>
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </StepShell>
   );
 }
@@ -937,15 +1029,47 @@ export function DescriptionRulesStep({
     return api.updateDescriptionRules(boat.id, payload);
   }
 
+  const hasTitle = stepFields.some((f) => f.key === "listing_title");
+  const hasDescription = stepFields.some((f) => f.key === "description");
+  const petFields = PET_POLICY_FIELD_KEYS.filter((key) =>
+    stepFields.some((f) => f.key === key)
+  );
+  const selectedPet =
+    petFields.find((key) => values[key] === true || values[key] === "true") ?? "";
+  const petError = petFields.map((key) => fieldErrors[key]).find(Boolean);
+
+  function selectPetPolicy(selected: string) {
+    setValues((v) => {
+      const next = { ...v };
+      for (const key of PET_POLICY_FIELD_KEYS) next[key] = key === selected;
+      return next;
+    });
+  }
+
   const canSave =
     boat.listingModels.length > 0 &&
-    (!stepFields.some((f) => f.key === "listing_title") ||
-      String(values.listing_title ?? "").trim().length >= 3);
+    (!hasTitle || String(values.listing_title ?? "").trim().length >= 3);
+
+  const RULE_FIELD_META: { key: string; label: string; hint: string }[] = [
+    {
+      key: "alcohol_allowed",
+      label: "Alkol İzni",
+      hint: "Misafirler teknede alkollü içecek getirebilir/tüketebilir mi?",
+    },
+    {
+      key: "outside_food_drink_allowed",
+      label: "Dışarıdan Yiyecek/İçecek",
+      hint: "Misafirler dışarıdan yiyecek/içecek getirebilir mi?",
+    },
+  ];
+  const ruleFields = RULE_FIELD_META.filter((r) =>
+    stepFields.some((f) => f.key === r.key)
+  );
 
   return (
     <StepShell
       title="Açıklama"
-      description="İlan başlığı, açıklama ve evcil hayvan politikasını gir. Alanlar kiralama paketine göre zorunlu olabilir."
+      description="İlan başlığı, açıklama, tekne kuralları ve evcil hayvan politikasını gir. Alanlar kiralama paketine göre zorunlu olabilir."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -959,7 +1083,124 @@ export function DescriptionRulesStep({
       {boat.listingModels.length === 0 ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
-      <DynamicOnboardingFields fields={stepFields} values={values} onChange={setValue} fieldErrors={fieldErrors} />
+
+      {hasTitle || hasDescription ? (
+        <section className="space-y-5">
+          <h3 className="text-[15px] font-semibold text-ink">İlan Başlığı ve Açıklaması</h3>
+          {hasTitle ? (
+            <div data-field="listing_title">
+              <Field
+                label="İlan Başlığı"
+                required
+                hint="En az 3, en fazla 120 karakter."
+                error={fieldErrors.listing_title}
+              >
+                <Input
+                  value={String(values.listing_title ?? "")}
+                  error={!!fieldErrors.listing_title}
+                  maxLength={120}
+                  onChange={(e) => setValue("listing_title", e.target.value)}
+                  placeholder="Örn. Bodrum'da 4 kabinli lüks gulet"
+                />
+              </Field>
+            </div>
+          ) : null}
+          {hasDescription ? (
+            <div data-field="description">
+              <Field label="Açıklama" error={fieldErrors.description}>
+                <Textarea
+                  rows={6}
+                  value={String(values.description ?? "")}
+                  error={!!fieldErrors.description}
+                  maxLength={5000}
+                  onChange={(e) => setValue("description", e.target.value)}
+                  placeholder="Tekneni, sunduğun deneyimi ve öne çıkan özellikleri anlat."
+                />
+              </Field>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {ruleFields.length > 0 ? (
+        <section
+          className={cn(
+            "space-y-4",
+            (hasTitle || hasDescription) && "mt-8 border-t border-gray-200 pt-8"
+          )}
+        >
+          <div>
+            <h3 className="text-[15px] font-semibold text-ink">Tekne Kuralları</h3>
+            <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
+              Misafirler için geçerli kuralları belirt.
+            </p>
+          </div>
+          <div className="space-y-4">
+            {ruleFields.map((r) => (
+              <div key={r.key} data-field={r.key}>
+                <Field label={r.label} hint={r.hint} error={fieldErrors[r.key]}>
+                  <Checkbox
+                    label="Evet, izin veriliyor"
+                    checked={values[r.key] === true || values[r.key] === "true"}
+                    onChange={(e) => setValue(r.key, e.target.checked)}
+                  />
+                </Field>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {petFields.length > 0 ? (
+        <section
+          className={cn(
+            "space-y-3",
+            (hasTitle || hasDescription || ruleFields.length > 0) &&
+              "mt-8 border-t border-gray-200 pt-8"
+          )}
+          data-field={petFields[0]}
+        >
+          <div>
+            <h3 className="text-[15px] font-semibold text-ink">Evcil Hayvan Politikası</h3>
+            <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
+              Teknende evcil hayvan kabul durumunu seç (tek seçim).
+            </p>
+          </div>
+          <div className="space-y-2" role="radiogroup" aria-label="Evcil hayvan politikası">
+            {petFields.map((key) => {
+              const active = selectedPet === key;
+              return (
+                <label
+                  key={key}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition",
+                    active
+                      ? "border-brand-500 bg-brand-50/60"
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="pet_policy"
+                    value={key}
+                    checked={active}
+                    onChange={() => selectPetPolicy(key)}
+                    className="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500"
+                  />
+                  <span className="text-body-sm text-gray-700">{PET_POLICY_LABELS[key]}</span>
+                </label>
+              );
+            })}
+          </div>
+          {selectedPet === "welcome_at_additional_charge" ? (
+            <p className="text-caption text-gray-500">
+              Bu seçenekte müşteriye rezervasyon sırasında evcil hayvan ücreti uygulandığı
+              belirtilir.
+            </p>
+          ) : null}
+          {petError ? <p className="text-caption text-danger-600">{petError}</p> : null}
+        </section>
+      ) : null}
     </StepShell>
   );
 }
@@ -1232,7 +1473,7 @@ export function PricingStep({
     const pricing = models.map((m) => ({
       listingModelKey: m.key,
       price: Number(prices[m.key] || 0),
-      currency: "EUR" as const,
+      currency: "TRY" as const,
     }));
 
     const payload = {
@@ -1302,7 +1543,7 @@ export function PricingStep({
                   placeholder="0"
                   className="max-w-[200px]"
                 />
-              <span className="text-sm text-slate-500">EUR</span>
+              <span className="text-sm text-slate-500">₺</span>
             </div>
           </Field>
           </div>

@@ -23,6 +23,18 @@ export const ONBOARDING_PACKAGE_LABELS: Record<OnboardingPackageKey, string> = {
   seahub_stay_included: "Konaklamalı paket (Overnight / Weekly)",
 };
 
+/** Kaptana her kiralama modeli kartının altında gösterilen kısa açıklama. */
+export const LISTING_MODEL_BRIEFS: Record<ListingModelKey, string> = {
+  hourly:
+    "Teknenizi saatlik olarak kiralayın. Günübirlik turlar, transfer ve kısa süreli kiralamalar için idealdir.",
+  daily:
+    "Teknenizi tam günlük olarak kiralayın. Sabah başlayıp akşam biten kiralamalar için.",
+  overnight:
+    "Geceleme dahil kiralama. Misafirler teknenizde konaklar; fiyata yatak ve hizmetler dahildir.",
+  weekly_charter:
+    "7 gece ve üzeri uzun süreli kiralamalar. Yelken tatilleri ve mavi yolculuklar için.",
+};
+
 /** Kiralama modeli seçimine göre kaptana gösterilecek kısa açıklama. */
 export function describeListingModelPackages(listingModelKeys: string[]): string | null {
   const packages = resolvePackagesFromListingModels(listingModelKeys);

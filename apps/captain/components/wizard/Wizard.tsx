@@ -127,30 +127,43 @@ export function Wizard({ boatId }: { boatId: string }) {
   }
 
   const isPreview = active === PREVIEW_ID;
+  // Pending listings stay editable: the captain can revise while it waits for
+  // review; saved changes keep the PENDING_REVIEW status (no re-submit needed).
   const canEditSteps =
-    boat.status === "DRAFT" || boat.status === "REJECTED" || boat.status === "ACTIVE";
+    boat.status === "DRAFT" ||
+    boat.status === "REJECTED" ||
+    boat.status === "ACTIVE" ||
+    boat.status === "PENDING_REVIEW";
   const canSubmit = boat.status === "DRAFT" || boat.status === "REJECTED";
   const idx = isPreview ? STEP_ORDER.length - 1 : stepIndex(active);
   const StepComponent = isPreview ? null : STEP_COMPONENTS[active as OnboardingStep];
 
   const completed = boat.progress.completedSteps;
+  // First not-yet-completed step = the step the captain should be working on.
   const currentBoatStep = completed.length
     ? STEP_ORDER.find((s) => !completed.includes(s)) ?? "DOCUMENTS"
     : "LISTING_MODEL";
-  const furthest = Math.max(
-    stepIndex(currentBoatStep),
-    stepIndex(boat.progress.activeStep ?? boat.progress.currentStep),
-    ...completed.map(stepIndex),
-    0
-  );
+  const currentIdx = stepIndex(currentBoatStep);
+  // Airbnb-style gating: a step is reachable only if it is already completed
+  // (revisit) or it is the next step to complete. Jumping ahead to a locked
+  // step is not allowed until the preceding steps are saved.
+  const allStepsDone = STEP_ORDER.every((s) => completed.includes(s));
   const stepperItems: StepperItem[] = [
     ...STEP_ORDER.map((step, i) => ({
       id: step,
       label: STEP_LABELS[step],
       done: completed.includes(step),
-      reachable: i <= furthest,
+      reachable: completed.includes(step) || i <= currentIdx,
+      lockedHint: `Bu adıma geçmek için önce "${STEP_LABELS[currentBoatStep]}" adımını tamamlayın.`,
     })),
-    { id: PREVIEW_ID, label: "Önizleme", icon: faEye, done: false, reachable: true },
+    {
+      id: PREVIEW_ID,
+      label: "Önizleme",
+      icon: faEye,
+      done: false,
+      reachable: allStepsDone,
+      lockedHint: "Önizleme için önce tüm adımları tamamlayın.",
+    },
   ];
 
   return (
@@ -181,8 +194,7 @@ export function Wizard({ boatId }: { boatId: string }) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
+            variant="secondary"
             onClick={() => window.open(`/boats/${boat.id}/preview`, "_blank", "noopener,noreferrer")}
           >
             <FontAwesomeIcon icon={faEye} className="text-[14px]" aria-hidden />
@@ -204,10 +216,21 @@ export function Wizard({ boatId }: { boatId: string }) {
       ) : null}
 
       {boat.status === "PENDING_REVIEW" ? (
-        <div className="mb-4">
+        <div className="mb-4 space-y-3">
           <Alert variant="info">
-            İlanın incelemeye gönderildi. Yönetici onayı bekleniyor.
+            İlanın{boat.title ? ` "${boat.title}"` : ""} incelemeye gönderildi. Ortalama onay
+            süresi 24-48 saattir. Onay durumunu &quot;Teknelerim&quot; sayfasından takip
+            edebilirsin. İnceleme sürerken de düzenleme yapabilirsin; değişikliklerin kaydedilir
+            ve ilan onay beklemeye devam eder.
           </Alert>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={() => router.push("/")}>
+              Ana Sayfaya Dön
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => router.push("/boats")}>
+              Teknelerim
+            </Button>
+          </div>
         </div>
       ) : null}
 

@@ -21,10 +21,16 @@ import {
 } from "@getyourboat/shared";
 import { Checkbox, Field, Input, Select } from "../ui";
 import { isBrandModelFieldKey } from "./BrandModelFields";
+import { NumberStepper } from "./NumberStepper";
 import { HourFieldSelect, UnitFieldInput } from "./UnitFieldInput";
 import type { FieldErrorsMap } from "@getyourboat/shared";
 
 const CREW_INCLUDED_FIELD_KEY = "crew_members_included_in_the_price";
+
+/** Count fields that use a +/- stepper (years/measures stay as plain inputs). */
+function isCountField(key: string): boolean {
+  return key === "capacity" || NUMERIC_CABIN_FIELD_KEYS.has(key);
+}
 
 function FieldShell({
   fieldKey,
@@ -83,16 +89,26 @@ export function CrewFieldsSection({
           required={requiredKeys?.has(CREW_FIELD_KEY) ?? false}
           error={crewError}
         >
-          <Input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            placeholder="Örn. 2"
-            value={values[CREW_FIELD_KEY] ?? ""}
-            disabled={noCrewMembers}
-            error={!!crewError}
-            onChange={(e) => onChange(CREW_FIELD_KEY, e.target.value)}
-          />
+          {noCrewMembers ? (
+            <Input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              placeholder="Örn. 2"
+              value={values[CREW_FIELD_KEY] ?? ""}
+              disabled
+              error={!!crewError}
+              onChange={(e) => onChange(CREW_FIELD_KEY, e.target.value)}
+            />
+          ) : (
+            <NumberStepper
+              value={values[CREW_FIELD_KEY] ?? ""}
+              min={0}
+              error={!!crewError}
+              ariaLabel="Toplam Mürettebat Sayısı"
+              onChange={(v) => onChange(CREW_FIELD_KEY, v)}
+            />
+          )}
         </Field>
       </div>
       <div data-field={CREW_INCLUDED_FIELD_KEY}>
@@ -101,14 +117,12 @@ export function CrewFieldsSection({
           required={requiredKeys?.has(CREW_INCLUDED_FIELD_KEY) ?? false}
           error={crewIncludedError}
         >
-          <Input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            placeholder="Örn. 2"
+          <NumberStepper
             value={values[CREW_INCLUDED_FIELD_KEY] ?? ""}
+            min={0}
             error={!!crewIncludedError}
-            onChange={(e) => onChange(CREW_INCLUDED_FIELD_KEY, e.target.value)}
+            ariaLabel="Fiyata Dahil Mürettebat Sayısı"
+            onChange={(v) => onChange(CREW_INCLUDED_FIELD_KEY, v)}
           />
         </Field>
       </div>
@@ -259,15 +273,25 @@ export function FeatureFieldsGrid({
                       required={isRequired}
                       error={fieldError}
                     >
-                      <Input
-                        type={isNumeric ? "number" : "text"}
-                        min={isNumeric ? 0 : undefined}
-                        inputMode={isNumeric ? "numeric" : undefined}
-                        placeholder={isNumeric ? "0" : undefined}
-                        value={values[f.key] ?? ""}
-                        error={!!fieldError}
-                        onChange={(e) => onChange(f.key, e.target.value)}
-                      />
+                      {isCountField(f.key) ? (
+                        <NumberStepper
+                          value={values[f.key] ?? ""}
+                          min={0}
+                          error={!!fieldError}
+                          ariaLabel={getFieldLabel(f)}
+                          onChange={(v) => onChange(f.key, v)}
+                        />
+                      ) : (
+                        <Input
+                          type={isNumeric ? "number" : "text"}
+                          min={isNumeric ? 0 : undefined}
+                          inputMode={isNumeric ? "numeric" : undefined}
+                          placeholder={isNumeric ? "0" : undefined}
+                          value={values[f.key] ?? ""}
+                          error={!!fieldError}
+                          onChange={(e) => onChange(f.key, e.target.value)}
+                        />
+                      )}
                     </Field>
                   </FieldShell>
                 );

@@ -1,6 +1,45 @@
 import type { AuthResponseDTO, AuthUserDTO } from "@getyourboat/shared";
 import { setAccessToken } from "./token-store";
 
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+let inflightRefresh: Promise<AuthResponseDTO | null> | null = null;
+
+/** Reads the `exp` claim (ms epoch) from a JWT without verifying it. */
+function decodeJwtExpMs(token: string): number | null {
+  const part = token.split(".")[1];
+  if (!part) return null;
+  try {
+    const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(json) as { exp?: number };
+    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearProactiveRefresh(): void {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
+/**
+ * Silently refresh the access token ~90s before it expires so an active
+ * captain is never bounced to the login screen mid-session. Rescheduled after
+ * every successful refresh.
+ */
+function scheduleProactiveRefresh(token: string): void {
+  clearProactiveRefresh();
+  const expMs = decodeJwtExpMs(token);
+  if (expMs === null) return;
+  const leadMs = 90_000;
+  const delay = Math.max(15_000, expMs - Date.now() - leadMs);
+  refreshTimer = setTimeout(() => {
+    void refreshSession();
+  }, delay);
+}
+
 export class AuthError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -40,6 +79,7 @@ export async function signup(body: {
     body,
   });
   setAccessToken(data.accessToken);
+  scheduleProactiveRefresh(data.accessToken);
   return data;
 }
 
@@ -53,28 +93,44 @@ export async function login(body: {
     body,
   });
   setAccessToken(data.accessToken);
+  scheduleProactiveRefresh(data.accessToken);
   return data;
 }
 
-export async function refreshSession(): Promise<AuthResponseDTO | null> {
-  try {
-    const data = await authFetch<AuthResponseDTO & { authenticated?: boolean }>("/api/auth/session");
-    if (data.authenticated === false || !data.accessToken) {
+export function refreshSession(): Promise<AuthResponseDTO | null> {
+  // Dedupe concurrent refreshes: each refresh rotates (revokes) the previous
+  // refresh token, so parallel calls (Strict Mode double-mount, multiple 401s,
+  // proactive timer + reactive retry) would otherwise invalidate each other.
+  if (inflightRefresh) return inflightRefresh;
+  inflightRefresh = (async () => {
+    try {
+      const data = await authFetch<AuthResponseDTO & { authenticated?: boolean }>(
+        "/api/auth/session"
+      );
+      if (data.authenticated === false || !data.accessToken) {
+        setAccessToken(null);
+        clearProactiveRefresh();
+        return null;
+      }
+      setAccessToken(data.accessToken);
+      scheduleProactiveRefresh(data.accessToken);
+      return data;
+    } catch {
       setAccessToken(null);
+      clearProactiveRefresh();
       return null;
+    } finally {
+      inflightRefresh = null;
     }
-    setAccessToken(data.accessToken);
-    return data;
-  } catch {
-    setAccessToken(null);
-    return null;
-  }
+  })();
+  return inflightRefresh;
 }
 
 export async function logoutSession(): Promise<void> {
   try {
     await authFetch("/api/auth/logout", { method: "POST", body: {} });
   } finally {
+    clearProactiveRefresh();
     setAccessToken(null);
   }
 }

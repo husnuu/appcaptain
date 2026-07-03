@@ -67,9 +67,32 @@ export const ALWAYS_OPTIONAL_FIELD_KEYS = new Set<string>([
   "boat_plan",
 ]);
 
-/** Evcil hayvan politikası — en az biri seçilmeli (üçü birden zorunlu değil). */
+/**
+ * Donanım kategorileri "ekstra ücretli" olarak işaretlenemez. Güvenlik ekipmanı
+ * (can yeleği, ilk yardım, EPIRB…), navigasyon (GPS, VHF, autopilot…) ve güverte
+ * ekipmanları standart kabul edilir; bunları ekstra ücrete tabi tutmak yanlış.
+ * Yeni bir kategori eklenirse buraya key'i eklemek yeterli.
+ */
+export const NO_EXTRA_AMENITY_CATEGORY_KEYS = new Set<string>([
+  "deck",
+  "security",
+  "navigation",
+]);
+
+export function amenityCategoryAllowsExtra(categoryKey: string): boolean {
+  return !NO_EXTRA_AMENITY_CATEGORY_KEYS.has(categoryKey);
+}
+
+/** Evcil hayvan politikası — birbirini dışlayan tek seçim (radio). */
 export const PET_POLICY_FIELD_KEYS = [
   "not_permitted",
   "welcome_at_additional_charge",
   "welcome_at_no_additional_charge",
 ] as const;
+
+/** Kaptana gösterilen Türkçe evcil hayvan politikası seçenek metinleri. */
+export const PET_POLICY_LABELS: Record<(typeof PET_POLICY_FIELD_KEYS)[number], string> = {
+  not_permitted: "Kabul edilmiyor",
+  welcome_at_additional_charge: "Ek ücretle kabul ediliyor",
+  welcome_at_no_additional_charge: "Ücretsiz kabul ediliyor",
+};

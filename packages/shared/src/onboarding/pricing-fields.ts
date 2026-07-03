@@ -8,6 +8,8 @@ export interface IncludedFeeFieldGroup {
   notIncludedKey: string;
   label: string;
   feePlaceholder: string;
+  /** Kaptana ücretin ne olduğunu açıklayan kısa not. */
+  description?: string;
 }
 
 export const INCLUDED_FEE_FIELD_GROUPS: IncludedFeeFieldGroup[] = [
@@ -15,19 +17,22 @@ export const INCLUDED_FEE_FIELD_GROUPS: IncludedFeeFieldGroup[] = [
     includedKey: "mooring_fees_included",
     notIncludedKey: "mooring_fees_not_included",
     label: "Liman Ücreti",
-    feePlaceholder: "Örn. 50 EUR/gece",
+    feePlaceholder: "Örn. 500 ₺/gece",
+    description: "Teknenin bağlandığı marinaya ödenen liman/geceleme ücretidir.",
   },
   {
     includedKey: "final_cleaning_included",
     notIncludedKey: "final_cleaning_not_included",
     label: "Final Temizlik Ücreti",
-    feePlaceholder: "Örn. 150 EUR",
+    feePlaceholder: "Örn. 1.500 ₺",
+    description: "Kiralama sonunda teknenin temizliği için alınan tek seferlik ücrettir.",
   },
   {
     includedKey: "transit_log_included",
     notIncludedKey: "transit_log_not_included",
     label: "Geçiş Belgesi (Transit Log)",
-    feePlaceholder: "Örn. 200 EUR",
+    feePlaceholder: "Örn. 2.000 ₺",
+    description: "Transit log, yabancı sularda seyir için gerekli resmi belgedir.",
   },
 ];
 

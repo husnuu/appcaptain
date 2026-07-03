@@ -3,6 +3,7 @@
 import { useAuth } from "../components/auth-provider";
 import { AppShell } from "../components/layout/AppShell";
 import { AnnouncementCarousel } from "../components/dashboard/AnnouncementCarousel";
+import { ReservationsChart } from "../components/dashboard/ReservationsChart";
 import { StatGrid } from "../components/dashboard/StatGrid";
 import { WelcomeHeader } from "../components/dashboard/WelcomeHeader";
 import { useDashboardStats } from "../lib/api/dashboard";
@@ -17,6 +18,7 @@ function DashboardContent() {
       <AnnouncementCarousel />
       <WelcomeHeader name={name} />
       <StatGrid stats={data} loading={isLoading} error={isError} />
+      <ReservationsChart />
     </>
   );
 }

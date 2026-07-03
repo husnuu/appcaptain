@@ -245,7 +245,7 @@ export function BoatDetailView({
                     <span>{a.label}</span>
                     {a.isExtra && a.extraPrice != null ? (
                       <Badge variant="warning">
-                        +{formatPrice(a.extraPrice, a.currency ?? "EUR")}
+                        +{formatPrice(a.extraPrice, a.currency ?? "TRY")}
                       </Badge>
                     ) : null}
                   </li>

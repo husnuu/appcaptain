@@ -264,7 +264,7 @@ export function buildPricingSchema(requiredBookingKeys: string[]) {
           z.object({
             listingModelKey: z.string().min(1),
             price: z.number().nonnegative(),
-            currency: z.string().length(3).default("EUR"),
+            currency: z.string().length(3).default("TRY"),
           })
         )
         .min(1),
@@ -297,7 +297,7 @@ export const extraSchema = z.object({
   name: z.string().min(2).max(120),
   description: z.string().max(2000).nullable().optional(),
   price: z.number().nonnegative(),
-  currency: z.string().length(3).default("EUR"),
+  currency: z.string().length(3).default("TRY"),
   pricingType: z.nativeEnum(ExtraPricingType).default(ExtraPricingType.PER_BOOKING),
 });
 export type ExtraInput = z.infer<typeof extraSchema>;

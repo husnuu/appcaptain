@@ -39,13 +39,13 @@ interface NavLink {
 
 const PRIMARY: NavLink[] = [
   { key: "dashboard", label: "Ana Sayfa", icon: faGaugeHigh, href: "/" },
-  { key: "messages", label: "Mesajlar", icon: faComments, href: "/messages" },
   { key: "boats", label: "Teknelerim", icon: faAnchor, href: "/boats" },
-  { key: "experiences", label: "Deneyimler", icon: faStar, href: "/experiences" },
+  { key: "experiences", label: "Deneyimlerim", icon: faStar, href: "/experiences" },
   { key: "calendar", label: "Takvim", icon: faCalendarDays, href: "/calendar" },
-  { key: "discounts", label: "İndirimler", icon: faPercent, href: "/discounts" },
+  { key: "messages", label: "Mesajlar", icon: faComments, href: "/messages" },
   { key: "payments", label: "Ödemeler", icon: faWallet, href: "/payments" },
-  { key: "legal", label: "Yasal & Ödeme", icon: faScaleBalanced, href: "/legal" },
+  { key: "discounts", label: "İndirim", icon: faPercent, href: "/discounts" },
+  { key: "legal", label: "Yasal", icon: faScaleBalanced, href: "/legal" },
 ];
 
 export function CaptainSidebar({ active }: { active: SidebarKey }) {
@@ -60,7 +60,7 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   return (
     <Sidebar className="sticky top-0 h-screen">
       <SidebarBrand>
-        GetYourBoat <span className="text-brand-500">Captain</span>
+        SEAHUB <span className="text-brand-500">Captain</span>
       </SidebarBrand>
 
       <nav className="flex flex-1 flex-col gap-1">

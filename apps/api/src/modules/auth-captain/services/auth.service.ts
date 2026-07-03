@@ -12,7 +12,7 @@ function unauthorized(message: string) {
 
 const REFRESH_DAYS_DEFAULT = 30;
 const REFRESH_DAYS_REMEMBER = 30;
-const ACCESS_EXPIRES = "15m";
+const ACCESS_EXPIRES = "30m";
 
 /** In-memory brute-force guard (per email). */
 const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();

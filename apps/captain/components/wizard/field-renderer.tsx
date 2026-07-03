@@ -47,6 +47,28 @@ export function getConfigFieldsForStep(
   return getFieldsForWizardStep(config.fields, step);
 }
 
+/** İptal politikası seçenekleri + kaptana gösterilen açıklama metinleri. */
+const CANCELLATION_POLICY_OPTIONS = [
+  {
+    value: "flexible",
+    label: "Esnek",
+    description:
+      "Başlangıç tarihinden 1 gün öncesine kadar ücretsiz iptal. 1 günden az kaldığında ücretin %50'si iade edilir.",
+  },
+  {
+    value: "moderate",
+    label: "Orta",
+    description:
+      "Başlangıç tarihinden 5 gün öncesine kadar ücretsiz iptal. 5 günden az kaldığında ücretin %50'si iade edilir.",
+  },
+  {
+    value: "strict",
+    label: "Katı",
+    description:
+      "Başlangıç tarihinden 14 gün öncesine kadar ücretsiz iptal. 14 günden az kaldığında iade yapılmaz.",
+  },
+] as const;
+
 function isBooleanField(field: OnboardingFieldDTO): boolean {
   return (
     field.type === "rule" ||
@@ -110,6 +132,7 @@ function IncludedFeeField({
     <div key={group.includedKey} data-field={group.includedKey} className="space-y-3">
       <Field
         label={group.label}
+        hint={group.description}
         required={requiredKeys?.has(group.includedKey) ?? false}
         error={fieldError}
       >
@@ -120,7 +143,7 @@ function IncludedFeeField({
         >
           <option value="">Seçiniz…</option>
           <option value="included">Fiyata dahil</option>
-          <option value="not_included">Dahil değil</option>
+          <option value="not_included">Dahil değil (müşteri ayrıca öder)</option>
         </Select>
       </Field>
       {mode === "not_included" ? (
@@ -355,6 +378,7 @@ export function DynamicOnboardingFields({
         }
 
         if (field.key === "cancellation_policy" || field.key === "deposit_type_payment_before") {
+          const isCancellation = field.key === "cancellation_policy";
           return (
             <div key={field.key} data-field={field.key}>
               <Field label={label} required={required} error={fieldError}>
@@ -364,12 +388,12 @@ export function DynamicOnboardingFields({
                   onChange={(e) => onChange(field.key, e.target.value)}
                 >
                   <option value="">Seçiniz…</option>
-                  {field.key === "cancellation_policy" ? (
-                    <>
-                      <option value="flexible">Esnek</option>
-                      <option value="moderate">Orta</option>
-                      <option value="strict">Katı</option>
-                    </>
+                  {isCancellation ? (
+                    CANCELLATION_POLICY_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))
                   ) : (
                     <>
                       <option value="percent_20">%20 ön ödeme</option>
@@ -379,6 +403,19 @@ export function DynamicOnboardingFields({
                   )}
                 </Select>
               </Field>
+              {isCancellation ? (
+                <ul className="mt-2 space-y-1 text-[12px] leading-relaxed text-gray-500">
+                  {CANCELLATION_POLICY_OPTIONS.map((o) => (
+                    <li
+                      key={o.value}
+                      className={stringValue === o.value ? "text-gray-700" : undefined}
+                    >
+                      <span className="font-medium text-gray-600">{o.label}:</span>{" "}
+                      {o.description}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           );
         }

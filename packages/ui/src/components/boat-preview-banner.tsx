@@ -29,7 +29,8 @@ export function BoatPreviewBanner({
           <div>
             <p className="text-body-sm font-semibold">Önizleme Modu</p>
             <p className="text-caption text-amber-900/80">
-              Bu, ilanınızın taslak görünümüdür — henüz yayınlanmadı.
+              Bu, ilanınızın müşterilere görüneceği halidir. Değişiklik yapmak için
+              &quot;Düzenlemeye Geri Dön&quot;e tıklayın.
               {completionPercent != null
                 ? ` İlanınız yaklaşık %${completionPercent} tamamlandı.`
                 : null}
