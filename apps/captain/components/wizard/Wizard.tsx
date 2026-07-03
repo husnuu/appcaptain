@@ -194,7 +194,8 @@ export function Wizard({ boatId }: { boatId: string }) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
-            variant="secondary"
+            variant="outline"
+            className="border-2 border-brand-500 font-semibold text-brand-600 hover:bg-brand-50"
             onClick={() => window.open(`/boats/${boat.id}/preview`, "_blank", "noopener,noreferrer")}
           >
             <FontAwesomeIcon icon={faEye} className="text-[14px]" aria-hidden />

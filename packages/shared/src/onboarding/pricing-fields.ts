@@ -106,6 +106,94 @@ export function toTimeInputValue(value: string): string {
   return trimmed;
 }
 
+/** "HH:MM" -> total minutes since midnight, or null when unparseable. */
+export function timeToMinutes(value: string): number | null {
+  const match = toTimeInputValue(value).match(/^(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+export interface CheckTimeGroup {
+  inKey: string;
+  outKey: string;
+  title: string;
+  subtitle: string;
+  inDefault: string;
+  outDefault: string;
+  /**
+   * When true, check-out must be strictly after check-in (same-day rental).
+   * Overnight/weekly stays check out the next morning, so no ordering applies.
+   */
+  enforceOrder: boolean;
+}
+
+/** Check-in/out time pairs rendered as grouped cards in the Fiyat step. */
+export const CHECK_TIME_GROUPS: CheckTimeGroup[] = [
+  {
+    inKey: "check_in",
+    outKey: "check_out",
+    title: "Konaklamalı / Haftalık Kiralama Saatleri",
+    subtitle: "Stay Included ve haftalık kiralamalar için geçerlidir.",
+    inDefault: "14:00",
+    outDefault: "10:00",
+    enforceOrder: false,
+  },
+  {
+    inKey: "check_in_time_day_rental",
+    outKey: "check_out_time_day_rental",
+    title: "Günlük Kiralama Saatleri",
+    subtitle: "Günlük (daily) kiralamalar için geçerlidir.",
+    inDefault: "09:00",
+    outDefault: "18:00",
+    enforceOrder: true,
+  },
+];
+
+/** Sensible per-field default check-in/out time, used when the value is empty. */
+export const CHECK_TIME_DEFAULTS: Record<string, string> = CHECK_TIME_GROUPS.reduce(
+  (acc, g) => {
+    acc[g.inKey] = g.inDefault;
+    acc[g.outKey] = g.outDefault;
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
+/** Second (check-out) key of each pair — skipped in the field loop; rendered inside the group. */
+export const CHECK_TIME_SKIP_KEYS = new Set(CHECK_TIME_GROUPS.map((g) => g.outKey));
+
+const checkTimeGroupByKey = new Map<string, CheckTimeGroup>();
+for (const group of CHECK_TIME_GROUPS) {
+  checkTimeGroupByKey.set(group.inKey, group);
+  checkTimeGroupByKey.set(group.outKey, group);
+}
+
+export function getCheckTimeGroup(key: string): CheckTimeGroup | undefined {
+  return checkTimeGroupByKey.get(key);
+}
+
+/**
+ * Returns titles of daily groups where check-out is not after check-in.
+ * Only groups with `enforceOrder` are validated, and only when both values exist.
+ */
+export function getInvalidCheckTimeGroupTitles(
+  values: Record<string, unknown>
+): string[] {
+  const invalid: string[] = [];
+  for (const group of CHECK_TIME_GROUPS) {
+    if (!group.enforceOrder) continue;
+    const inMin = timeToMinutes(String(values[group.inKey] ?? ""));
+    const outMin = timeToMinutes(String(values[group.outKey] ?? ""));
+    if (inMin != null && outMin != null && outMin <= inMin) {
+      invalid.push(group.title);
+    }
+  }
+  return invalid;
+}
+
 export const WEEKDAY_OPTIONS = [
   "Pazartesi",
   "Salı",

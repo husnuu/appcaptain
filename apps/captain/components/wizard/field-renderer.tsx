@@ -13,8 +13,10 @@ import {
   parseMinRentalDuration,
   PRICING_FIELD_PLACEHOLDERS,
   readIncludedFeePair,
-  TIME_FIELD_KEYS,
-  toTimeInputValue,
+  CHECK_TIME_SKIP_KEYS,
+  getCheckTimeGroup,
+  timeToMinutes,
+  type CheckTimeGroup,
   WEEKDAY_OPTIONS,
   writeIncludedFeePair,
   type FieldValueMap,
@@ -24,6 +26,7 @@ import {
 } from "@getyourboat/shared";
 import type { OnboardingConfig } from "../../lib/types";
 import { Checkbox, Field, Input, Select, Textarea } from "../ui";
+import { TimePicker } from "./TimePicker";
 
 export {
   FeatureFieldsGrid,
@@ -157,6 +160,72 @@ function IncludedFeeField({
             />
           </Field>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CheckInOutGroup({
+  group,
+  values,
+  onChange,
+  fieldErrors,
+  requiredKeys,
+}: {
+  group: CheckTimeGroup;
+  values: FieldValueMap;
+  onChange: (key: string, value: string | boolean) => void;
+  fieldErrors?: FieldErrorsMap;
+  requiredKeys?: ReadonlySet<string>;
+}) {
+  const inValue = String(values[group.inKey] ?? "");
+  const outValue = String(values[group.outKey] ?? "");
+  const inError = fieldErrors?.[group.inKey];
+  const outError = fieldErrors?.[group.outKey];
+
+  const inMin = timeToMinutes(inValue);
+  const outMin = timeToMinutes(outValue);
+  const orderInvalid =
+    group.enforceOrder && inMin != null && outMin != null && outMin <= inMin;
+
+  return (
+    <div className="rounded-xl border border-gray-200 p-5" data-field={group.inKey}>
+      <h4 className="text-[14px] font-semibold text-ink">{group.title}</h4>
+      <p className="mt-0.5 text-[12px] text-gray-500">{group.subtitle}</p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Giriş Saati"
+          required={requiredKeys?.has(group.inKey) ?? false}
+          error={inError}
+        >
+          <TimePicker
+            value={inValue}
+            defaultValue={group.inDefault}
+            error={!!inError || orderInvalid}
+            ariaLabel="Giriş saati"
+            onChange={(v) => onChange(group.inKey, v)}
+          />
+        </Field>
+        <div data-field={group.outKey}>
+          <Field
+            label="Çıkış Saati"
+            required={requiredKeys?.has(group.outKey) ?? false}
+            error={outError}
+          >
+            <TimePicker
+              value={outValue}
+              defaultValue={group.outDefault}
+              error={!!outError || orderInvalid}
+              ariaLabel="Çıkış saati"
+              onChange={(v) => onChange(group.outKey, v)}
+            />
+          </Field>
+        </div>
+      </div>
+      {orderInvalid ? (
+        <p className="mt-2 text-[12px] text-danger-600">
+          Çıkış saati giriş saatinden sonra olmalıdır.
+        </p>
       ) : null}
     </div>
   );
@@ -420,19 +489,21 @@ export function DynamicOnboardingFields({
           );
         }
 
-        if (TIME_FIELD_KEYS.has(field.key)) {
+        if (CHECK_TIME_SKIP_KEYS.has(field.key)) {
+          return null;
+        }
+
+        const checkTimeGroup = getCheckTimeGroup(field.key);
+        if (checkTimeGroup && checkTimeGroup.inKey === field.key) {
           return (
-            <div key={field.key} data-field={field.key}>
-              <Field label={label} required={required} error={fieldError}>
-                <Input
-                  type="time"
-                  value={toTimeInputValue(stringValue)}
-                  error={!!fieldError}
-                  onChange={(e) => onChange(field.key, e.target.value)}
-                  className="max-w-[160px]"
-                />
-              </Field>
-            </div>
+            <CheckInOutGroup
+              key={field.key}
+              group={checkTimeGroup}
+              values={values}
+              onChange={onChange}
+              fieldErrors={fieldErrors}
+              requiredKeys={requiredKeys}
+            />
           );
         }
 
