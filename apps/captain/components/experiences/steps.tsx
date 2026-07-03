@@ -13,8 +13,25 @@ import {
 import { Button } from "@getyourboat/ui";
 import { useState } from "react";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
-import { Alert, Field, Input, Label, Select, Textarea } from "../ui";
+import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
 import { LinesField, StepShell } from "./form-utils";
+
+const MIN_AGE_OPTIONS = ["", "0", "6", "8", "10", "12", "16", "18"];
+
+const TICKET_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "Belirtilmedi" },
+  { value: "mobile", label: "Mobil bilet" },
+  { value: "printed", label: "Baskılı bilet" },
+  { value: "both", label: "Her ikisi de" },
+];
+
+const ACCESSIBILITY_OPTIONS = [
+  "Tekerlekli sandalye erişimi",
+  "İşitme engelli uyumlu",
+  "Görme engelli uyumlu",
+  "Bebek arabası uygun",
+  "Yaşlı/hareket kısıtlı uyumlu",
+];
 
 export interface ExperienceStepProps {
   experience: ExperienceDTO;
@@ -70,6 +87,7 @@ export function CategoryStep({ experience, onSaved, onNext }: ExperienceStepProp
 
 export function TitleDescriptionStep({ experience, onSaved, onNext }: ExperienceStepProps) {
   const [title, setTitle] = useState(experience.title);
+  const [referenceCode, setReferenceCode] = useState(experience.referenceCode ?? "");
   const [shortDescription, setShortDescription] = useState(experience.shortDescription);
   const [fullDescription, setFullDescription] = useState(experience.fullDescription);
   const [highlights, setHighlights] = useState(experience.highlights);
@@ -84,7 +102,17 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
     >
       <Field>
         <Label>Başlık *</Label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+        <p className="mt-1 text-xs text-gray-500">{title.length} / 120</p>
+      </Field>
+      <Field>
+        <Label>Referans kodu</Label>
+        <Input
+          value={referenceCode}
+          onChange={(e) => setReferenceCode(e.target.value)}
+          maxLength={40}
+          placeholder="Örn. EXP-1234 (opsiyonel — dahili takip için)"
+        />
       </Field>
       <Field>
         <Label>Kısa açıklama *</Label>
@@ -94,13 +122,31 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
         <Label>Tam açıklama *</Label>
         <Textarea rows={6} value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} />
       </Field>
-      <LinesField label="Öne çıkanlar" value={highlights} onChange={setHighlights} required />
-      <LinesField label="Anahtar kelimeler" value={keywords} onChange={setKeywords} />
+      <LinesField
+        label="Öne çıkanlar"
+        hint="Deneyimini özel kılan 3-5 madde yaz."
+        value={highlights}
+        onChange={setHighlights}
+        required
+      />
+      <LinesField
+        label="Anahtar kelimeler"
+        hint="Müşterilerin seni bulmasına yardımcı etiketler (örn. tekne turu, yelken, Çeşme)."
+        value={keywords}
+        onChange={setKeywords}
+      />
       <Button
         onClick={() =>
           void save(
             experience.id,
-            { title, shortDescription, fullDescription, highlights, keywords },
+            {
+              title,
+              referenceCode: referenceCode.trim() || null,
+              shortDescription,
+              fullDescription,
+              highlights,
+              keywords,
+            },
             (next) => { onSaved(next); onNext(); }
           )
         }
@@ -115,6 +161,7 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
 export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStepProps) {
   const [included, setIncluded] = useState(experience.included);
   const [notIncluded, setNotIncluded] = useState(experience.notIncluded);
+  const [toBring, setToBring] = useState(experience.toBring);
   const [notAllowed, setNotAllowed] = useState(experience.notAllowed);
   const [knowBeforeYouGo, setKnowBeforeYouGo] = useState(experience.knowBeforeYouGo);
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(
@@ -124,9 +171,31 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
 
   return (
     <StepShell title="Dahil / Hariç / Bilgilendirme" error={error}>
-      <LinesField label="Dahil olanlar" value={included} onChange={setIncluded} required />
-      <LinesField label="Dahil olmayanlar" value={notIncluded} onChange={setNotIncluded} />
-      <LinesField label="Yasak olanlar" value={notAllowed} onChange={setNotAllowed} />
+      <LinesField
+        label="Fiyata dahil olanlar"
+        hint="Örn. Atıştırmalıklar, şnorkel ekipmanı, sigorta"
+        value={included}
+        onChange={setIncluded}
+        required
+      />
+      <LinesField
+        label="Fiyata dahil olmayanlar"
+        hint="Örn. Ulaşım, öğle yemeği"
+        value={notIncluded}
+        onChange={setNotIncluded}
+      />
+      <LinesField
+        label="Getirmeniz gerekenler"
+        hint="Örn. Güneş kremi, havlu, yüzme kıyafeti"
+        value={toBring}
+        onChange={setToBring}
+      />
+      <LinesField
+        label="İzin verilmeyenler"
+        hint="Örn. Evcil hayvan, cam şişe"
+        value={notAllowed}
+        onChange={setNotAllowed}
+      />
       <LinesField label="Gitmeden bilinmesi gerekenler" value={knowBeforeYouGo} onChange={setKnowBeforeYouGo} />
       <Field>
         <Label>Acil durum telefonu</Label>
@@ -139,6 +208,7 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
             {
               included,
               notIncluded,
+              toBring,
               notAllowed,
               knowBeforeYouGo,
               emergencyContactPhone: emergencyContactPhone || null,
@@ -164,12 +234,25 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
     experience.meetingPointLng != null ? String(experience.meetingPointLng) : ""
   );
   const [meetingTime, setMeetingTime] = useState(experience.meetingTime);
+  const [isSameEndPoint, setIsSameEndPoint] = useState(experience.isSameEndPoint);
+  const [endPoint, setEndPoint] = useState(experience.endPoint);
   const [languages, setLanguages] = useState(experience.languages.length ? experience.languages : ["Türkçe"]);
   const [minParticipants, setMinParticipants] = useState(String(experience.minParticipants));
   const [maxParticipants, setMaxParticipants] = useState(String(experience.maxParticipants));
+  const [minAge, setMinAge] = useState(experience.minAge != null ? String(experience.minAge) : "");
+  const [ticketType, setTicketType] = useState(experience.ticketType ?? "");
   const [requiredEquipment, setRequiredEquipment] = useState(experience.requiredEquipment);
   const [accessibilityInfo, setAccessibilityInfo] = useState(experience.accessibilityInfo ?? "");
+  const [accessibilityOptions, setAccessibilityOptions] = useState<string[]>(
+    experience.accessibilityOptions
+  );
   const { saving, error, save } = useStepSave(ExperienceStep.LOGISTICS);
+
+  function toggleAccessibility(option: string) {
+    setAccessibilityOptions((prev) =>
+      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
+    );
+  }
 
   return (
     <StepShell title="Lojistik" error={error}>
@@ -195,6 +278,23 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
         <Label>Buluşma saati *</Label>
         <Input value={meetingTime} onChange={(e) => setMeetingTime(e.target.value)} placeholder="örn. 10:00" />
       </Field>
+      <Field>
+        <Checkbox
+          checked={isSameEndPoint}
+          onChange={(e) => setIsSameEndPoint(e.target.checked)}
+          label="Buluşma ve bitiş noktası aynı"
+        />
+      </Field>
+      {!isSameEndPoint ? (
+        <Field>
+          <Label>Bitiş noktası</Label>
+          <Input
+            value={endPoint}
+            onChange={(e) => setEndPoint(e.target.value)}
+            placeholder="Deneyimin sona erdiği konum"
+          />
+        </Field>
+      ) : null}
       <LinesField label="Diller" value={languages} onChange={setLanguages} required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
@@ -202,13 +302,48 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
           <Input type="number" value={minParticipants} onChange={(e) => setMinParticipants(e.target.value)} />
         </Field>
         <Field>
-          <Label>Maks katılımcı *</Label>
+          <Label>Maks katılımcı (grup büyüklüğü) *</Label>
           <Input type="number" value={maxParticipants} onChange={(e) => setMaxParticipants(e.target.value)} />
+        </Field>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field>
+          <Label>Minimum yaş</Label>
+          <Select value={minAge} onChange={(e) => setMinAge(e.target.value)}>
+            {MIN_AGE_OPTIONS.map((age) => (
+              <option key={age || "none"} value={age}>
+                {age === "" ? "Yaş sınırı yok" : `${age}+`}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field>
+          <Label>Bilet türü</Label>
+          <Select value={ticketType} onChange={(e) => setTicketType(e.target.value)}>
+            {TICKET_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value || "none"} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </Select>
         </Field>
       </div>
       <LinesField label="Gerekli ekipman / beceriler" value={requiredEquipment} onChange={setRequiredEquipment} />
       <Field>
-        <Label>Erişilebilirlik bilgisi</Label>
+        <Label>Erişilebilirlik seçenekleri</Label>
+        <div className="mt-1 grid gap-2 sm:grid-cols-2">
+          {ACCESSIBILITY_OPTIONS.map((option) => (
+            <Checkbox
+              key={option}
+              checked={accessibilityOptions.includes(option)}
+              onChange={() => toggleAccessibility(option)}
+              label={option}
+            />
+          ))}
+        </div>
+      </Field>
+      <Field>
+        <Label>Ek erişilebilirlik notu</Label>
         <Textarea rows={3} value={accessibilityInfo} onChange={(e) => setAccessibilityInfo(e.target.value)} />
       </Field>
       <Button
@@ -221,11 +356,16 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
               meetingPointLat: meetingPointLat ? Number(meetingPointLat) : null,
               meetingPointLng: meetingPointLng ? Number(meetingPointLng) : null,
               meetingTime,
+              isSameEndPoint,
+              endPoint: isSameEndPoint ? "" : endPoint,
               languages,
               minParticipants: Number(minParticipants),
               maxParticipants: Number(maxParticipants),
+              minAge: minAge ? Number(minAge) : null,
+              ticketType: ticketType || null,
               requiredEquipment,
               accessibilityInfo: accessibilityInfo || null,
+              accessibilityOptions,
             },
             (next) => { onSaved(next); onNext(); }
           )

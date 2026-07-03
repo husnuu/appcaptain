@@ -502,6 +502,7 @@ model Experience {
 
   category              ExperienceCategory?
   title                 String                @default("")
+  referenceCode         String?
   shortDescription      String                @default("")
   fullDescription       String                @default("")
   highlights            String[]              @default([])
@@ -510,6 +511,7 @@ model Experience {
   included              String[]              @default([])
   notIncluded           String[]              @default([])
   notAllowed            String[]              @default([])
+  toBring               String[]              @default([])
   knowBeforeYouGo       String[]              @default([])
   emergencyContactPhone String?
 
@@ -518,14 +520,21 @@ model Experience {
   meetingPointLat       Float?
   meetingPointLng       Float?
   meetingTime           String                @default("")
+  endPoint              String                @default("")
+  endPointLat           Float?
+  endPointLng           Float?
+  isSameEndPoint        Boolean               @default(true)
   languages             String[]              @default([])
   minParticipants       Int                   @default(1)
   maxParticipants       Int                   @default(10)
+  minAge                Int?
+  ticketType            String?
   requiredEquipment     String[]              @default([])
   accessibilityInfo     String?
+  accessibilityOptions  String[]              @default([])
 
   basePrice             Decimal               @default(0) @db.Decimal(10, 2)
-  currency              String                @default("EUR")
+  currency              String                @default("TRY")
   pricingType           ExperiencePricingType @default(PER_PERSON)
   childDiscountPercent  Int?
 

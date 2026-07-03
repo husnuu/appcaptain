@@ -62,4 +62,5 @@ export {
   faGaugeSimpleHigh,
   faPlus,
   faMinus,
+  faLock,
 } from "@fortawesome/free-solid-svg-icons";

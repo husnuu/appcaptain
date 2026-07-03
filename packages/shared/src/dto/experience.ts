@@ -31,6 +31,7 @@ export interface ExperienceDTO {
   progress: ExperienceProgressDTO;
   category: ExperienceCategory | null;
   title: string;
+  referenceCode: string | null;
   shortDescription: string;
   fullDescription: string;
   highlights: string[];
@@ -38,6 +39,7 @@ export interface ExperienceDTO {
   included: string[];
   notIncluded: string[];
   notAllowed: string[];
+  toBring: string[];
   knowBeforeYouGo: string[];
   emergencyContactPhone: string | null;
   durationMinutes: number;
@@ -45,11 +47,18 @@ export interface ExperienceDTO {
   meetingPointLat: number | null;
   meetingPointLng: number | null;
   meetingTime: string;
+  endPoint: string;
+  endPointLat: number | null;
+  endPointLng: number | null;
+  isSameEndPoint: boolean;
   languages: string[];
   minParticipants: number;
   maxParticipants: number;
+  minAge: number | null;
+  ticketType: string | null;
   requiredEquipment: string[];
   accessibilityInfo: string | null;
+  accessibilityOptions: string[];
   basePrice: number;
   currency: string;
   pricingType: ExperiencePricingType;

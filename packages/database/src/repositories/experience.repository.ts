@@ -15,6 +15,7 @@ import { computeExperienceProgress } from "@getyourboat/shared";
 export interface ExperienceWriteBase {
   category?: ExperienceCategory | null;
   title?: string;
+  referenceCode?: string | null;
   shortDescription?: string;
   fullDescription?: string;
   highlights?: string[];
@@ -22,6 +23,7 @@ export interface ExperienceWriteBase {
   included?: string[];
   notIncluded?: string[];
   notAllowed?: string[];
+  toBring?: string[];
   knowBeforeYouGo?: string[];
   emergencyContactPhone?: string | null;
   durationMinutes?: number;
@@ -29,11 +31,18 @@ export interface ExperienceWriteBase {
   meetingPointLat?: number | null;
   meetingPointLng?: number | null;
   meetingTime?: string;
+  endPoint?: string;
+  endPointLat?: number | null;
+  endPointLng?: number | null;
+  isSameEndPoint?: boolean;
   languages?: string[];
   minParticipants?: number;
   maxParticipants?: number;
+  minAge?: number | null;
+  ticketType?: string | null;
   requiredEquipment?: string[];
   accessibilityInfo?: string | null;
+  accessibilityOptions?: string[];
   basePrice?: number;
   currency?: string;
   pricingType?: ExperiencePricingType;
@@ -66,6 +75,7 @@ export function toExperienceDTO(row: ExperienceRow): ExperienceDTO {
     progress,
     category: (row.category as ExperienceCategory | null) ?? null,
     title: row.title,
+    referenceCode: row.referenceCode,
     shortDescription: row.shortDescription,
     fullDescription: row.fullDescription,
     highlights: row.highlights,
@@ -73,6 +83,7 @@ export function toExperienceDTO(row: ExperienceRow): ExperienceDTO {
     included: row.included,
     notIncluded: row.notIncluded,
     notAllowed: row.notAllowed,
+    toBring: row.toBring,
     knowBeforeYouGo: row.knowBeforeYouGo,
     emergencyContactPhone: row.emergencyContactPhone,
     durationMinutes: row.durationMinutes,
@@ -80,11 +91,18 @@ export function toExperienceDTO(row: ExperienceRow): ExperienceDTO {
     meetingPointLat: row.meetingPointLat,
     meetingPointLng: row.meetingPointLng,
     meetingTime: row.meetingTime,
+    endPoint: row.endPoint,
+    endPointLat: row.endPointLat,
+    endPointLng: row.endPointLng,
+    isSameEndPoint: row.isSameEndPoint,
     languages: row.languages,
     minParticipants: row.minParticipants,
     maxParticipants: row.maxParticipants,
+    minAge: row.minAge,
+    ticketType: row.ticketType,
     requiredEquipment: row.requiredEquipment,
     accessibilityInfo: row.accessibilityInfo,
+    accessibilityOptions: row.accessibilityOptions,
     basePrice: Number(row.basePrice),
     currency: row.currency,
     pricingType: row.pricingType as ExperiencePricingType,
@@ -122,6 +140,7 @@ export type ExperienceRow = {
   completedSteps: string[];
   category: string | null;
   title: string;
+  referenceCode: string | null;
   shortDescription: string;
   fullDescription: string;
   highlights: string[];
@@ -129,6 +148,7 @@ export type ExperienceRow = {
   included: string[];
   notIncluded: string[];
   notAllowed: string[];
+  toBring: string[];
   knowBeforeYouGo: string[];
   emergencyContactPhone: string | null;
   durationMinutes: number;
@@ -136,11 +156,18 @@ export type ExperienceRow = {
   meetingPointLat: number | null;
   meetingPointLng: number | null;
   meetingTime: string;
+  endPoint: string;
+  endPointLat: number | null;
+  endPointLng: number | null;
+  isSameEndPoint: boolean;
   languages: string[];
   minParticipants: number;
   maxParticipants: number;
+  minAge: number | null;
+  ticketType: string | null;
   requiredEquipment: string[];
   accessibilityInfo: string | null;
+  accessibilityOptions: string[];
   basePrice: { toNumber(): number } | number | string;
   currency: string;
   pricingType: string;

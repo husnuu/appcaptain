@@ -17,6 +17,7 @@ export const experienceStep1Schema = z.object({
 
 export const experienceStep2Schema = z.object({
   title: z.string().trim().min(10).max(120),
+  referenceCode: z.string().trim().max(40).optional().nullable(),
   shortDescription: z.string().trim().min(20).max(300),
   fullDescription: z.string().trim().min(100).max(5000),
   highlights: stringList.min(1, "En az bir öne çıkan madde ekleyin"),
@@ -27,6 +28,7 @@ export const experienceStep3Schema = z.object({
   included: stringList.min(1, "En az bir dahil olan madde ekleyin"),
   notIncluded: optionalStringList,
   notAllowed: optionalStringList,
+  toBring: optionalStringList,
   knowBeforeYouGo: optionalStringList,
   emergencyContactPhone: z.string().trim().min(6).max(30).optional().nullable(),
 });
@@ -38,11 +40,18 @@ export const experienceStep4Schema = z
     meetingPointLat: z.coerce.number().min(-90).max(90).optional().nullable(),
     meetingPointLng: z.coerce.number().min(-180).max(180).optional().nullable(),
     meetingTime: z.string().trim().min(2).max(100),
+    endPoint: z.string().trim().max(500).optional().default(""),
+    endPointLat: z.coerce.number().min(-90).max(90).optional().nullable(),
+    endPointLng: z.coerce.number().min(-180).max(180).optional().nullable(),
+    isSameEndPoint: z.coerce.boolean().optional().default(true),
     languages: stringList.min(1, "En az bir dil seçin"),
     minParticipants: z.coerce.number().int().min(1).max(500),
     maxParticipants: z.coerce.number().int().min(1).max(500),
+    minAge: z.coerce.number().int().min(0).max(99).optional().nullable(),
+    ticketType: z.string().trim().max(40).optional().nullable(),
     requiredEquipment: optionalStringList,
     accessibilityInfo: z.string().trim().max(1000).optional().nullable(),
+    accessibilityOptions: optionalStringList,
   })
   .refine((v) => v.maxParticipants >= v.minParticipants, {
     message: "Maksimum katılımcı minimumdan küçük olamaz",
@@ -51,7 +60,7 @@ export const experienceStep4Schema = z
 
 export const experienceStep5Schema = z.object({
   basePrice: z.coerce.number().positive("Fiyat 0'dan büyük olmalı"),
-  currency: z.string().trim().length(3).default("EUR"),
+  currency: z.string().trim().length(3).default("TRY"),
   pricingType: z.nativeEnum(ExperiencePricingType),
   childDiscountPercent: z.coerce.number().int().min(0).max(100).optional().nullable(),
 });
@@ -81,6 +90,7 @@ export const experienceSchema = z
   .object({
     category: experienceStep1Schema.shape.category,
     title: experienceStep2Schema.shape.title,
+    referenceCode: experienceStep2Schema.shape.referenceCode,
     shortDescription: experienceStep2Schema.shape.shortDescription,
     fullDescription: experienceStep2Schema.shape.fullDescription,
     highlights: experienceStep2Schema.shape.highlights,
@@ -88,6 +98,7 @@ export const experienceSchema = z
     included: experienceStep3Schema.shape.included,
     notIncluded: experienceStep3Schema.shape.notIncluded,
     notAllowed: experienceStep3Schema.shape.notAllowed,
+    toBring: experienceStep3Schema.shape.toBring,
     knowBeforeYouGo: experienceStep3Schema.shape.knowBeforeYouGo,
     emergencyContactPhone: experienceStep3Schema.shape.emergencyContactPhone,
     durationMinutes: experienceStep4Schema.innerType().shape.durationMinutes,
@@ -95,11 +106,18 @@ export const experienceSchema = z
     meetingPointLat: experienceStep4Schema.innerType().shape.meetingPointLat,
     meetingPointLng: experienceStep4Schema.innerType().shape.meetingPointLng,
     meetingTime: experienceStep4Schema.innerType().shape.meetingTime,
+    endPoint: experienceStep4Schema.innerType().shape.endPoint,
+    endPointLat: experienceStep4Schema.innerType().shape.endPointLat,
+    endPointLng: experienceStep4Schema.innerType().shape.endPointLng,
+    isSameEndPoint: experienceStep4Schema.innerType().shape.isSameEndPoint,
     languages: experienceStep4Schema.innerType().shape.languages,
     minParticipants: experienceStep4Schema.innerType().shape.minParticipants,
     maxParticipants: experienceStep4Schema.innerType().shape.maxParticipants,
+    minAge: experienceStep4Schema.innerType().shape.minAge,
+    ticketType: experienceStep4Schema.innerType().shape.ticketType,
     requiredEquipment: experienceStep4Schema.innerType().shape.requiredEquipment,
     accessibilityInfo: experienceStep4Schema.innerType().shape.accessibilityInfo,
+    accessibilityOptions: experienceStep4Schema.innerType().shape.accessibilityOptions,
     basePrice: experienceStep5Schema.shape.basePrice,
     currency: experienceStep5Schema.shape.currency,
     pricingType: experienceStep5Schema.shape.pricingType,

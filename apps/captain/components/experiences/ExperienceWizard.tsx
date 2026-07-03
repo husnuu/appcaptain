@@ -3,7 +3,11 @@
 import {
   Badge,
   Button,
+  cn,
   FontAwesomeIcon,
+  ProgressBar,
+  faCheck,
+  faLock,
   faPaperPlane,
 } from "@getyourboat/ui";
 import { ExperienceStatus, ExperienceStep } from "@getyourboat/shared";
@@ -19,7 +23,6 @@ import {
 } from "../../lib/experience";
 import type { ExperienceDTO } from "@getyourboat/shared";
 import { Alert, Spinner } from "../ui";
-import { Stepper, type StepperItem } from "../wizard/Stepper";
 import { EXPERIENCE_STEP_COMPONENTS } from "./steps";
 
 export function ExperienceWizard({ experienceId }: { experienceId: string }) {
@@ -50,7 +53,7 @@ export function ExperienceWizard({ experienceId }: { experienceId: string }) {
     };
   }, [experienceId]);
 
-  const stepperItems = useMemo<StepperItem[]>(() => {
+  const navItems = useMemo(() => {
     if (!experience) return [];
     const completed = new Set(experience.progress.completedSteps);
     const activeIdx = experienceStepIndex(active);
@@ -61,6 +64,13 @@ export function ExperienceWizard({ experienceId }: { experienceId: string }) {
       reachable: idx <= activeIdx || completed.has(step),
     }));
   }, [experience, active]);
+
+  const progressPercent = useMemo(() => {
+    if (!experience) return 0;
+    return Math.round(
+      (experience.progress.completedSteps.length / EXPERIENCE_STEP_ORDER.length) * 100
+    );
+  }, [experience]);
 
   async function handleSubmit() {
     if (!experience) return;
@@ -122,21 +132,80 @@ export function ExperienceWizard({ experienceId }: { experienceId: string }) {
         </div>
       </div>
 
-      <Stepper items={stepperItems} currentId={active} onSelect={(id) => setActive(id as ExperienceStep)} />
+      <div className="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
+        <aside className="mb-6 lg:mb-0">
+          <div className="sticky top-4 rounded-xl border border-gray-200 bg-white p-4">
+            <div className="mb-4">
+              <div className="mb-1.5 flex items-center justify-between text-sm">
+                <span className="font-medium text-gray-700">Tamamlanma</span>
+                <span className="font-semibold text-brand-600">%{progressPercent}</span>
+              </div>
+              <ProgressBar percent={progressPercent} />
+            </div>
+            <nav className="space-y-1">
+              {navItems.map((item, idx) => {
+                const isActive = item.id === active;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={!item.reachable}
+                    onClick={() => item.reachable && setActive(item.id as ExperienceStep)}
+                    aria-current={isActive ? "step" : undefined}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition",
+                      isActive
+                        ? "bg-brand-50 font-medium text-ink"
+                        : item.reachable
+                          ? "text-gray-600 hover:bg-gray-100/70"
+                          : "cursor-not-allowed text-gray-300"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+                        isActive
+                          ? "bg-brand-500 text-white"
+                          : item.done
+                            ? "border border-brand-200 bg-brand-50 text-brand-600"
+                            : item.reachable
+                              ? "border border-gray-200 bg-white text-gray-400"
+                              : "border border-gray-100 bg-gray-50 text-gray-300"
+                      )}
+                    >
+                      {item.done && !isActive ? (
+                        <FontAwesomeIcon icon={faCheck} className="text-[11px]" aria-hidden />
+                      ) : !item.reachable ? (
+                        <FontAwesomeIcon icon={faLock} className="text-[10px]" aria-hidden />
+                      ) : (
+                        idx + 1
+                      )}
+                    </span>
+                    <span className="min-w-0 truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <StepComponent
-          experience={experience}
-          onSaved={setExperience}
-          onNext={() => {
-            const idx = experienceStepIndex(active);
-            const next = EXPERIENCE_STEP_ORDER[idx + 1];
-            if (next) setActive(next);
-          }}
-        />
+        <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-6">
+          <StepComponent
+            experience={experience}
+            onSaved={setExperience}
+            onNext={() => {
+              const idx = experienceStepIndex(active);
+              const next = EXPERIENCE_STEP_ORDER[idx + 1];
+              if (next) setActive(next);
+            }}
+          />
+          {submitError ? (
+            <div className="mt-4">
+              <Alert variant="danger">{submitError}</Alert>
+            </div>
+          ) : null}
+        </div>
       </div>
-
-      {submitError ? <Alert variant="danger">{submitError}</Alert> : null}
     </div>
   );
 }
