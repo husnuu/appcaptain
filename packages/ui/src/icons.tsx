@@ -63,4 +63,6 @@ export {
   faPlus,
   faMinus,
   faLock,
+  faArrowTrendUp,
+  faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons";

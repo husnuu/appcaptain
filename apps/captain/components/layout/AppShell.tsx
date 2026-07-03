@@ -22,7 +22,7 @@ export function AppShell({
         <div className="hidden lg:block">
           <CaptainSidebar active={active} />
         </div>
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen flex-1 flex-col bg-[#F8FAFC]">
           <Header />
           <main className="mx-auto w-full max-w-content flex-1 px-4 py-6 sm:px-6">
             {children}
