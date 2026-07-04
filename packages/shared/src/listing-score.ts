@@ -4,6 +4,7 @@ import { OnboardingStep } from "./enums";
 import type { FeatureSubTabId } from "./onboarding/feature-subtabs";
 
 export type StepInfoCardKey =
+  | "identity"
   | "engine"
   | "cabins"
   | "specs"
@@ -26,10 +27,15 @@ export const STEP_INFO_CARDS: Record<
     description:
       "Saatlik veya konaklamalı kiralama seçerek ilanın hangi paketlerde listeleneceğini belirle.",
   },
+  identity: {
+    title: "Tekne kimliği",
+    description:
+      "Tekne tipi, marka ve modeli seç — ilanının kimliğini ve arama eşleşmesini belirler.",
+  },
   specs: {
     title: "Tekne özellikleri",
     description:
-      "Marka, model ve temel teknik bilgileri doldur — müşteriler tekneni daha kolay bulur.",
+      "Temel teknik bilgileri (kapasite, boyut, yıl) doldur — müşteriler tekneni daha kolay bulur.",
   },
   engine: {
     title: "Motor bilgileri",

@@ -38,14 +38,11 @@ import {
   amenityCategoryAllowsExtra,
   getRequiredAmenityKeys,
   getRequiredDescriptionFieldKeys,
-  getPetPolicyFieldKeys,
   getRequiredFeatureKeysForStep,
   getRequiredPricingFieldKeys,
   getInvalidCheckTimeGroupTitles,
   isGuletBoatType,
   OnboardingStep,
-  PET_POLICY_FIELD_KEYS,
-  PET_POLICY_LABELS,
   PRICING_REQUIRED_HINT,
   readFieldValues,
   toBoatDetailViewModel,
@@ -73,6 +70,7 @@ import {
   SPECS_NUMERIC_HINT,
   CABINS_REQUIRED_HINT,
   getConfigFieldsForStep,
+  isExtraServicePricingField,
   isResolvedConfig,
 } from "./field-renderer";
 import {
@@ -121,7 +119,7 @@ function StepShell({
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h2 className="text-[20px] font-semibold tracking-tight text-ink">{title}</h2>
+        <h1 className="text-[28px] font-bold tracking-[-0.02em] text-ink">{title}</h1>
         {description ? <p className="text-body-sm text-gray-500">{description}</p> : null}
       </div>
       <div className="space-y-8">{children}</div>
@@ -305,7 +303,7 @@ export function BoatTypeFeaturesStep({
     return map;
   }, [boat.features]);
 
-  const [activeTab, setActiveTab] = useState<FeatureSubTabId>("specs");
+  const [activeTab, setActiveTab] = useState<FeatureSubTabId>("identity");
   const [boatTypeKey, setBoatTypeKey] = useState(boat.boatType?.key ?? "");
   const [values, setValues] = useState<Record<string, string>>(initialFeatures);
   const [engineType, setEngineType] = useState<EngineType | "">(boat.engineType ?? "");
@@ -377,29 +375,41 @@ export function BoatTypeFeaturesStep({
   const requiredKeysForTab = (tab: FeatureSubTabId) =>
     [...requiredFeatureKeys].filter((key) => featureFieldSubTab(key) === tab);
   const tabComplete: Record<FeatureSubTabId, boolean> = {
-    specs: boatTypeKey.trim().length > 0 && requiredKeysForTab("specs").every(isFilled),
+    identity: boatTypeKey.trim().length > 0,
+    specs: requiredKeysForTab("specs").every(isFilled),
     engine: engineType.trim().length > 0 && requiredKeysForTab("engine").every(isFilled),
     cabins: requiredKeysForTab("cabins").every(isFilled),
   };
   const tabReachable: Record<FeatureSubTabId, boolean> = {
-    specs: true,
-    engine: tabComplete.specs,
-    cabins: tabComplete.specs && tabComplete.engine,
+    identity: true,
+    specs: tabComplete.identity,
+    engine: tabComplete.identity && tabComplete.specs,
+    cabins: tabComplete.identity && tabComplete.specs && tabComplete.engine,
   };
   const TAB_LOCK_HINT: Record<FeatureSubTabId, string> = {
-    specs: "",
+    identity: "",
+    specs: 'Devam etmek için "Tekne Kimliği" bölümünü tamamlayın.',
     engine: 'Devam etmek için "Tekne Özellikleri" bölümünü tamamlayın.',
     cabins: 'Devam etmek için "Motor" bölümünü tamamlayın.',
   };
+  const firstLockedHint =
+    FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])?.id &&
+    TAB_LOCK_HINT[FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])!.id];
   // Keep the active tab valid: if the current tab becomes unreachable, fall back
   // to the first reachable tab.
   useEffect(() => {
     if (!tabReachable[activeTab]) {
-      const fallback = FEATURE_SUB_TABS.find((t) => tabReachable[t.id])?.id ?? "specs";
+      const fallback = FEATURE_SUB_TABS.find((t) => tabReachable[t.id])?.id ?? "identity";
       if (fallback !== activeTab) setActiveTab(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, tabReachable.specs, tabReachable.engine, tabReachable.cabins]);
+  }, [
+    activeTab,
+    tabReachable.identity,
+    tabReachable.specs,
+    tabReachable.engine,
+    tabReachable.cabins,
+  ]);
 
   function save() {
     const features = buildFeatureWritesFromValues(values);
@@ -465,79 +475,70 @@ export function BoatTypeFeaturesStep({
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
 
-      <section className="mb-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-card">
-        <div>
-          <h3 className="text-[15px] font-semibold text-ink">Tekne kimliği</h3>
-          <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
-            Bu bilgiler tüm sekmeler için ortaktır; bir kez doldurman yeterli.
+      <div className="mb-6">
+        <Tabs
+          items={FEATURE_SUB_TABS.map((t) => ({
+            id: t.id,
+            label: t.label,
+            disabled: !tabReachable[t.id],
+            lockedHint: TAB_LOCK_HINT[t.id],
+            badge: !tabReachable[t.id] ? (
+              <FontAwesomeIcon icon={faLock} className="text-[11px]" aria-hidden />
+            ) : tabErrorCounts[t.id] && tabErrorCounts[t.id]! > 0 ? (
+              <span
+                className="inline-flex h-2 w-2 rounded-full bg-danger-500"
+                aria-label={`${tabErrorCounts[t.id]} hatalı alan`}
+              />
+            ) : undefined,
+          }))}
+          activeId={activeTab}
+          onChange={(id) => {
+            void flushFeaturesDraft();
+            setActiveTab(id as FeatureSubTabId);
+          }}
+        />
+        {firstLockedHint ? (
+          <p className="mt-2 text-[12px] text-gray-500">{firstLockedHint}</p>
+        ) : null}
+      </div>
+
+      {activeTab === "identity" ? (
+        <section className="space-y-4">
+          <p className="text-[13px] leading-relaxed text-gray-500">
+            Teknenin tipini, markasını ve modelini seç. Bu bilgiler ilanının kimliğini
+            oluşturur.
           </p>
-        </div>
-        <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-          <div data-field="boatTypeKey">
-            <Field label="Tekne tipi" error={fieldErrors.boatTypeKey}>
-              <Select
-                leftIcon={faAnchor}
-                value={boatTypeKey}
-                error={!!fieldErrors.boatTypeKey}
-                onChange={(e) => setBoatTypeKey(e.target.value)}
-              >
-              <option value="">Seçiniz…</option>
-              {config.boatTypes.map((t) => (
-                <option key={t.key} value={t.key}>
-                  {t.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <div data-field="boatTypeKey">
+              <Field label="Tekne tipi" required error={fieldErrors.boatTypeKey}>
+                <Select
+                  leftIcon={faAnchor}
+                  value={boatTypeKey}
+                  error={!!fieldErrors.boatTypeKey}
+                  onChange={(e) => setBoatTypeKey(e.target.value)}
+                >
+                  <option value="">Seçiniz…</option>
+                  {config.boatTypes.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+
+            <BrandModelFields
+              boatTypeKey={boatTypeKey}
+              values={values}
+              isGulet={isGuletBoatType(boatTypeKey)}
+              fieldErrors={fieldErrors}
+              onChange={(key, value) => setValues((v) => ({ ...v, [key]: value }))}
+              onPendingRequestChange={(req) => {
+                pendingBrandRequestRef.current = req;
+              }}
+            />
           </div>
-
-          <BrandModelFields
-            boatTypeKey={boatTypeKey}
-            values={values}
-            isGulet={isGuletBoatType(boatTypeKey)}
-            fieldErrors={fieldErrors}
-            onChange={(key, value) => setValues((v) => ({ ...v, [key]: value }))}
-            onPendingRequestChange={(req) => {
-              pendingBrandRequestRef.current = req;
-            }}
-          />
-        </div>
-      </section>
-
-      {tabGroups.length > 0 ? (
-        <div className="mb-6">
-          <Tabs
-            items={tabGroups.map((t) => ({
-              id: t.id,
-              label: t.label,
-              disabled: !tabReachable[t.id],
-              lockedHint: TAB_LOCK_HINT[t.id],
-              badge:
-                !tabReachable[t.id] ? (
-                  <FontAwesomeIcon
-                    icon={faLock}
-                    className="text-[11px]"
-                    aria-hidden
-                  />
-                ) : tabErrorCounts[t.id] && tabErrorCounts[t.id]! > 0 ? (
-                  <span
-                    className="inline-flex h-2 w-2 rounded-full bg-danger-500"
-                    aria-label={`${tabErrorCounts[t.id]} hatalı alan`}
-                  />
-                ) : undefined,
-            }))}
-            activeId={activeTab}
-            onChange={(id) => {
-              void flushFeaturesDraft();
-              setActiveTab(id as FeatureSubTabId);
-            }}
-          />
-          {!tabReachable.engine || !tabReachable.cabins ? (
-            <p className="mt-2 text-[12px] text-gray-500">
-              {!tabReachable.engine ? TAB_LOCK_HINT.engine : TAB_LOCK_HINT.cabins}
-            </p>
-          ) : null}
-        </div>
+        </section>
       ) : null}
 
       {activeTab === "specs" ? (
@@ -655,6 +656,18 @@ export function AmenitiesStep({
   );
   const totalSelected = useMemo(
     () => Object.values(state).filter((v) => v.included || v.isExtra).length,
+    [state]
+  );
+  const totalExtraPrice = useMemo(
+    () =>
+      Object.values(state).reduce(
+        (sum, v) => (v.isExtra ? sum + (Number(v.extraPrice) || 0) : sum),
+        0
+      ),
+    [state]
+  );
+  const extraCount = useMemo(
+    () => Object.values(state).filter((v) => v.isExtra).length,
     [state]
   );
 
@@ -881,20 +894,36 @@ export function AmenitiesStep({
                   {cat.label}
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {cat.items.map((a) => (
-                    <span
-                      key={a.key}
-                      className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700"
-                    >
-                      {getFieldLabel(a)}
-                      {state[a.key]?.isExtra ? (
-                        <span className="text-brand-500">· ekstra</span>
-                      ) : null}
-                    </span>
-                  ))}
+                  {cat.items.map((a) => {
+                    const st = state[a.key];
+                    const price = st?.isExtra ? Number(st.extraPrice) || 0 : 0;
+                    return (
+                      <span
+                        key={a.key}
+                        className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700"
+                      >
+                        {getFieldLabel(a)}
+                        {st?.isExtra ? (
+                          <span className="text-brand-500">
+                            · {price > 0 ? `₺${price.toLocaleString("tr-TR")}` : "ekstra"}
+                          </span>
+                        ) : null}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             ))}
+            {extraCount > 0 ? (
+              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <span className="text-body-sm text-gray-600">
+                  {extraCount} ekstra ücretli seçenek
+                </span>
+                <span className="text-body-sm font-semibold text-ink">
+                  Toplam ₺{totalExtraPrice.toLocaleString("tr-TR")}
+                </span>
+              </div>
+            ) : null}
           </div>
         )}
       </Modal>
@@ -1113,8 +1142,8 @@ export function DescriptionRulesStep({
     if (isResolvedConfig(config)) {
       const modelKeys = boat.listingModels.map((m) => m.key);
       const required = getRequiredDescriptionFieldKeys(config.fields, modelKeys);
-      const petPolicyKeys = getPetPolicyFieldKeys(config.fields, modelKeys);
-      const result = buildDescriptionRulesSchema(required, petPolicyKeys).safeParse(payload);
+      // Pet policy is no longer required; boat rules are optional too.
+      const result = buildDescriptionRulesSchema(required, []).safeParse(payload);
       if (!result.success) {
         const { fields, message } = buildValidationErrorResponse(result.error);
         return Promise.reject(
@@ -1128,20 +1157,6 @@ export function DescriptionRulesStep({
 
   const hasTitle = stepFields.some((f) => f.key === "listing_title");
   const hasDescription = stepFields.some((f) => f.key === "description");
-  const petFields = PET_POLICY_FIELD_KEYS.filter((key) =>
-    stepFields.some((f) => f.key === key)
-  );
-  const selectedPet =
-    petFields.find((key) => values[key] === true || values[key] === "true") ?? "";
-  const petError = petFields.map((key) => fieldErrors[key]).find(Boolean);
-
-  function selectPetPolicy(selected: string) {
-    setValues((v) => {
-      const next = { ...v };
-      for (const key of PET_POLICY_FIELD_KEYS) next[key] = key === selected;
-      return next;
-    });
-  }
 
   const canSave =
     boat.listingModels.length > 0 &&
@@ -1151,8 +1166,8 @@ export function DescriptionRulesStep({
 
   return (
     <StepShell
-      title="Açıklama"
-      description="İlan başlığı, açıklama, tekne kuralları ve evcil hayvan politikasını gir. Alanlar kiralama paketine göre zorunlu olabilir."
+      title="Açıklama ve Politikalar"
+      description="İlan başlığı, açıklama ve tekne kurallarını gir. Kurallar opsiyoneldir."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -1212,9 +1227,13 @@ export function DescriptionRulesStep({
         )}
       >
         <div>
-          <h3 className="text-[15px] font-semibold text-ink">Tekne Kuralları</h3>
+          <h3 className="text-[15px] font-semibold text-ink">
+            Tekne Kuralları{" "}
+            <span className="font-normal text-gray-400">(opsiyonel)</span>
+          </h3>
           <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
-            Misafirler için geçerli kuralları belirt. Her kural için Evet ya da Hayır seç.
+            Misafirler için geçerli kuralları belirt. Her kural için Evet ya da Hayır
+            seçebilirsin; hiçbirini seçmeden de devam edebilirsin.
           </p>
         </div>
         <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
@@ -1234,53 +1253,6 @@ export function DescriptionRulesStep({
         </div>
         {ruleErrors ? <p className="text-caption text-danger-600">{ruleErrors}</p> : null}
       </section>
-
-      {petFields.length > 0 ? (
-        <section
-          className="mt-8 space-y-3 border-t border-gray-200 pt-8"
-          data-field={petFields[0]}
-        >
-          <div>
-            <h3 className="text-[15px] font-semibold text-ink">Evcil Hayvan Politikası</h3>
-            <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
-              Teknende evcil hayvan kabul durumunu seç (tek seçim).
-            </p>
-          </div>
-          <div className="space-y-2" role="radiogroup" aria-label="Evcil hayvan politikası">
-            {petFields.map((key) => {
-              const active = selectedPet === key;
-              return (
-                <label
-                  key={key}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition",
-                    active
-                      ? "border-brand-500 bg-brand-50/60"
-                      : "border-gray-200 hover:border-gray-300"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="pet_policy"
-                    value={key}
-                    checked={active}
-                    onChange={() => selectPetPolicy(key)}
-                    className="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500"
-                  />
-                  <span className="text-body-sm text-gray-700">{PET_POLICY_LABELS[key]}</span>
-                </label>
-              );
-            })}
-          </div>
-          {selectedPet === "welcome_at_additional_charge" ? (
-            <p className="text-caption text-gray-500">
-              Bu seçenekte müşteriye rezervasyon sırasında evcil hayvan ücreti uygulandığı
-              belirtilir.
-            </p>
-          ) : null}
-          {petError ? <p className="text-caption text-danger-600">{petError}</p> : null}
-        </section>
-      ) : null}
     </StepShell>
   );
 }
@@ -1521,8 +1493,21 @@ export function PricingStep({
         map[f.key] = rules[f.key] ?? "";
       }
     }
+    // Custom deposit note (Deposit type = "Diğer") lives in structuredRules only.
+    map.customDepositNote = String(rules.customDepositNote ?? "");
     return map;
   }, [boat.structuredRules, bookingFields]);
+
+  // Split booking fields into base pricing vs. extra services (port fee,
+  // cleaning, transit log, fuel, daily A/C) for the two-section layout.
+  const basePricingFields = useMemo(
+    () => bookingFields.filter((f) => !isExtraServicePricingField(f)),
+    [bookingFields]
+  );
+  const extraServiceFields = useMemo(
+    () => bookingFields.filter((f) => isExtraServicePricingField(f)),
+    [bookingFields]
+  );
 
   const [prices, setPrices] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {};
@@ -1597,10 +1582,13 @@ export function PricingStep({
     );
   }
 
+  const onBookingChange = (key: string, value: string | boolean) =>
+    setBookingValues((v) => ({ ...v, [key]: value }));
+
   return (
     <StepShell
-      title="Fiyat"
-      description="Model başına fiyat ve rezervasyon kuralları."
+      title="Fiyatlar ve Ek Hizmetler"
+      description="Model başına fiyatları, rezervasyon kurallarını ve ek hizmet ücretlerini gir."
       footer={
         <>
           <BackButton onClick={goBack} show />
@@ -1616,45 +1604,67 @@ export function PricingStep({
           Çıkış saati giriş saatinden sonra olmalıdır ({timeOrderErrors.join(", ")}).
         </Alert>
       ) : null}
-      <p className="text-body-sm text-gray-500">{PRICING_REQUIRED_HINT}</p>
-      <section className="space-y-4">
-        <h3 className="text-[15px] font-semibold text-ink">Kiralama fiyatları</h3>
-        {models.map((m) => (
-          <div key={m.key} data-field={m.key}>
-            <Field
-              label={getListingModelPriceLabel(m.key, m.label)}
-              required
-              error={fieldErrors[m.key]}
-            >
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min={0}
-                  value={prices[m.key] ?? ""}
-                  error={!!fieldErrors[m.key]}
-                  onChange={(e) => setPrices((p) => ({ ...p, [m.key]: e.target.value }))}
-                  placeholder="0"
-                  className="max-w-[200px]"
-                />
-              <span className="text-sm text-slate-500">₺</span>
+
+      <section className="space-y-5">
+        <h2 className="text-[18px] font-semibold text-ink">Temel Fiyatlandırma</h2>
+        <p className="text-body-sm text-gray-500">{PRICING_REQUIRED_HINT}</p>
+        <div className="space-y-4">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-gray-600">
+            Kiralama fiyatları
+          </h3>
+          {models.map((m) => (
+            <div key={m.key} data-field={m.key}>
+              <Field
+                label={getListingModelPriceLabel(m.key, m.label)}
+                required
+                error={fieldErrors[m.key]}
+              >
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={prices[m.key] ?? ""}
+                    error={!!fieldErrors[m.key]}
+                    onChange={(e) => setPrices((p) => ({ ...p, [m.key]: e.target.value }))}
+                    placeholder="0"
+                    className="max-w-[200px]"
+                  />
+                  <span className="text-sm text-slate-500">₺</span>
+                </div>
+              </Field>
             </div>
-          </Field>
-          </div>
-        ))}
+          ))}
+        </div>
+        {basePricingFields.length > 0 ? (
+          <DynamicOnboardingFields
+            fields={basePricingFields}
+            values={bookingValues}
+            onChange={onBookingChange}
+            fieldErrors={fieldErrors}
+            requiredKeys={requiredKeySet}
+          />
+        ) : null}
       </section>
 
-      <section className="space-y-4 border-t border-gray-100 pt-7">
-        <h3 className="text-[15px] font-semibold text-ink">Rezervasyon & ödeme kuralları</h3>
-        <DynamicOnboardingFields
-          fields={bookingFields}
-          values={bookingValues}
-          onChange={(key, value) => setBookingValues((v) => ({ ...v, [key]: value }))}
-          contactForFuelCost={contactForFuelCost}
-          onContactForFuelCostChange={setContactForFuelCost}
-          fieldErrors={fieldErrors}
-          requiredKeys={requiredKeySet}
-        />
-      </section>
+      {extraServiceFields.length > 0 ? (
+        <section className="mt-10 space-y-5 border-t border-gray-200 pt-8">
+          <div>
+            <h2 className="text-[18px] font-semibold text-ink">Ek Hizmetler ve Ücretler</h2>
+            <p className="mt-1 text-body-sm text-gray-500">
+              Her hizmet için fiyata dahil olup olmadığını, dahil değilse tahmini ücreti belirt.
+            </p>
+          </div>
+          <DynamicOnboardingFields
+            fields={extraServiceFields}
+            values={bookingValues}
+            onChange={onBookingChange}
+            contactForFuelCost={contactForFuelCost}
+            onContactForFuelCostChange={setContactForFuelCost}
+            fieldErrors={fieldErrors}
+            requiredKeys={requiredKeySet}
+          />
+        </section>
+      ) : null}
     </StepShell>
   );
 }

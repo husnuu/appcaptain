@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import {
   CREW_TAB_FIELD_KEYS,
   ENGINE_FIELD_KEYS,
+  IDENTITY_FIELD_KEYS,
   NUMERIC_CABIN_FIELD_KEYS,
   getValidationFieldLabel,
   type FeatureSubTabId,
@@ -15,6 +16,7 @@ import type { SerializedBoat } from "./types";
 export type { FieldErrorsMap };
 
 export function featureFieldSubTab(field: string): FeatureSubTabId {
+  if ((IDENTITY_FIELD_KEYS as readonly string[]).includes(field)) return "identity";
   if (field === "engineType") return "engine";
   if ((CREW_TAB_FIELD_KEYS as readonly string[]).includes(field)) return "cabins";
   if ((ENGINE_FIELD_KEYS as readonly string[]).includes(field)) return "engine";

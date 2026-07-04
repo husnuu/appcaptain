@@ -58,7 +58,7 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   };
 
   return (
-    <Sidebar className="sticky top-0 h-screen">
+    <Sidebar className="sticky top-0 h-screen bg-primary-700">
       <SidebarBrand>
         SEAHUB <span className="text-brand-500">Captain</span>
       </SidebarBrand>

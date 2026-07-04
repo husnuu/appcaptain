@@ -324,6 +324,19 @@ function isRequiredKey(key: string, requiredKeys?: ReadonlySet<string>): boolean
   return requiredKeys?.has(key) ?? false;
 }
 
+/**
+ * Extra services / fees (port fee, cleaning, transit log, fuel, daily A/C) that
+ * belong in the Pricing step's "Ek Hizmetler ve Ücretler" section. Everything
+ * else is base pricing.
+ */
+export function isExtraServicePricingField(field: OnboardingFieldDTO): boolean {
+  if (getIncludedFeeGroup(field.key)) return true;
+  if (INCLUDED_FEE_SKIP_KEYS.has(field.key)) return true;
+  if (field.key === "fuel_cost" || field.key === "daily_a_c_usage") return true;
+  if (getFieldBehavior(field.key).special === "fuel_contact_flag") return true;
+  return false;
+}
+
 export function DynamicOnboardingFields({
   fields,
   values,
@@ -448,6 +461,7 @@ export function DynamicOnboardingFields({
 
         if (field.key === "cancellation_policy" || field.key === "deposit_type_payment_before") {
           const isCancellation = field.key === "cancellation_policy";
+          const depositIsOther = !isCancellation && stringValue === "other";
           return (
             <div key={field.key} data-field={field.key}>
               <Field label={label} required={required} error={fieldError}>
@@ -468,10 +482,21 @@ export function DynamicOnboardingFields({
                       <option value="percent_20">%20 ön ödeme</option>
                       <option value="percent_50">%50 ön ödeme</option>
                       <option value="full">Tam ödeme</option>
+                      <option value="other">Diğer (özel oran girin)</option>
                     </>
                   )}
                 </Select>
               </Field>
+              {depositIsOther ? (
+                <div className="mt-2" data-field="customDepositNote">
+                  <Input
+                    value={String(values.customDepositNote ?? "")}
+                    onChange={(e) => onChange("customDepositNote", e.target.value)}
+                    placeholder="Örn. %15 veya ₺5.000 sabit depozito"
+                    className="max-w-[300px]"
+                  />
+                </div>
+              ) : null}
               {isCancellation ? (
                 <ul className="mt-2 space-y-1 text-[12px] leading-relaxed text-gray-500">
                   {CANCELLATION_POLICY_OPTIONS.map((o) => (

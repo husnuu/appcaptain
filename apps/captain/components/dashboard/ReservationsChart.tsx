@@ -99,8 +99,8 @@ export function ReservationsChart() {
             <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="reservationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#F97316" />
-                  <stop offset="100%" stopColor="#FDBA74" />
+                  <stop offset="0%" stopColor="#0097A7" />
+                  <stop offset="100%" stopColor="#80DEEA" />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />

@@ -59,7 +59,7 @@ export function Tabs({ items, activeId, onChange, className }: TabsProps) {
               onChange(tab.id);
             }}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-body-sm font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-full px-5 py-2 text-body-sm font-medium transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2",
               locked
                 ? "cursor-not-allowed bg-gray-100 text-gray-400 opacity-40"

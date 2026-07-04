@@ -9,9 +9,9 @@ export const STEP_LABELS: Record<OnboardingStep, string> = {
   BOAT_TYPE_FEATURES: "Özellikler",
   AMENITIES: "Donanımlar",
   LOCATION: "Konum",
-  DESCRIPTION_RULES: "Açıklama",
+  DESCRIPTION_RULES: "Açıklama ve Politikalar",
   PHOTOS: "Fotoğraflar",
-  PRICING: "Fiyat",
+  PRICING: "Fiyatlar ve Ek Hizmetler",
   DOCUMENTS: "Dokümanlar",
 };
 
