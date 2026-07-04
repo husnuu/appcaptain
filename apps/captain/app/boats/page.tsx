@@ -5,30 +5,37 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Alert,
-  Badge,
   Button,
-  EmptyState,
   FontAwesomeIcon,
   Skeleton,
+  cn,
   faAnchor,
   faBolt,
   faPenToSquare,
+  faPlus,
   faTrash,
 } from "@getyourboat/ui";
 import { useAuth } from "../../components/auth-provider";
 import { AppShell } from "../../components/layout/AppShell";
 import { api, ApiError } from "../../lib/api";
 import { useMyBoats, useProfile } from "../../lib/hooks";
-import { STATUS_LABELS, STEP_LABELS } from "../../lib/onboarding";
+import { STATUS_LABELS, STEP_LABELS, STEP_ORDER, stepIndex } from "../../lib/onboarding";
 import type { ApprovalType, BoatListItem, BoatStatus } from "../../lib/types";
 
-const STATUS_VARIANT: Record<BoatStatus, "neutral" | "warning" | "success" | "danger"> = {
-  DRAFT: "neutral",
-  PENDING_REVIEW: "warning",
-  ACTIVE: "success",
-  REJECTED: "danger",
-  SUSPENDED: "danger",
+/** Pill status badge colors (doc-specified) — overlaid on the card cover. */
+const STATUS_BADGE_STYLES: Record<BoatStatus, string> = {
+  DRAFT: "bg-[#FEF3C7] text-[#92400E]",
+  PENDING_REVIEW: "bg-[#DBEAFE] text-[#1D4ED8]",
+  ACTIVE: "bg-[#D1FAE5] text-[#065F46]",
+  REJECTED: "bg-[#FEE2E2] text-[#991B1B]",
+  SUSPENDED: "bg-[#FEE2E2] text-[#991B1B]",
 };
+
+/** Rough completion hint for drafts, derived from the current wizard step. */
+function draftPercent(currentStep: BoatListItem["currentStep"]): number {
+  const done = stepIndex(currentStep);
+  return Math.max(5, Math.round((done / STEP_ORDER.length) * 100));
+}
 
 function BoatsContent() {
   const router = useRouter();
@@ -98,145 +105,174 @@ function BoatsContent() {
   }
 
   return (
-    <div className="rounded-card bg-ink-800 p-5 text-white shadow-card sm:p-6">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-heading text-white">Teknelerim</h1>
-          <p className="mt-1 text-body-sm text-white/70">
+          <h1 className="text-[28px] font-bold tracking-[-0.02em] text-[#111827]">Teknelerim</h1>
+          <p className="mt-1 text-[14px] text-[#6B7280]">
             Teknelerini ekle, düzenle, anlık rezervasyonu aç veya sil.
           </p>
         </div>
         <Button onClick={newBoat} loading={creating || profileLoading}>
-          + Yeni Tekne
+          <FontAwesomeIcon icon={faPlus} className="text-[14px]" aria-hidden />
+          Yeni Tekne
         </Button>
       </div>
 
       {!authLoading && !isAuthenticated ? (
-        <div className="mb-4">
-          <Alert variant="info">
-            Teknelerinizi görmek ve yönetmek için{" "}
-            <Link href="/login" className="font-medium underline">
-              giriş yapın
-            </Link>
-            . Henüz hesabınız yoksa{" "}
-            <Link href="/signup" className="font-medium underline">
-              kayıt olun
-            </Link>
-            .
-          </Alert>
-        </div>
+        <Alert variant="info">
+          Teknelerinizi görmek ve yönetmek için{" "}
+          <Link href="/login" className="font-medium underline">
+            giriş yapın
+          </Link>
+          . Henüz hesabınız yoksa{" "}
+          <Link href="/signup" className="font-medium underline">
+            kayıt olun
+          </Link>
+          .
+        </Alert>
       ) : null}
 
       {error || createError || actionError ? (
-        <div className="mb-4">
-          <Alert variant="danger">
-            <p>{error ?? createError ?? actionError}</p>
-            {error?.includes("Oturumunuzun süresi doldu") ? (
-              <Link href="/login" className="mt-2 inline-block font-medium underline">
-                Giriş sayfasına git
-              </Link>
-            ) : null}
-          </Alert>
-        </div>
+        <Alert variant="danger">
+          <p>{error ?? createError ?? actionError}</p>
+          {error?.includes("Oturumunuzun süresi doldu") ? (
+            <Link href="/login" className="mt-2 inline-block font-medium underline">
+              Giriş sayfasına git
+            </Link>
+          ) : null}
+        </Alert>
       ) : null}
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <Skeleton className="h-72 rounded-card bg-white/10" />
-          <Skeleton className="h-72 rounded-card bg-white/10" />
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-80 rounded-2xl" />
+          <Skeleton className="h-80 rounded-2xl" />
+          <Skeleton className="h-80 rounded-2xl" />
         </div>
       ) : !list || list.length === 0 ? (
-        <EmptyState
-          icon={faAnchor}
-          title="Henüz bir teknen yok"
-          description="Başlamak için yeni bir tekne ekle ve onboarding sihirbazını tamamla."
-          action={
+        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
+          <FontAwesomeIcon icon={faAnchor} className="text-[64px] text-[#D1D5DB]" aria-hidden />
+          <h3 className="mt-6 text-[20px] font-semibold text-[#374151]">Henüz teknen yok</h3>
+          <p className="mt-2 text-[14px] text-[#9CA3AF]">
+            Tekne ekleyerek kiralama almaya başla.
+          </p>
+          <div className="mt-6">
             <Button onClick={newBoat} loading={creating || profileLoading}>
-              + Yeni Tekne
+              <FontAwesomeIcon icon={faPlus} className="text-[14px]" aria-hidden />
+              İlk Tekneni Ekle
             </Button>
-          }
-          className="border-white/10 bg-white/5 [&_h3]:text-white [&_p]:text-white/70 [&_svg]:text-white/50"
-        />
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((boat) => {
             const cover = boat.photos?.[0]?.publicUrl;
             const busy = busyId === boat.id;
             const instantOn = boat.approvalType === "INSTANT";
+            const isDraft = boat.status === "DRAFT";
+            const percent = draftPercent(boat.currentStep);
 
             return (
               <article
                 key={boat.id}
-                className="overflow-hidden rounded-card border border-white/10 bg-ink-900 shadow-card"
+                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.04)] transition duration-150 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.10)]"
               >
-                <div className="h-40 w-full bg-white/5">
+                <div className="relative h-[180px] w-full">
                   {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={cover}
-                      alt={boat.title ?? "Tekne"}
-                      className="h-full w-full object-cover"
-                    />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cover}
+                        alt={boat.title ?? "Tekne"}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
+                    </>
                   ) : (
-                    <div className="flex h-full items-center justify-center text-white/40">
-                      Fotoğraf yok
+                    <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#F1F5F9]">
+                      <FontAwesomeIcon
+                        icon={faAnchor}
+                        className="text-[32px] text-[#9CA3AF]"
+                        aria-hidden
+                      />
+                      <span className="text-[13px] text-[#9CA3AF]">Fotoğraf eklenmedi</span>
                     </div>
                   )}
+                  <span
+                    className={cn(
+                      "absolute right-3 top-3 rounded-full px-2.5 py-1 text-[12px] font-semibold",
+                      STATUS_BADGE_STYLES[boat.status]
+                    )}
+                  >
+                    {STATUS_LABELS[boat.status]}
+                  </span>
                 </div>
 
-                <div className="space-y-4 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-semibold text-white">
-                        {boat.title || "İsimsiz taslak"}
-                      </h3>
-                      <p className="mt-1 text-caption text-white/60">
-                        {boat.boatType?.label ?? "Tekne tipi seçilmedi"} ·{" "}
-                        {STEP_LABELS[boat.currentStep]}
-                      </p>
-                    </div>
-                    <Badge variant={STATUS_VARIANT[boat.status]}>
-                      {STATUS_LABELS[boat.status]}
-                    </Badge>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <h3
+                      className={cn(
+                        "truncate text-[16px] font-bold",
+                        boat.title ? "text-[#111827]" : "italic text-[#9CA3AF]"
+                      )}
+                    >
+                      {boat.title || "İsimsiz taslak"}
+                    </h3>
+                    <p className="mt-1 truncate text-[13px] text-[#6B7280]">
+                      {boat.boatType?.label ?? "Tekne tipi seçilmedi"} ·{" "}
+                      {STEP_LABELS[boat.currentStep]}
+                    </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
+                  {isDraft ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+                        <div
+                          className="h-full rounded-full bg-[#0097A7]"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <span className="text-[12px] tabular-nums text-[#6B7280]">%{percent}</span>
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
                       disabled={busy}
                       onClick={() => router.push(`/boats/${boat.id}`)}
                       aria-label={`${boat.title || "Tekne"} düzenle`}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#0097A7] bg-white px-3 text-[13px] font-medium text-[#0097A7] transition-colors hover:bg-[#F0FDFC] disabled:opacity-50"
                     >
-                      <FontAwesomeIcon icon={faPenToSquare} className="text-[14px]" aria-hidden />
+                      <FontAwesomeIcon icon={faPenToSquare} className="text-[13px]" aria-hidden />
                       Düzenle
-                    </Button>
+                    </button>
 
-                    <Button
-                      size="sm"
-                      variant={instantOn ? "primary" : "outline"}
-                      className={
-                        instantOn
-                          ? undefined
-                          : "border-white/20 bg-transparent text-white hover:bg-white/10"
-                      }
+                    <button
+                      type="button"
                       disabled={busy}
-                      loading={busy}
                       onClick={() => toggleInstantBooking(boat)}
+                      className={cn(
+                        "inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors disabled:opacity-50",
+                        instantOn
+                          ? "bg-[#0097A7] text-white hover:bg-[#007A8A]"
+                          : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                      )}
                     >
-                      <FontAwesomeIcon icon={faBolt} className="text-[14px]" aria-hidden />
+                      <FontAwesomeIcon icon={faBolt} className="text-[13px]" aria-hidden />
                       {instantOn ? "Anlık booking açık" : "Anlık booking aç"}
-                    </Button>
+                    </button>
 
-                    <Button
-                      size="sm"
-                      variant="danger"
+                    <button
+                      type="button"
                       disabled={busy}
                       onClick={() => removeBoat(boat)}
+                      aria-label={`${boat.title || "Tekne"} sil`}
+                      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#FEE2E2] bg-[#FFF5F5] text-[#EF4444] transition-colors hover:bg-[#FEE2E2] disabled:opacity-50"
                     >
-                      <FontAwesomeIcon icon={faTrash} className="text-[14px]" aria-hidden />
-                      Sil
-                    </Button>
+                      <FontAwesomeIcon icon={faTrash} className="text-[13px]" aria-hidden />
+                    </button>
                   </div>
                 </div>
               </article>

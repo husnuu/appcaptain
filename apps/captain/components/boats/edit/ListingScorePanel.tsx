@@ -2,12 +2,10 @@
 
 import {
   STEP_INFO_CARDS,
-  buildWizardStepProgress,
   calculateWizardListingScore,
   deriveCompletedWizardSteps,
   resolveStepInfoCardKey,
 } from "@getyourboat/shared";
-import { cn, FontAwesomeIcon, faCheck } from "@getyourboat/ui";
 import type { FeatureSubTabId, OnboardingStep } from "@getyourboat/shared";
 import type { SerializedBoat } from "../../../lib/types";
 import { STEP_LABELS } from "../../../lib/onboarding";
@@ -25,7 +23,6 @@ export function ListingScorePanel({
 }: ListingScorePanelProps) {
   const completed = deriveCompletedWizardSteps(boat);
   const percent = calculateWizardListingScore(completed);
-  const steps = buildWizardStepProgress(completed, activeStep);
   const tip = STEP_INFO_CARDS[resolveStepInfoCardKey(activeStep, featureSubTab)];
   const activeLabel =
     activeStep === "PREVIEW"
@@ -69,53 +66,7 @@ export function ListingScorePanel({
           </div>
         </div>
 
-        {/* Wizard steps — üst stepper ile aynı sıra */}
-        <ul className="border-t border-gray-100 px-2 py-2">
-          {steps.map(({ step, done, current }, index) => (
-            <li key={step}>
-              <div
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
-                  current && "bg-gray-50"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors",
-                    done
-                      ? "bg-emerald-500 text-white"
-                      : current
-                        ? "bg-ink text-white"
-                        : "border border-gray-200 bg-white text-gray-400"
-                  )}
-                >
-                  {done ? (
-                    <FontAwesomeIcon icon={faCheck} className="text-[10px]" aria-hidden />
-                  ) : (
-                    index + 1
-                  )}
-                </span>
-                <span
-                  className={cn(
-                    "flex-1 text-[13px] leading-tight",
-                    done && !current && "text-gray-500",
-                    current && "font-semibold text-ink",
-                    !done && !current && "text-gray-400"
-                  )}
-                >
-                  {STEP_LABELS[step]}
-                </span>
-                {current ? (
-                  <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-600">
-                    Aktif
-                  </span>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* Context tip */}
+        {/* Aktif adım açıklaması — üst stepper ile tekrar olmaması için adım listesi kaldırıldı */}
         <div className="border-t border-gray-100 bg-[#fafafa] px-5 py-4">
           <p className="text-[13px] font-semibold text-ink">{tip.title}</p>
           <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500">{tip.description}</p>

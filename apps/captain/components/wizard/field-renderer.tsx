@@ -24,6 +24,7 @@ import {
   type OnboardingFieldDTO,
   type ResolvedOnboardingConfigDTO,
 } from "@getyourboat/shared";
+import { FontAwesomeIcon, faClock } from "@getyourboat/ui";
 import type { OnboardingConfig } from "../../lib/types";
 import { Checkbox, Field, Input, Select, Textarea } from "../ui";
 import { TimePicker } from "./TimePicker";
@@ -189,9 +190,14 @@ function CheckInOutGroup({
     group.enforceOrder && inMin != null && outMin != null && outMin <= inMin;
 
   return (
-    <div className="rounded-xl border border-gray-200 p-5" data-field={group.inKey}>
-      <h4 className="text-[14px] font-semibold text-ink">{group.title}</h4>
-      <p className="mt-0.5 text-[12px] text-gray-500">{group.subtitle}</p>
+    <div className="rounded-xl border border-gray-200 bg-white p-5" data-field={group.inKey}>
+      <div className="flex items-center gap-2">
+        <FontAwesomeIcon icon={faClock} className="text-[16px] text-gray-400" aria-hidden />
+        <h4 className="text-[13px] font-semibold uppercase tracking-[0.04em] text-gray-700">
+          {group.title}
+        </h4>
+      </div>
+      <p className="mt-1 text-[13px] text-gray-500">{group.subtitle}</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Field
           label="Giriş Saati"

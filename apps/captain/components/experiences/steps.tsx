@@ -9,6 +9,7 @@ import {
   ExperienceDTO,
   ExperiencePricingType,
   ExperienceStep,
+  ValidationFieldError,
 } from "@getyourboat/shared";
 import { Button } from "@getyourboat/ui";
 import { useState } from "react";
@@ -42,29 +43,40 @@ export interface ExperienceStepProps {
 function useStepSave(step: ExperienceStep) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ValidationFieldError[]>([]);
 
   async function save(id: string, body: unknown, onSaved: (next: ExperienceDTO) => void) {
     setSaving(true);
     setError(null);
+    setFieldErrors([]);
     try {
       const next = await api.updateExperienceStep(id, step, body);
       onSaved(next);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Kaydedilemedi");
+      if (err instanceof ApiError && err.fields && err.fields.length > 0) {
+        setFieldErrors(err.fields);
+      } else {
+        setError(err instanceof ApiError ? err.message : "Kaydedilemedi");
+      }
     } finally {
       setSaving(false);
     }
   }
 
-  return { saving, error, save };
+  return { saving, error, fieldErrors, save };
 }
 
 export function CategoryStep({ experience, onSaved, onNext }: ExperienceStepProps) {
   const [category, setCategory] = useState(experience.category ?? ExperienceCategory.BOAT_TOUR);
-  const { saving, error, save } = useStepSave(ExperienceStep.CATEGORY);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.CATEGORY);
 
   return (
-    <StepShell title="Kategori" description="Deneyiminin türünü seç." error={error}>
+    <StepShell
+      title="Kategori"
+      description="Deneyiminin türünü seç."
+      error={error}
+      fieldErrors={fieldErrors}
+    >
       <Field>
         <Label>Kategori *</Label>
         <Select value={category} onChange={(e) => setCategory(e.target.value as ExperienceCategory)}>
@@ -92,18 +104,21 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
   const [fullDescription, setFullDescription] = useState(experience.fullDescription);
   const [highlights, setHighlights] = useState(experience.highlights);
   const [keywords, setKeywords] = useState(experience.keywords);
-  const { saving, error, save } = useStepSave(ExperienceStep.TITLE_DESCRIPTION);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.TITLE_DESCRIPTION);
 
   return (
     <StepShell
       title="Başlık & Açıklama"
       description="Başlık konum adıyla başlamalı (örn. Bodrum Gün Batımı Yelken Turu)."
       error={error}
+      fieldErrors={fieldErrors}
     >
       <Field>
         <Label>Başlık *</Label>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
-        <p className="mt-1 text-xs text-gray-500">{title.length} / 120</p>
+        <p className="mt-1 text-xs text-gray-500">
+          En az 10 karakter · {title.trim().length} / 120
+        </p>
       </Field>
       <Field>
         <Label>Referans kodu</Label>
@@ -117,10 +132,16 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
       <Field>
         <Label>Kısa açıklama *</Label>
         <Textarea rows={3} value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
+        <p className="mt-1 text-xs text-gray-500">
+          En az 20 karakter · {shortDescription.trim().length} / 300
+        </p>
       </Field>
       <Field>
         <Label>Tam açıklama *</Label>
         <Textarea rows={6} value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} />
+        <p className="mt-1 text-xs text-gray-500">
+          En az 100 karakter · {fullDescription.trim().length} / 5000
+        </p>
       </Field>
       <LinesField
         label="Öne çıkanlar"
@@ -167,10 +188,10 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(
     experience.emergencyContactPhone ?? ""
   );
-  const { saving, error, save } = useStepSave(ExperienceStep.INCLUDED_INFO);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.INCLUDED_INFO);
 
   return (
-    <StepShell title="Dahil / Hariç / Bilgilendirme" error={error}>
+    <StepShell title="Dahil / Hariç / Bilgilendirme" error={error} fieldErrors={fieldErrors}>
       <LinesField
         label="Fiyata dahil olanlar"
         hint="Örn. Atıştırmalıklar, şnorkel ekipmanı, sigorta"
@@ -246,7 +267,7 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   const [accessibilityOptions, setAccessibilityOptions] = useState<string[]>(
     experience.accessibilityOptions
   );
-  const { saving, error, save } = useStepSave(ExperienceStep.LOGISTICS);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.LOGISTICS);
 
   function toggleAccessibility(option: string) {
     setAccessibilityOptions((prev) =>
@@ -255,7 +276,7 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   }
 
   return (
-    <StepShell title="Lojistik" error={error}>
+    <StepShell title="Lojistik" error={error} fieldErrors={fieldErrors}>
       <Field>
         <Label>Süre (dakika) *</Label>
         <Input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} />
@@ -385,10 +406,10 @@ export function PricingStep({ experience, onSaved, onNext }: ExperienceStepProps
   const [childDiscountPercent, setChildDiscountPercent] = useState(
     experience.childDiscountPercent != null ? String(experience.childDiscountPercent) : ""
   );
-  const { saving, error, save } = useStepSave(ExperienceStep.PRICING);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.PRICING);
 
   return (
-    <StepShell title="Fiyatlandırma" error={error}>
+    <StepShell title="Fiyatlandırma" error={error} fieldErrors={fieldErrors}>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
           <Label>Temel fiyat *</Label>
@@ -445,13 +466,14 @@ export function CancellationStep({ experience, onSaved, onNext }: ExperienceStep
   const [cancellationPolicyText, setCancellationPolicyText] = useState(
     experience.cancellationPolicyText ?? ""
   );
-  const { saving, error, save } = useStepSave(ExperienceStep.CANCELLATION);
+  const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.CANCELLATION);
 
   return (
     <StepShell
       title="İptal Politikası"
       description="Tam açıklamadaki iptal koşulları bu seçimle çelişmemeli."
       error={error}
+      fieldErrors={fieldErrors}
     >
       <Field>
         <Label>İptal politikası *</Label>
@@ -498,7 +520,7 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
   const [videoUrl, setVideoUrl] = useState(experience.videoUrl ?? "");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { saving, error: saveError, save } = useStepSave(ExperienceStep.MEDIA);
+  const { saving, error: saveError, fieldErrors, save } = useStepSave(ExperienceStep.MEDIA);
 
   async function handleUpload(file: File, asCover?: boolean) {
     setUploading(true);
@@ -523,6 +545,7 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       title="Medya"
       description="Kapak fotoğrafı zorunlu. Galeri için en az 5 foto önerilir."
       error={error || saveError}
+      fieldErrors={fieldErrors}
     >
       {experience.coverPhotoUrl ? (
         <img src={experience.coverPhotoUrl} alt="Kapak" className="h-40 w-full rounded-xl object-cover" />

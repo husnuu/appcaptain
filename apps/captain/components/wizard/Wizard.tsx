@@ -170,7 +170,7 @@ export function Wizard({ boatId }: { boatId: string }) {
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6">
       <button
         onClick={() => router.push("/boats")}
-        className="mb-5 flex items-center gap-2 text-body-sm font-medium text-gray-500 transition hover:text-ink"
+        className="mb-5 flex items-center gap-1.5 text-body-sm font-medium text-brand-600 transition hover:text-brand-700"
       >
         <FontAwesomeIcon icon={faArrowLeft} className="text-[14px]" aria-hidden />
         Teknelerim

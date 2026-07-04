@@ -6,6 +6,7 @@ import {
   cn,
   FontAwesomeIcon,
   ProgressBar,
+  faArrowLeft,
   faCheck,
   faLock,
   faPaperPlane,
@@ -119,10 +120,15 @@ export function ExperienceWizard({ experienceId }: { experienceId: string }) {
             <p className="mt-2 text-sm text-amber-700">{experience.reviewNote}</p>
           ) : null}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push("/experiences")}>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/experiences")}
+            className="flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} className="text-[14px]" aria-hidden />
             Listeye dön
-          </Button>
+          </button>
           {canSubmit ? (
             <Button onClick={() => void handleSubmit()} disabled={submitting}>
               <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />

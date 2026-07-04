@@ -60,7 +60,11 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   return (
     <Sidebar className="sticky top-0 h-screen bg-primary-700">
       <SidebarBrand>
-        SEAHUB <span className="text-brand-500">Captain</span>
+        <span className="font-bold tracking-tight">
+          <span className="text-brand-400">SEA</span>
+          <span className="text-white">HUB</span>
+        </span>
+        <span className="ml-1.5 text-sm font-medium text-gray-300">Captain</span>
       </SidebarBrand>
 
       <nav className="flex flex-1 flex-col gap-1">

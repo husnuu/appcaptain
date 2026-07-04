@@ -886,29 +886,56 @@ export function AmenitiesStep({
         ) : (
           <div className="space-y-4">
             <p className="text-body-sm text-gray-500">
-              Toplam {totalSelected} donanım seçtin. Devam etmeden önce kontrol et.
+              Toplam {totalSelected} donanım seçtin. Ekstra ücretli olanların fiyatını
+              aşağıdan düzenleyebilirsin; değişiklikler otomatik kaydedilir.
             </p>
             {selectedByCategory.map((cat) => (
               <div key={cat.key}>
                 <h4 className="mb-2 text-caption font-semibold uppercase tracking-wide text-gray-400">
                   {cat.label}
                 </h4>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-1.5">
                   {cat.items.map((a) => {
                     const st = state[a.key];
-                    const price = st?.isExtra ? Number(st.extraPrice) || 0 : 0;
+                    const isExtra = !!st?.isExtra;
                     return (
-                      <span
+                      <div
                         key={a.key}
-                        className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2"
                       >
-                        {getFieldLabel(a)}
-                        {st?.isExtra ? (
-                          <span className="text-brand-500">
-                            · {price > 0 ? `₺${price.toLocaleString("tr-TR")}` : "ekstra"}
+                        <span className="flex min-w-0 items-center gap-2 text-[13px] text-ink">
+                          <span
+                            className={cn(
+                              "h-2 w-2 shrink-0 rounded-full",
+                              isExtra ? "bg-amber-500" : "bg-emerald-500"
+                            )}
+                            aria-hidden
+                          />
+                          <span className="truncate">{getFieldLabel(a)}</span>
+                        </span>
+                        {isExtra ? (
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <Input
+                              type="number"
+                              min={1}
+                              value={st?.extraPrice ?? ""}
+                              error={!!fieldErrors[a.key]}
+                              onChange={(e) => set(a.key, { extraPrice: e.target.value })}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") e.currentTarget.blur();
+                              }}
+                              className="h-9 w-20 text-right"
+                              placeholder="0"
+                              aria-label={`${getFieldLabel(a)} ekstra ücreti`}
+                            />
+                            <span className="text-[13px] text-gray-500">₺</span>
+                          </div>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
+                            Fiyata dahil
                           </span>
-                        ) : null}
-                      </span>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -1605,11 +1632,11 @@ export function PricingStep({
         </Alert>
       ) : null}
 
-      <section className="space-y-5">
-        <h2 className="text-[18px] font-semibold text-ink">Temel Fiyatlandırma</h2>
-        <p className="text-body-sm text-gray-500">{PRICING_REQUIRED_HINT}</p>
+      <section className="space-y-6 [&_input]:text-[16px] [&_label]:text-[15px] [&_label]:text-gray-900 [&_select]:text-[16px] [&_textarea]:text-[16px]">
+        <h2 className="text-[24px] font-bold tracking-[-0.01em] text-ink">Temel Fiyatlandırma</h2>
+        <p className="text-[13px] text-gray-500">{PRICING_REQUIRED_HINT}</p>
         <div className="space-y-4">
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-gray-600">
+          <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-gray-700">
             Kiralama fiyatları
           </h3>
           {models.map((m) => (
@@ -1647,10 +1674,10 @@ export function PricingStep({
       </section>
 
       {extraServiceFields.length > 0 ? (
-        <section className="mt-10 space-y-5 border-t border-gray-200 pt-8">
+        <section className="mt-10 space-y-6 border-t border-gray-200 pt-8 [&_input]:text-[16px] [&_label]:text-[15px] [&_label]:text-gray-900 [&_select]:text-[16px] [&_textarea]:text-[16px]">
           <div>
-            <h2 className="text-[18px] font-semibold text-ink">Ek Hizmetler ve Ücretler</h2>
-            <p className="mt-1 text-body-sm text-gray-500">
+            <h2 className="text-[24px] font-bold tracking-[-0.01em] text-ink">Ek Hizmetler ve Ücretler</h2>
+            <p className="mt-1 text-[13px] text-gray-500">
               Her hizmet için fiyata dahil olup olmadığını, dahil değilse tahmini ücreti belirt.
             </p>
           </div>
