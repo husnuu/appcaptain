@@ -11,7 +11,7 @@ import {
   ExperienceStep,
   ValidationFieldError,
 } from "@getyourboat/shared";
-import { Button } from "@getyourboat/ui";
+import { Button, cn } from "@getyourboat/ui";
 import { useState } from "react";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
 import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
@@ -104,7 +104,51 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
   const [fullDescription, setFullDescription] = useState(experience.fullDescription);
   const [highlights, setHighlights] = useState(experience.highlights);
   const [keywords, setKeywords] = useState(experience.keywords);
+  const [attempted, setAttempted] = useState(false);
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.TITLE_DESCRIPTION);
+
+  const titleLen = title.trim().length;
+  const shortLen = shortDescription.trim().length;
+  const fullLen = fullDescription.trim().length;
+
+  // Client-side validation mirrors the server Zod schema so we never POST
+  // invalid data (which previously produced an opaque 400).
+  const localErrors: Record<string, string> = {};
+  if (titleLen < 10) localErrors.title = `En az 10 karakter gerekli (şu an: ${titleLen})`;
+  else if (titleLen > 120) localErrors.title = "En fazla 120 karakter girilebilir";
+  if (shortLen < 20)
+    localErrors.shortDescription = `En az 20 karakter gerekli (şu an: ${shortLen})`;
+  else if (shortLen > 300)
+    localErrors.shortDescription = "En fazla 300 karakter girilebilir";
+  if (fullLen < 100)
+    localErrors.fullDescription = `En az 100 karakter gerekli (şu an: ${fullLen})`;
+  if (highlights.length === 0)
+    localErrors.highlights = "En az bir öne çıkan madde ekleyin";
+
+  const isValid = Object.keys(localErrors).length === 0;
+  const errFor = (key: string) => (attempted ? localErrors[key] : undefined);
+  const counterClass = (below: boolean) =>
+    cn("mt-1 text-xs", below ? "text-danger-600" : "text-gray-500");
+
+  function handleSubmit() {
+    setAttempted(true);
+    if (!isValid) return;
+    void save(
+      experience.id,
+      {
+        title,
+        referenceCode: referenceCode.trim() || null,
+        shortDescription,
+        fullDescription,
+        highlights,
+        keywords,
+      },
+      (next) => {
+        onSaved(next);
+        onNext();
+      }
+    );
+  }
 
   return (
     <StepShell
@@ -115,9 +159,17 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
     >
       <Field>
         <Label>Başlık *</Label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
-        <p className="mt-1 text-xs text-gray-500">
-          En az 10 karakter · {title.trim().length} / 120
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={120}
+          error={!!errFor("title")}
+        />
+        {errFor("title") ? (
+          <p className="mt-1 text-xs text-danger-600">{errFor("title")}</p>
+        ) : null}
+        <p className={counterClass(titleLen < 10)}>
+          {titleLen} / 120{titleLen < 10 ? " (en az 10)" : ""}
         </p>
       </Field>
       <Field>
@@ -131,50 +183,66 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
       </Field>
       <Field>
         <Label>Kısa açıklama *</Label>
-        <Textarea rows={3} value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
-        <p className="mt-1 text-xs text-gray-500">
-          En az 20 karakter · {shortDescription.trim().length} / 300
+        <Textarea
+          rows={3}
+          value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)}
+          error={!!errFor("shortDescription")}
+        />
+        {errFor("shortDescription") ? (
+          <p className="mt-1 text-xs text-danger-600">{errFor("shortDescription")}</p>
+        ) : null}
+        <p className={counterClass(shortLen < 20)}>
+          {shortLen} / 300{shortLen < 20 ? " (en az 20)" : ""}
         </p>
       </Field>
       <Field>
         <Label>Tam açıklama *</Label>
-        <Textarea rows={6} value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} />
-        <p className="mt-1 text-xs text-gray-500">
-          En az 100 karakter · {fullDescription.trim().length} / 5000
+        <Textarea
+          rows={6}
+          value={fullDescription}
+          onChange={(e) => setFullDescription(e.target.value)}
+          error={!!errFor("fullDescription")}
+        />
+        {errFor("fullDescription") ? (
+          <p className="mt-1 text-xs text-danger-600">{errFor("fullDescription")}</p>
+        ) : null}
+        <p className={counterClass(fullLen < 100)}>
+          {fullLen} / 5000{fullLen < 100 ? " (en az 100)" : ""}
         </p>
       </Field>
-      <LinesField
-        label="Öne çıkanlar"
-        hint="Deneyimini özel kılan 3-5 madde yaz."
-        value={highlights}
-        onChange={setHighlights}
-        required
-      />
+      <div>
+        <LinesField
+          label="Öne çıkanlar"
+          hint="Deneyimini özel kılan 3-5 madde yaz."
+          value={highlights}
+          onChange={setHighlights}
+          required
+        />
+        {errFor("highlights") ? (
+          <p className="mt-1 text-xs text-danger-600">{errFor("highlights")}</p>
+        ) : null}
+      </div>
       <LinesField
         label="Anahtar kelimeler"
         hint="Müşterilerin seni bulmasına yardımcı etiketler (örn. tekne turu, yelken, Çeşme)."
         value={keywords}
         onChange={setKeywords}
       />
-      <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              title,
-              referenceCode: referenceCode.trim() || null,
-              shortDescription,
-              fullDescription,
-              highlights,
-              keywords,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
+      <button
+        type="button"
+        onClick={handleSubmit}
         disabled={saving}
+        aria-disabled={!isValid}
+        className={cn(
+          "inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold transition-all disabled:opacity-60",
+          isValid
+            ? "bg-brand-600 text-white hover:bg-brand-700"
+            : "cursor-not-allowed bg-gray-200 text-gray-400"
+        )}
       >
         {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      </button>
     </StepShell>
   );
 }
