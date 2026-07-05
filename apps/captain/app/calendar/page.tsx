@@ -389,26 +389,33 @@ const DAILY_END = 22;
 function DailyCalendar({
   date,
   blocks,
+  mockReservations,
 }: {
   date: string;
   blocks: BlockResponseDTO[];
+  mockReservations: MockReservationDTO[];
 }) {
   const today = toYMD(new Date());
   const isPastDay = date < today;
 
-  // Filter blocks relevant to this day
   const dayBlocks = blocks.filter((b) => b.startDate <= date && b.endDate >= date);
+  const dayReservations = mockReservations.filter((r) => r.startDate <= date && r.endDate >= date);
 
-  // For each hour slot, determine status
   const slots = Array.from({ length: DAILY_END - DAILY_START }, (_, i) => {
     const h = DAILY_START + i;
     const startTime = `${String(h).padStart(2, "0")}:00`;
     const endTime = `${String(h + 1).padStart(2, "0")}:00`;
 
-    // Non-HOURLY block covers the entire day
+    // Non-HOURLY owner block covers the entire day
     const fullDayBlock = dayBlocks.find((b) => b.model !== BookingModel.HOURLY);
     if (fullDayBlock) {
-      return { startTime, endTime, status: "BLOCKED" as const, model: fullDayBlock.model as BookingModel };
+      return { startTime, endTime, status: "BLOCKED" as const, blockModel: fullDayBlock.model as BookingModel, bookedModel: undefined };
+    }
+
+    // Mock reservation covers the entire day
+    if (dayReservations.length > 0) {
+      const res = dayReservations[0]!;
+      return { startTime, endTime, status: "BOOKED" as const, blockModel: undefined, bookedModel: res.model as BookingModel };
     }
 
     // HOURLY block overlapping this slot
@@ -419,30 +426,34 @@ function DailyCalendar({
         b.startTime < endTime && b.endTime > startTime,
     );
     if (slotBlock) {
-      return { startTime, endTime, status: "BLOCKED" as const, model: BookingModel.HOURLY };
+      return { startTime, endTime, status: "BLOCKED" as const, blockModel: BookingModel.HOURLY, bookedModel: undefined };
     }
 
-    return { startTime, endTime, status: "AVAILABLE" as const, model: undefined };
+    return { startTime, endTime, status: "AVAILABLE" as const, blockModel: undefined, bookedModel: undefined };
   });
 
   return (
     <div className="mt-4 space-y-0.5">
-      {slots.map(({ startTime, endTime, status, model }) => {
+      {slots.map(({ startTime, endTime, status, blockModel, bookedModel }) => {
         const isBlocked = status === "BLOCKED";
+        const isBooked = status === "BOOKED";
+        const bgColor = isBlocked ? BLOCK_COLOR : isBooked ? (bookedModel ? RESERVATION_COLORS[bookedModel] : BOOKED_COLOR) : undefined;
         return (
           <div
             key={startTime}
             className={[
               "flex items-center gap-3 rounded px-3 py-2 text-sm",
-              isBlocked ? "text-white" : isPastDay ? "text-white/20" : "bg-white/5 text-white/70",
+              (isBlocked || isBooked) ? "text-white" : isPastDay ? "text-white/20" : "bg-white/5 text-white/70",
             ].join(" ")}
-            style={isBlocked ? { backgroundColor: BLOCK_COLOR } : undefined}
+            style={bgColor ? { backgroundColor: bgColor, opacity: isBooked ? 0.85 : 1 } : undefined}
           >
             <span className="w-12 shrink-0 text-xs font-mono opacity-70">{startTime}</span>
             <span className="text-xs">
               {isBlocked
-                ? `Blokeli${model ? ` — ${MODEL_LABELS[model]}` : ""}`
-                : "Müsait"}
+                ? `Blokeli${blockModel ? ` — ${MODEL_LABELS[blockModel]}` : ""}`
+                : isBooked
+                  ? `${bookedModel ? `${MODEL_LABELS[bookedModel]} ` : ""}Rezervasyonu`
+                  : "Müsait"}
             </span>
             <span className="ml-auto text-xs opacity-50">{endTime}</span>
           </div>
@@ -1099,7 +1110,7 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
           onDayHover={handleDayHover}
         />
       ) : (
-        <DailyCalendar date={currentDay} blocks={blocks} />
+        <DailyCalendar date={currentDay} blocks={blocks} mockReservations={mockReservations} />
       )}
 
       <Legend models={availableModels} />
