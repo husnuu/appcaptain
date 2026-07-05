@@ -315,24 +315,22 @@ function MonthCalendar({
   );
 }
 
-// ─── Weekly calendar ───────────────────────────────────────────────────────────
+// ─── Weekly calendar (time-grid, Google Calendar style) ───────────────────────
 
 function WeekCalendar({
   weekStart,
-  dayMap,
+  blocks,
+  mockReservations,
   rangePickStart,
   hoverDate,
-  pricingMap,
-  primaryModelKey,
   onDayClick,
   onDayHover,
 }: {
   weekStart: string;
-  dayMap: Record<string, RichDay>;
+  blocks: BlockResponseDTO[];
+  mockReservations: MockReservationDTO[];
   rangePickStart: string | null;
   hoverDate: string | null;
-  pricingMap: PricingMap;
-  primaryModelKey: string | undefined;
   onDayClick: (day: RichDay) => void;
   onDayHover: (date: string) => void;
 }) {
@@ -348,31 +346,107 @@ function WeekCalendar({
       ? rangePickStart <= hoverDate ? hoverDate : rangePickStart
       : null;
 
+  const dayData = days.map((date) => {
+    const dayBlocks = blocks.filter((b) => b.startDate <= date && b.endDate >= date);
+    const dayRes = mockReservations.filter((r) => r.startDate <= date && r.endDate >= date);
+    const fullDayBlock = dayBlocks.find((b) => b.model !== BookingModel.HOURLY) ?? null;
+    const fullDayRes = dayRes[0] ?? null;
+    const hourlyBlocks = dayBlocks.filter((b) => b.model === BookingModel.HOURLY);
+    const isPast = date < today;
+    const isRangeStart = date === rangePickStart;
+    const isInRange = !!(rangeMin && rangeMax && date > rangeMin && date < rangeMax);
+    const richDay: RichDay = fullDayBlock
+      ? { date, status: "BLOCKED", blockModel: fullDayBlock.model as BookingModel }
+      : fullDayRes
+        ? { date, status: "BOOKED", bookedModel: fullDayRes.model as BookingModel }
+        : { date, status: "AVAILABLE" };
+    return { date, fullDayBlock, fullDayRes, hourlyBlocks, isPast, isRangeStart, isInRange, richDay };
+  });
+
   return (
     <div className="mt-4">
-      <div className="grid grid-cols-7 gap-1">
-        {days.map((date) => {
+      {/* Day header row */}
+      <div className="grid border-b border-white/10 pb-2" style={{ gridTemplateColumns: "3.5rem repeat(7, 1fr)" }}>
+        <div />
+        {dayData.map(({ date, isPast }) => {
           const jsDate = parseDate(date);
           const dayLabel = DAY_NAMES[jsDate.getUTCDay() === 0 ? 6 : jsDate.getUTCDay() - 1]!;
-          const monthDay = `${jsDate.getUTCDate()} ${MONTH_NAMES[jsDate.getUTCMonth()]!.slice(0, 3)}`;
+          const isToday = date === today;
           return (
-            <div key={date} className="flex flex-col gap-1">
-              <div className="text-center text-caption font-semibold text-white/50">
-                {dayLabel}
-                <br />
-                <span className="text-[10px] font-normal text-white/40">{monthDay}</span>
+            <div key={date} className="text-center px-0.5">
+              <div className="text-xs font-semibold text-white/50">{dayLabel}</div>
+              <div className={`mt-0.5 text-sm ${isToday ? "font-bold text-white" : isPast ? "text-white/25" : "text-white/75"}`}>
+                {jsDate.getUTCDate()}
+                <span className={`ml-1 text-[10px] font-normal ${isPast ? "text-white/20" : "text-white/35"}`}>
+                  {MONTH_NAMES[jsDate.getUTCMonth()]!.slice(0, 3)}
+                </span>
               </div>
-              <DayCell
-                day={dayMap[date] ?? { date, status: "AVAILABLE" }}
-                isPast={date < today}
-                isRangeStart={date === rangePickStart}
-                isRangeEnd={!!rangeMax && date === rangeMax && date !== rangePickStart}
-                isInHoverRange={!!(rangeMin && rangeMax && date > rangeMin && date < rangeMax)}
-                pricingMap={pricingMap}
-            primaryModelKey={primaryModelKey}
-                onClick={onDayClick}
-                onMouseEnter={() => date >= today && onDayHover(date)}
-              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Scrollable time grid */}
+      <div className="mt-1 overflow-y-auto" style={{ maxHeight: "26rem" }}>
+        {Array.from({ length: DAILY_END - DAILY_START }, (_, i) => {
+          const h = DAILY_START + i;
+          const startTime = `${String(h).padStart(2, "0")}:00`;
+          const endTime = `${String(h + 1).padStart(2, "0")}:00`;
+
+          return (
+            <div
+              key={h}
+              className="grid border-t border-white/5"
+              style={{ gridTemplateColumns: "3.5rem repeat(7, 1fr)", height: "2.5rem" }}
+            >
+              <div className="flex items-start justify-end pr-2 pt-0.5">
+                <span className="text-[10px] font-mono text-white/30">{startTime}</span>
+              </div>
+
+              {dayData.map(({ date, fullDayBlock, fullDayRes, hourlyBlocks, isPast, isRangeStart, isInRange, richDay }) => {
+                let bgColor: string | undefined;
+                let cellLabel: string | undefined;
+                let isBooked = false;
+
+                if (fullDayBlock) {
+                  bgColor = BLOCK_COLOR;
+                  if (i === 0) cellLabel = `Blokaj — ${MODEL_LABELS[fullDayBlock.model as BookingModel]}`;
+                } else if (fullDayRes) {
+                  bgColor = RESERVATION_COLORS[fullDayRes.model as BookingModel] ?? BOOKED_COLOR;
+                  isBooked = true;
+                  if (i === 0) cellLabel = `${MODEL_LABELS[fullDayRes.model as BookingModel]} Rezervasyonu`;
+                } else {
+                  const slotBlock = hourlyBlocks.find(
+                    (b) => b.startTime && b.endTime && b.startTime < endTime && b.endTime > startTime,
+                  );
+                  if (slotBlock) {
+                    bgColor = BLOCK_COLOR;
+                    cellLabel = "Saatlik Blokaj";
+                  }
+                }
+
+                const isOccupied = !!bgColor;
+                const isAvailableAndFuture = !isOccupied && !isPast;
+                const rangeHighlight = isRangeStart ? "bg-white/20" : isInRange ? "bg-white/10" : "";
+
+                return (
+                  <button
+                    key={date}
+                    disabled={isOccupied || isPast}
+                    className={[
+                      "border-l border-white/5 flex items-start px-1 pt-0.5 overflow-hidden text-left w-full",
+                      isAvailableAndFuture ? `hover:bg-white/10 cursor-pointer ${rangeHighlight}` : "cursor-default",
+                    ].join(" ")}
+                    style={bgColor ? { backgroundColor: bgColor, opacity: isPast ? 0.3 : isBooked ? 0.82 : 1 } : undefined}
+                    onClick={() => { if (isAvailableAndFuture) onDayClick(richDay); }}
+                    onMouseEnter={() => { if (isAvailableAndFuture) onDayHover(date); }}
+                  >
+                    {cellLabel && (
+                      <span className="text-[9px] font-semibold text-white leading-tight truncate">{cellLabel}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           );
         })}
@@ -1101,11 +1175,10 @@ function BoatCalendar({ boat }: { boat: SerializedBoat }) {
       ) : viewMode === "weekly" ? (
         <WeekCalendar
           weekStart={weekStart}
-          dayMap={dayMap}
+          blocks={blocks}
+          mockReservations={mockReservations}
           rangePickStart={rangePickStart}
           hoverDate={hoverDate}
-          pricingMap={pricingMap}
-          primaryModelKey={primaryModelKey}
           onDayClick={handleDayClick}
           onDayHover={handleDayHover}
         />
