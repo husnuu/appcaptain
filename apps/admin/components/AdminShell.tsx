@@ -67,8 +67,21 @@ export function AdminTopBar() {
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="text-subheading font-bold text-brand-700">
-          GetYourBoat <span className="text-ink">Admin</span>
+        <Link
+          href="/"
+          className="flex flex-col leading-tight transition-opacity hover:opacity-80"
+          title="Ana sayfaya dön"
+        >
+          <span
+            className="font-bold"
+            style={{ fontFamily: 'var(--font-serif), Georgia, "Times New Roman", serif', fontSize: "24px", lineHeight: 1.1 }}
+          >
+            <span style={{ color: "#4BAFD6" }}>Sea</span>
+            <span style={{ color: "#1E3A7A" }}> Hub</span>
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+            Admin
+          </span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">

@@ -42,8 +42,22 @@ export function TopBar() {
   return (
     <header className="sticky top-0 z-10 bg-ink-800 text-white">
       <div className="mx-auto flex max-w-content items-center justify-between px-4 py-3">
-        <Link href="/" className="text-subheading font-bold text-white">
-          SEAHUB <span className="text-brand-500">Captain</span>
+        <Link
+          href="/"
+          className="flex flex-col leading-tight transition-opacity hover:opacity-80"
+          title="Ana sayfaya dön"
+        >
+          <span
+            className="font-bold"
+            style={{ fontFamily: 'var(--font-serif), Georgia, "Times New Roman", serif', fontSize: "22px", lineHeight: 1.1 }}
+          >
+            <span style={{ color: "#4BAFD6" }}>Sea</span>
+            {/* Koyu üst bar üzerinde okunabilirlik için "Hub" açık mavi. */}
+            <span style={{ color: "#B8D9F0" }}> Hub</span>
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
+            Captain
+          </span>
         </Link>
         <div className="flex items-center gap-3 text-body-sm text-gray-300">
           {isAuthenticated && user?.email ? (

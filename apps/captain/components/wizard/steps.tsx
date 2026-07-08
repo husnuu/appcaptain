@@ -63,7 +63,7 @@ import {
 import { useStepDraftAutosave } from "../../lib/hooks/useAutosaveDraft";
 import { prefetchBrandCatalog } from "../../lib/brand-catalog";
 import type { OnboardingConfig, ResolvedOnboardingConfig, SerializedBoat } from "../../lib/types";
-import { Alert, Checkbox, Field, Input, Modal, Select, Spinner, Textarea } from "../ui";
+import { Alert, Field, Input, Modal, Select, Spinner, Textarea } from "../ui";
 import {
   DynamicOnboardingFields,
   FeatureFieldsGrid,
@@ -318,7 +318,17 @@ export function BoatTypeFeaturesStep({
     boat.features.find((f) => f.key === "number_of_crew_members")?.value === "0"
   );
   const pendingBrandRequestRef = useRef<BrandModelPendingRequest | null>(null);
-  const { busy, fieldErrors, errorSummary, run } = useStepSaver(onSaved);
+  const { busy, fieldErrors, errorSummary, run, clearFieldError } = useStepSaver(onSaved);
+
+  // Kullanıcı bir alanı düzenlemeye başlayınca o alanın hatasını temizle;
+  // hatalar yalnızca "Kaydet & Devam" sonrası görünür, düzeltince kaybolur.
+  const updateValue = useCallback(
+    (key: string, value: string) => {
+      setValues((v) => ({ ...v, [key]: value }));
+      clearFieldError(key);
+    },
+    [clearFieldError]
+  );
 
   const buildFeaturesPayload = useCallback(() => {
     const features = buildFeatureWritesFromValues(values);
@@ -530,10 +540,12 @@ export function BoatTypeFeaturesStep({
         </>
       }
     >
-      {/* Büyük alan-hata banner'ı kaldırıldı; hatalar ilgili alanın altında inline
+      {/* Alan-hata banner'ı gösterilmez; hatalar ilgili alanın altında inline
           gösteriliyor ve hatalı sekme kırmızı nokta ile işaretleniyor. Yalnızca
           alan-dışı genel hatalar (ör. ağ hatası) burada gösterilir. */}
-      {errorSummary ? <Alert>{errorSummary}</Alert> : null}
+      {errorSummary && Object.keys(fieldErrors).length === 0 ? (
+        <Alert>{errorSummary}</Alert>
+      ) : null}
       {!hasListingModels ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
@@ -585,7 +597,10 @@ export function BoatTypeFeaturesStep({
                   leftIcon={faAnchor}
                   value={boatTypeKey}
                   error={!!fieldErrors.boatTypeKey}
-                  onChange={(e) => setBoatTypeKey(e.target.value)}
+                  onChange={(e) => {
+                    setBoatTypeKey(e.target.value);
+                    clearFieldError("boatTypeKey");
+                  }}
                 >
                   <option value="">Seçiniz…</option>
                   {config.boatTypes.map((t) => (
@@ -602,7 +617,7 @@ export function BoatTypeFeaturesStep({
               values={values}
               isGulet={isGuletBoatType(boatTypeKey)}
               fieldErrors={fieldErrors}
-              onChange={(key, value) => setValues((v) => ({ ...v, [key]: value }))}
+              onChange={updateValue}
               onPendingRequestChange={(req) => {
                 pendingBrandRequestRef.current = req;
               }}
@@ -621,7 +636,10 @@ export function BoatTypeFeaturesStep({
             <Select
               value={engineType}
               error={!!fieldErrors.engineType}
-              onChange={(e) => setEngineType(e.target.value as EngineType | "")}
+              onChange={(e) => {
+                setEngineType(e.target.value as EngineType | "");
+                clearFieldError("engineType");
+              }}
             >
             <option value="">Seçiniz…</option>
             {Object.values(EngineType).map((type) => (
@@ -642,7 +660,7 @@ export function BoatTypeFeaturesStep({
             noCrewMembers={noCrewMembers}
             fieldErrors={fieldErrors}
             requiredKeys={requiredFeatureKeys}
-            onChange={(key, value) => setValues((v) => ({ ...v, [key]: value }))}
+            onChange={updateValue}
             onNoCrewMembersChange={setNoCrewMembers}
           />
           <CabinConfigurationSection
@@ -658,7 +676,7 @@ export function BoatTypeFeaturesStep({
         engineType={engineType || null}
         fieldErrors={fieldErrors}
         requiredKeys={requiredFeatureKeys}
-        onChange={(key, value) => setValues((v) => ({ ...v, [key]: value }))}
+        onChange={updateValue}
       />
     </StepShell>
   );
@@ -670,6 +688,21 @@ interface AmenityState {
   included: boolean;
   isExtra: boolean;
   extraPrice: string;
+}
+
+/** Donanım kategori anahtarlarının Türkçe etiketleri. */
+const AMENITY_CATEGORY_LABELS_TR: Record<string, string> = {
+  interior_equipment: "İç Donanım",
+  kitchen_equipment: "Mutfak",
+  other_amenities: "Diğer",
+  entertainment: "Eğlence",
+  security: "Güvenlik",
+  navigation: "Seyir",
+  deck: "Güverte",
+};
+
+function amenityCategoryLabel(key: string, fallback: string): string {
+  return AMENITY_CATEGORY_LABELS_TR[key] ?? fallback;
 }
 
 export function AmenitiesStep({
@@ -821,10 +854,6 @@ export function AmenitiesStep({
       />
       {boat.listingModels.length === 0 ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
-      ) : categories.length > 0 ? (
-        <p className="mb-4 text-[13px] leading-relaxed text-gray-500">
-          Var olan donanımları işaretle. Ekstra ücretli seçersen fiyat girmelisin.
-        </p>
       ) : null}
       {config.amenityCategories.length === 0 && boat.listingModels.length > 0 ? (
         <Alert variant="info">Bu kiralama modeli için donanım listesi yok.</Alert>
@@ -834,7 +863,7 @@ export function AmenitiesStep({
         <Tabs
           items={categories.map((c) => ({
             id: c.key,
-            label: c.label,
+            label: amenityCategoryLabel(c.key, c.label),
             badge:
               categoryErrorCounts[c.key] && categoryErrorCounts[c.key]! > 0 ? (
                 <span
@@ -852,71 +881,117 @@ export function AmenitiesStep({
       {categories
         .filter((cat) => cat.key === (activeCategory || categories[0]?.key))
         .map((cat) => (
-        <section key={cat.key} className="space-y-4">
-          <div className="space-y-3">
+          <section key={cat.key} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {cat.amenities.map((a) => {
               const st = state[a.key] ?? {
                 included: false,
                 isExtra: false,
                 extraPrice: "",
               };
+              const isChecked = st.included || st.isExtra;
+              const allowExtra = a.canBeExtra && amenityCategoryAllowsExtra(cat.key);
+              const hasError = !!fieldErrors[a.key];
+              const toggleCard = () =>
+                set(a.key, {
+                  included: !isChecked,
+                  isExtra: !isChecked ? st.isExtra : false,
+                });
               return (
-                <div key={a.key} data-field={a.key} className="flex flex-wrap items-center gap-4">
-                  <Checkbox
-                    label={
-                      requiredAmenityKeys.includes(a.key) ? (
-                        <>
-                          {getFieldLabel(a)}
-                          <span className="ml-0.5 text-danger-500" aria-hidden>
-                            *
-                          </span>
-                        </>
-                      ) : (
-                        getFieldLabel(a)
-                      )
+                <div
+                  key={a.key}
+                  data-field={a.key}
+                  role="button"
+                  tabIndex={0}
+                  onClick={toggleCard}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleCard();
                     }
-                    checked={st.included || st.isExtra}
-                    onChange={(e) =>
-                      set(a.key, {
-                        included: e.target.checked,
-                        isExtra: e.target.checked ? st.isExtra : false,
-                      })
-                    }
-                  />
-                  {fieldErrors[a.key] ? (
-                    <p className="w-full text-caption text-danger-600">{fieldErrors[a.key]}</p>
-                  ) : null}
-                  {a.canBeExtra &&
-                  amenityCategoryAllowsExtra(cat.key) &&
-                  (st.included || st.isExtra) ? (
-                    <>
-                      <Checkbox
-                        label="Ekstra ücretli"
-                        checked={st.isExtra}
-                        onChange={(e) => set(a.key, { isExtra: e.target.checked })}
-                      />
-                      {st.isExtra ? (
-                        <div className="flex items-center gap-1" data-field={`${a.key}-price`}>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={st.extraPrice}
-                            error={!!fieldErrors[a.key]}
-                            onChange={(e) => set(a.key, { extraPrice: e.target.value })}
-                            className="h-8 w-24"
-                            placeholder="Fiyat"
-                          />
-                          <span className="text-xs text-slate-500">₺</span>
-                        </div>
+                  }}
+                  className={cn(
+                    "relative flex cursor-pointer select-none items-start gap-3 rounded-xl border-2 p-4 transition-all",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2",
+                    hasError
+                      ? "border-danger-400 bg-white"
+                      : isChecked
+                        ? "border-brand-500 bg-brand-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+                      isChecked ? "border-brand-500 bg-brand-500" : "border-gray-300 bg-white"
+                    )}
+                    aria-hidden
+                  >
+                    {isChecked ? (
+                      <FontAwesomeIcon icon={faCheck} className="text-[10px] text-white" />
+                    ) : null}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={cn(
+                        "text-sm font-medium leading-tight",
+                        isChecked ? "text-brand-700" : "text-gray-700"
+                      )}
+                    >
+                      {getFieldLabel(a)}
+                      {requiredAmenityKeys.includes(a.key) ? (
+                        <span className="ml-0.5 text-danger-500" aria-hidden>
+                          *
+                        </span>
                       ) : null}
-                    </>
-                  ) : null}
+                    </p>
+
+                    {isChecked && allowExtra ? (
+                      <div
+                        className="mt-2 flex flex-wrap items-center gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <label className="flex cursor-pointer items-center gap-1.5">
+                          <input
+                            type="checkbox"
+                            checked={st.isExtra}
+                            onChange={(e) => set(a.key, { isExtra: e.target.checked })}
+                            className="h-3.5 w-3.5 accent-brand-500"
+                          />
+                          <span className="text-xs text-gray-500">Ekstra ücretli</span>
+                        </label>
+                        {st.isExtra ? (
+                          <div
+                            className="flex items-center gap-1"
+                            data-field={`${a.key}-price`}
+                          >
+                            <span className="text-xs text-gray-400">₺</span>
+                            <input
+                              type="number"
+                              min={1}
+                              placeholder="0"
+                              value={st.extraPrice}
+                              onChange={(e) => set(a.key, { extraPrice: e.target.value })}
+                              className={cn(
+                                "w-20 rounded-lg border px-2 py-1 text-xs text-gray-700 focus:outline-none",
+                                hasError
+                                  ? "border-danger-400 focus:border-danger-500"
+                                  : "border-gray-200 focus:border-brand-500"
+                              )}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {hasError ? (
+                      <p className="mt-1 text-caption text-danger-600">{fieldErrors[a.key]}</p>
+                    ) : null}
+                  </div>
                 </div>
               );
             })}
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
 
       <Modal
         open={showSummary}
@@ -967,7 +1042,7 @@ export function AmenitiesStep({
             {selectedByCategory.map((cat) => (
               <div key={cat.key}>
                 <h4 className="mb-2 text-caption font-semibold uppercase tracking-wide text-gray-400">
-                  {cat.label}
+                  {amenityCategoryLabel(cat.key, cat.label)}
                 </h4>
                 <div className="space-y-1.5">
                   {cat.items.map((a) => {
