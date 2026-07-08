@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   NavItem,
@@ -60,9 +61,8 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   return (
     <Sidebar className="sticky top-0 h-screen bg-primary-700">
       <SidebarBrand>
-        <a
+        <Link
           href="/"
-          onClick={go("/")}
           title="Ana sayfaya dön"
           className="flex flex-col leading-tight transition-opacity hover:opacity-80"
         >
@@ -77,7 +77,7 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
           <span className="mt-0.5 text-[11px] font-medium uppercase tracking-widest text-slate-400">
             Captain
           </span>
-        </a>
+        </Link>
       </SidebarBrand>
 
       <nav className="flex flex-1 flex-col gap-1">
