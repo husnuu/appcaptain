@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { AuthProvider } from "../components/auth-provider";
 import { QueryProvider } from "../lib/providers/QueryProvider";
@@ -8,6 +8,13 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -22,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang="tr" className={`${inter.variable} ${playfair.variable}`}>
       <body>
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>

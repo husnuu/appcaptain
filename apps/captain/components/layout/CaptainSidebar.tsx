@@ -60,11 +60,19 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   return (
     <Sidebar className="sticky top-0 h-screen bg-primary-700">
       <SidebarBrand>
-        <span className="font-bold tracking-tight">
-          <span className="text-brand-400">SEA</span>
-          <span className="text-white">HUB</span>
+        <span className="flex flex-col leading-tight">
+          <span
+            className="font-bold"
+            style={{ fontFamily: 'var(--font-serif), Georgia, "Times New Roman", serif', fontSize: "26px", lineHeight: 1.1 }}
+          >
+            <span style={{ color: "#4BAFD6" }}>Sea</span>
+            {/* Koyu lacivert sidebar üzerinde okunabilirlik için "Hub" beyaz. */}
+            <span className="text-white"> Hub</span>
+          </span>
+          <span className="mt-0.5 text-[11px] font-medium uppercase tracking-widest text-slate-400">
+            Captain
+          </span>
         </span>
-        <span className="ml-1.5 text-sm font-medium text-gray-300">Captain</span>
       </SidebarBrand>
 
       <nav className="flex flex-1 flex-col gap-1">
