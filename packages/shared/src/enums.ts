@@ -207,3 +207,28 @@ export const EngineType = {
   SAIL_NO_ENGINE: "SAIL_NO_ENGINE",
 } as const;
 export type EngineType = (typeof EngineType)[keyof typeof EngineType];
+
+/* ------------------------------ Discounts ----------------------------- */
+
+export const DiscountType = {
+  PERCENTAGE: "PERCENTAGE",
+  FIXED: "FIXED",
+} as const;
+export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
+
+export const DiscountTarget = {
+  BOAT: "BOAT",
+  EXPERIENCE: "EXPERIENCE",
+  ALL_BOATS: "ALL_BOATS",
+  ALL_EXPERIENCES: "ALL_EXPERIENCES",
+} as const;
+export type DiscountTarget =
+  (typeof DiscountTarget)[keyof typeof DiscountTarget];
+
+export const DiscountDayFilter = {
+  ALL: "ALL",
+  WEEKDAY: "WEEKDAY",
+  WEEKEND: "WEEKEND",
+} as const;
+export type DiscountDayFilter =
+  (typeof DiscountDayFilter)[keyof typeof DiscountDayFilter];

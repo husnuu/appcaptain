@@ -34,6 +34,19 @@ export default function AdminHome() {
             </Link>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>İndirimler</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <span className="text-sm text-slate-600">Tekne / deneyim indirim tanımları</span>
+            <Link href="/discounts">
+              <Button size="sm" variant="outline">
+                Yönet
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
       <p className="mt-8 text-sm text-slate-500">

@@ -5,6 +5,11 @@ import {
   type BoatModelDTO,
   type BrandModelRequestDTO,
   type CreateBrandModelRequestInput,
+  type CreateDiscountInput,
+  type DiscountDTO,
+  type DiscountListQuery,
+  type DiscountListResponse,
+  type UpdateDiscountInput,
 } from "@getyourboat/shared";
 import { getAdminToken, setAdminToken } from "./auth";
 
@@ -87,6 +92,37 @@ export const api = {
       method: "POST",
       body: {},
     }),
+
+  // --- Discounts ---
+  listDiscounts: (query: DiscountListQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.target) params.set("target", query.target);
+    if (query.isActive !== undefined) params.set("isActive", String(query.isActive));
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<DiscountListResponse>(`/admin/discounts${qs ? `?${qs}` : ""}`);
+  },
+  createDiscount: (body: CreateDiscountInput) =>
+    request<{ discount: DiscountDTO }>("/admin/discounts", { method: "POST", body }),
+  updateDiscount: (id: string, body: UpdateDiscountInput) =>
+    request<{ discount: DiscountDTO }>(`/admin/discounts/${id}`, { method: "PATCH", body }),
+  toggleDiscount: (id: string) =>
+    request<{ discount: DiscountDTO }>(`/admin/discounts/${id}/toggle`, { method: "PATCH" }),
+  deleteDiscount: (id: string) =>
+    request<{ success: boolean }>(`/admin/discounts/${id}`, { method: "DELETE" }),
+  listDiscountBoatOptions: (search?: string) => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<{ items: { id: string; name: string }[] }>(
+      `/admin/discounts/boat-options${qs}`
+    );
+  },
+  listDiscountExperienceOptions: (search?: string) => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<{ items: { id: string; name: string }[] }>(
+      `/admin/discounts/experience-options${qs}`
+    );
+  },
 };
 
 export { BoatBrandCategory, BOAT_BRAND_CATEGORY_LABELS };

@@ -1,8 +1,7 @@
 "use client";
 
 import { cn } from "../lib/cn";
-import { FontAwesomeIcon, faEye } from "../icons";
-import { buttonVariants } from "./button";
+import { FontAwesomeIcon, faEye, faPenToSquare } from "../icons";
 
 export interface BoatPreviewBannerProps {
   editHref: string;
@@ -19,28 +18,28 @@ export function BoatPreviewBanner({
   return (
     <div
       className={cn(
-        "sticky top-0 z-40 border-b border-amber-200 bg-amber-50 px-4 py-3",
+        "sticky top-0 z-40 border-b border-amber-200 bg-amber-50",
         className
       )}
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2 text-amber-950">
-          <FontAwesomeIcon icon={faEye} className="mt-0.5 shrink-0 text-[16px]" aria-hidden />
-          <div>
-            <p className="text-body-sm font-semibold">Önizleme Modu</p>
-            <p className="text-caption text-amber-900/80">
-              Bu, ilanınızın müşterilere görüneceği halidir. Değişiklik yapmak için
-              &quot;Düzenlemeye Geri Dön&quot;e tıklayın.
-              {completionPercent != null
-                ? ` İlanınız yaklaşık %${completionPercent} tamamlandı.`
-                : null}
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
+            <FontAwesomeIcon icon={faEye} className="text-[15px] text-amber-600" aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <p className="text-body-sm font-semibold text-amber-800">Önizleme Modu</p>
+            <p className="text-caption text-amber-700">
+              Müşteriler ilanınızı bu şekilde görecek
+              {completionPercent != null ? ` · %${completionPercent} tamamlandı` : null}
             </p>
           </div>
         </div>
         <a
           href={editHref}
-          className={buttonVariants({ variant: "secondary", size: "sm", className: "shrink-0 bg-white" })}
+          className="flex shrink-0 items-center gap-2 rounded-full bg-amber-600 px-4 py-2 text-caption font-semibold text-white transition-colors hover:bg-amber-700"
         >
+          <FontAwesomeIcon icon={faPenToSquare} className="text-[12px]" aria-hidden />
           Düzenlemeye Geri Dön
         </a>
       </div>

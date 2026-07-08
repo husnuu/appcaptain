@@ -66,4 +66,9 @@ export {
   faArrowTrendUp,
   faLayerGroup,
   faHouse,
+  faTag,
+  faMagnifyingGlass,
+  faShieldHalved,
+  faRightToBracket,
+  faArrowRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";

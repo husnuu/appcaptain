@@ -147,6 +147,13 @@ export function AdminTopBar() {
                 >
                   Bekleyen talepler
                 </Link>
+                <Link
+                  href="/discounts"
+                  onClick={closeAll}
+                  className="block px-3 py-2 text-body-sm text-gray-700 hover:bg-gray-50"
+                >
+                  İndirim yönetimi
+                </Link>
                 <a
                   href="mailto:destek@getyourboat.com?subject=GetYourBoat%20Admin%20Destek"
                   onClick={closeAll}

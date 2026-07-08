@@ -3,6 +3,7 @@ export * from "./constants";
 export * from "./onboarding";
 export * from "./experience";
 export * from "./brand-model";
+export * from "./discount";
 export * from "./units";
 export * from "./hull-material";
 export * from "./cabin-engine";
@@ -11,6 +12,7 @@ export * from "./dto/onboarding";
 export * from "./dto/cabin";
 export * from "./dto/experience";
 export * from "./dto/brand-model";
+export * from "./dto/discount";
 export * from "./dto/dashboard";
 export * from "./dto/boat-detail";
 export * from "./dto/profile";
@@ -26,6 +28,7 @@ export * from "./validation/auth";
 export * from "./validation/messaging";
 export * from "./validation/experience";
 export * from "./validation/brand-model";
+export * from "./validation/discount";
 
 /* Cross-cutting API envelope types. */
 export interface Paginated<T> {

@@ -180,6 +180,24 @@ enum EngineType {
   SAIL_NO_ENGINE
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum DiscountTarget {
+  BOAT
+  EXPERIENCE
+  ALL_BOATS
+  ALL_EXPERIENCES
+}
+
+enum DiscountDayFilter {
+  ALL
+  WEEKDAY
+  WEEKEND
+}
+
 /* ===================== Captain profiles (auth + boats) ================= */
 // Standalone captain accounts — email/password auth via apps/api JWT.
 
@@ -205,6 +223,7 @@ model Profile {
   captainConversations Conversation[] @relation("ConversationCaptain")
   experiences      Experience[]
   brandModelRequests BrandModelRequest[]
+  createdDiscounts Discount[]     @relation("DiscountCreatedBy")
 
   @@map("profiles")
 }
@@ -484,6 +503,8 @@ model Boat {
   reservations  Reservation[]
   reviews       Review[]
 
+  discounts     Discount[]
+
   @@index([ownerId])
   @@index([status])
   @@index([boatTypeKey])
@@ -549,10 +570,53 @@ model Experience {
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
 
+  discounts             Discount[]
+
   @@index([captainId])
   @@index([status])
   @@index([category])
   @@map("experiences")
+}
+
+/* ============================== Discounts ============================== */
+
+model Discount {
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+
+  type         DiscountType
+  value        Float
+
+  target       DiscountTarget
+  boatId       String?
+  experienceId String?           @db.Uuid
+
+  startDate    DateTime?
+  endDate      DateTime?
+
+  timeStart    String?
+  timeEnd      String?
+
+  dayFilter    DiscountDayFilter @default(ALL)
+
+  isActive     Boolean           @default(true)
+  maxUses      Int?
+  usedCount    Int               @default(0)
+
+  createdBy    String            @db.Uuid
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  boat       Boat?       @relation(fields: [boatId], references: [id], onDelete: SetNull)
+  experience Experience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
+  admin      Profile     @relation("DiscountCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([target])
+  @@index([isActive])
+  @@index([boatId])
+  @@index([experienceId])
+  @@map("discounts")
 }
 
 /// Which listing models a boat supports (hourly + daily, etc.).
