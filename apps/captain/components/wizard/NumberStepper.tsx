@@ -37,20 +37,15 @@ export function NumberStepper({
   }
 
   return (
-    <div
-      className={cn(
-        "inline-flex items-stretch overflow-hidden rounded-xl border bg-white",
-        error ? "border-danger-400" : "border-gray-300"
-      )}
-    >
+    <div className="inline-flex items-center gap-3">
       <button
         type="button"
         aria-label="Azalt"
         disabled={!canDecrement}
         onClick={() => commit((Number.isNaN(parsed) ? min : current) - step)}
-        className="flex w-10 items-center justify-center text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-300"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-brand-500 text-brand-600 transition-all hover:bg-brand-500 hover:text-white disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-300 disabled:hover:bg-white disabled:hover:text-gray-300"
       >
-        <FontAwesomeIcon icon={faMinus} className="text-[12px]" aria-hidden />
+        <FontAwesomeIcon icon={faMinus} className="text-[13px]" aria-hidden />
       </button>
       <input
         type="number"
@@ -59,6 +54,7 @@ export function NumberStepper({
         max={max}
         step={step}
         aria-label={ariaLabel}
+        aria-invalid={error || undefined}
         value={value}
         onChange={(e) => {
           const raw = e.target.value;
@@ -70,7 +66,10 @@ export function NumberStepper({
           if (Number.isNaN(n)) return;
           commit(n);
         }}
-        className="w-14 border-x border-gray-200 text-center text-body-sm text-ink outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className={cn(
+          "w-12 rounded-lg border-2 bg-white text-center text-lg font-semibold text-gray-900 outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+          error ? "border-danger-400" : "border-transparent focus:border-brand-500"
+        )}
         placeholder="0"
       />
       <button
@@ -78,9 +77,9 @@ export function NumberStepper({
         aria-label="Artır"
         disabled={!canIncrement}
         onClick={() => commit((Number.isNaN(parsed) ? min : current) + step)}
-        className="flex w-10 items-center justify-center text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-300"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-all hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
       >
-        <FontAwesomeIcon icon={faPlus} className="text-[12px]" aria-hidden />
+        <FontAwesomeIcon icon={faPlus} className="text-[13px]" aria-hidden />
       </button>
     </div>
   );

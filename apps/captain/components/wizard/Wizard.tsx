@@ -6,6 +6,7 @@ import {
   FontAwesomeIcon,
   faArrowLeft,
   faEye,
+  faHouse,
   faPaperPlane,
   faPenToSquare,
 } from "@getyourboat/ui";
@@ -225,12 +226,21 @@ export function Wizard({ boatId }: { boatId: string }) {
             ve ilan onay beklemeye devam eder.
           </Alert>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" size="sm" onClick={() => router.push("/")}>
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="inline-flex items-center gap-2 rounded-full bg-[#0F4C75] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0d3d5e]"
+            >
+              <FontAwesomeIcon icon={faHouse} className="text-[14px]" aria-hidden />
               Ana Sayfaya Dön
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => router.push("/boats")}>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/boats")}
+              className="inline-flex items-center rounded-full border-2 border-[#0097A7] bg-white px-6 py-3 text-sm font-semibold text-[#0097A7] transition-colors hover:bg-[#E0F7FA]"
+            >
               Teknelerim
-            </Button>
+            </button>
           </div>
         </div>
       ) : null}

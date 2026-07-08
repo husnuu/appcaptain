@@ -470,7 +470,10 @@ export function BoatTypeFeaturesStep({
         </>
       }
     >
-      <StepValidationAlert fieldErrors={fieldErrors} errorSummary={errorSummary} />
+      {/* Büyük alan-hata banner'ı kaldırıldı; hatalar ilgili alanın altında inline
+          gösteriliyor ve hatalı sekme kırmızı nokta ile işaretleniyor. Yalnızca
+          alan-dışı genel hatalar (ör. ağ hatası) burada gösterilir. */}
+      {errorSummary ? <Alert>{errorSummary}</Alert> : null}
       {!hasListingModels ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
@@ -854,9 +857,14 @@ export function AmenitiesStep({
         title="Seçilen Donanımlar — Özet"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowSummary(false)}>
+            <button
+              type="button"
+              onClick={() => setShowSummary(false)}
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} className="text-[13px]" aria-hidden />
               Geri Dön, Düzenle
-            </Button>
+            </button>
             <Button
               disabled={busy}
               onClick={() => {
@@ -1098,26 +1106,39 @@ function RuleYesNoToggle({
   onChange,
 }: {
   value: string | boolean | undefined;
-  onChange: (val: boolean) => void;
+  // `null` clears the selection (rule left unanswered).
+  onChange: (val: boolean | null) => void;
 }) {
   const yes = value === true || value === "true";
   const no = value === false || value === "false";
   const pill = (active: boolean, tone: "yes" | "no") =>
     cn(
-      "inline-flex h-9 min-w-[68px] items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition",
+      "inline-flex h-9 min-w-[68px] items-center justify-center gap-1.5 rounded-full border-2 px-4 text-[13px] font-medium transition-all",
       active
         ? tone === "yes"
           ? "border-brand-500 bg-brand-500 text-white"
-          : "border-gray-700 bg-gray-700 text-white"
-        : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+          : "border-danger-500 bg-danger-500 text-white"
+        : tone === "yes"
+          ? "border-gray-200 bg-white text-gray-600 hover:border-brand-500 hover:text-brand-600"
+          : "border-gray-200 bg-white text-gray-600 hover:border-danger-400 hover:text-danger-500"
     );
   return (
     <div className="flex shrink-0 gap-2">
-      <button type="button" className={pill(yes, "yes")} onClick={() => onChange(true)}>
+      <button
+        type="button"
+        className={pill(yes, "yes")}
+        aria-pressed={yes}
+        onClick={() => onChange(yes ? null : true)}
+      >
         {yes ? <FontAwesomeIcon icon={faCheck} className="text-[11px]" aria-hidden /> : null}
         Evet
       </button>
-      <button type="button" className={pill(no, "no")} onClick={() => onChange(false)}>
+      <button
+        type="button"
+        className={pill(no, "no")}
+        aria-pressed={no}
+        onClick={() => onChange(no ? null : false)}
+      >
         {no ? <FontAwesomeIcon icon={faCheck} className="text-[11px]" aria-hidden /> : null}
         Hayır
       </button>
@@ -1156,6 +1177,19 @@ export function DescriptionRulesStep({
 
   function setValue(key: string, value: string | boolean) {
     setValues((v) => ({ ...v, [key]: value }));
+  }
+
+  // Rule toggles are tri-state: `null` removes the key entirely so the rule is
+  // saved as "unanswered" (structuredRules is replaced, not merged, server-side).
+  function setRule(key: string, value: boolean | null) {
+    setValues((v) => {
+      if (value === null) {
+        const next = { ...v };
+        delete next[key];
+        return next;
+      }
+      return { ...v, [key]: value };
+    });
   }
 
   function save() {
@@ -1273,7 +1307,7 @@ export function DescriptionRulesStep({
               <span className="text-[14px] text-gray-700">{r.label}</span>
               <RuleYesNoToggle
                 value={values[r.key]}
-                onChange={(val) => setValue(r.key, val)}
+                onChange={(val) => setRule(r.key, val)}
               />
             </div>
           ))}
