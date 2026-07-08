@@ -11,11 +11,17 @@ import {
   ExperienceStep,
   ValidationFieldError,
 } from "@getyourboat/shared";
-import { Button, cn } from "@getyourboat/ui";
+import { Button, cn, LocationPicker } from "@getyourboat/ui";
 import { useState } from "react";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
 import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
+import { ChipInput } from "./ChipInput";
 import { LinesField, StepShell } from "./form-utils";
+
+const INCLUDED_SUGGESTIONS = ["Kaptan", "Yakıt", "Ekipman", "Sigorta", "Atıştırmalık", "Su"];
+const EXCLUDED_SUGGESTIONS = ["Ulaşım", "Öğle yemeği", "Kişisel harcamalar", "Bahşiş"];
+const TO_BRING_SUGGESTIONS = ["Güneş kremi", "Havlu", "Yüzme kıyafeti", "Fotoğraf makinesi"];
+const NOT_ALLOWED_SUGGESTIONS = ["Evcil hayvan", "Cam şişe", "Sigara (iç mekanda)", "Alkol"];
 
 const MIN_AGE_OPTIONS = ["", "0", "6", "8", "10", "12", "16", "18"];
 
@@ -260,32 +266,46 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
 
   return (
     <StepShell title="Dahil / Hariç / Bilgilendirme" error={error} fieldErrors={fieldErrors}>
-      <LinesField
+      <ChipInput
         label="Fiyata dahil olanlar"
-        hint="Örn. Atıştırmalıklar, şnorkel ekipmanı, sigorta"
+        description="Bilet fiyatına dahil olan her şeyi ekle"
+        placeholder="Örn. Kaptan, Yakıt, Sigorta…"
         value={included}
         onChange={setIncluded}
         required
+        suggestions={INCLUDED_SUGGESTIONS}
       />
-      <LinesField
+      <ChipInput
         label="Fiyata dahil olmayanlar"
-        hint="Örn. Ulaşım, öğle yemeği"
+        description="Ayrıca ödenmesi gereken şeyler"
+        placeholder="Örn. Ulaşım, Öğle yemeği…"
         value={notIncluded}
         onChange={setNotIncluded}
+        suggestions={EXCLUDED_SUGGESTIONS}
       />
-      <LinesField
+      <ChipInput
         label="Getirmeniz gerekenler"
-        hint="Örn. Güneş kremi, havlu, yüzme kıyafeti"
+        description="Katılımcıların yanında getirmesi gerekenler"
+        placeholder="Örn. Güneş kremi, Havlu…"
         value={toBring}
         onChange={setToBring}
+        suggestions={TO_BRING_SUGGESTIONS}
       />
-      <LinesField
+      <ChipInput
         label="İzin verilmeyenler"
-        hint="Örn. Evcil hayvan, cam şişe"
+        description="Katılımcıların yapmaması gerekenler"
+        placeholder="Örn. Evcil hayvan, Cam şişe…"
         value={notAllowed}
         onChange={setNotAllowed}
+        suggestions={NOT_ALLOWED_SUGGESTIONS}
       />
-      <LinesField label="Gitmeden bilinmesi gerekenler" value={knowBeforeYouGo} onChange={setKnowBeforeYouGo} />
+      <ChipInput
+        label="Gitmeden bilinmesi gerekenler"
+        description="Önemli uyarılar ve bilgiler"
+        placeholder="Örn. Deniz tutması için ilaç alın…"
+        value={knowBeforeYouGo}
+        onChange={setKnowBeforeYouGo}
+      />
       <Field>
         <Label>Acil durum telefonu</Label>
         <Input value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} />
@@ -335,6 +355,7 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   const [accessibilityOptions, setAccessibilityOptions] = useState<string[]>(
     experience.accessibilityOptions
   );
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.LOGISTICS);
 
   function toggleAccessibility(option: string) {
@@ -351,18 +372,30 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
       </Field>
       <Field>
         <Label>Buluşma noktası *</Label>
-        <Input value={meetingPoint} onChange={(e) => setMeetingPoint(e.target.value)} />
+        <p className="mb-2 text-xs text-gray-500">
+          Haritadan konum ara, tıkla veya işaretçiyi sürükle. Seçtiğin nokta katılımcılara
+          gösterilir.
+        </p>
+        <LocationPicker
+          mapboxToken={mapboxToken}
+          value={{
+            latitude: meetingPointLat ? Number(meetingPointLat) : null,
+            longitude: meetingPointLng ? Number(meetingPointLng) : null,
+            address: meetingPoint || null,
+          }}
+          onChange={(next) => {
+            setMeetingPointLat(next.latitude != null ? String(next.latitude) : "");
+            setMeetingPointLng(next.longitude != null ? String(next.longitude) : "");
+            if (next.address != null) setMeetingPoint(next.address);
+          }}
+        />
+        <Input
+          value={meetingPoint}
+          onChange={(e) => setMeetingPoint(e.target.value)}
+          placeholder="Buluşma noktası adı / açıklaması"
+          className="mt-2"
+        />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field>
-          <Label>Enlem (opsiyonel)</Label>
-          <Input value={meetingPointLat} onChange={(e) => setMeetingPointLat(e.target.value)} />
-        </Field>
-        <Field>
-          <Label>Boylam (opsiyonel)</Label>
-          <Input value={meetingPointLng} onChange={(e) => setMeetingPointLng(e.target.value)} />
-        </Field>
-      </div>
       <Field>
         <Label>Buluşma saati *</Label>
         <Input value={meetingTime} onChange={(e) => setMeetingTime(e.target.value)} placeholder="örn. 10:00" />

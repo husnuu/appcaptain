@@ -3,28 +3,43 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@getyourboat/ui";
 import { captainLoginSchema } from "@getyourboat/shared";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../components/auth-provider";
 import { Alert, Checkbox, Field, Input } from "../../components/ui";
 
 export default function LoginPage() {
   const { signIn, isAuthenticated, loading, redirectAfterAuth } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
   useEffect(() => {
-    setSessionExpired(new URLSearchParams(window.location.search).get("expired") === "1");
+    const params = new URLSearchParams(window.location.search);
+    setSessionExpired(params.get("expired") === "1");
+    // Only honor internal, absolute-path redirects to avoid open-redirects.
+    const target = params.get("redirect");
+    setRedirectTo(target && target.startsWith("/") && !target.startsWith("//") ? target : null);
   }, []);
+
+  const goAfterAuth = useCallback(async () => {
+    if (redirectTo) {
+      router.replace(redirectTo);
+      return;
+    }
+    await redirectAfterAuth();
+  }, [redirectTo, router, redirectAfterAuth]);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      void redirectAfterAuth();
+      void goAfterAuth();
     }
-  }, [loading, isAuthenticated, redirectAfterAuth]);
+  }, [loading, isAuthenticated, goAfterAuth]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +52,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signIn(parsed.data.email, parsed.data.password, parsed.data.rememberMe);
-      await redirectAfterAuth();
+      await goAfterAuth();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Giriş başarısız");
     } finally {

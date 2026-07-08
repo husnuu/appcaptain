@@ -1,10 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 import { useAuth } from "./auth-provider";
+import { Spinner } from "./ui";
 
+/**
+ * Client-side auth guard for all authenticated app pages. While the session is
+ * being restored we show a spinner; once resolved, unauthenticated visitors are
+ * redirected to the login page with a `redirect` param so they return to the
+ * page they were trying to reach after signing in.
+ */
 export function Protected({ children }: { children: ReactNode }) {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (loading || isAuthenticated) return;
+    const target = pathname && pathname !== "/" ? pathname : null;
+    const query = target ? `?redirect=${encodeURIComponent(target)}` : "";
+    router.replace(`/login${query}`);
+  }, [loading, isAuthenticated, pathname, router]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
+
   return <>{children}</>;
 }
 
