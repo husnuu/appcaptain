@@ -36,12 +36,13 @@ function normalizeTargetIds(input: {
 }
 
 export class PrismaDiscountRepository implements DiscountRepository {
-  async list(query: DiscountListQuery) {
+  async list(query: DiscountListQuery, ownerId?: string) {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, Math.max(1, query.limit ?? 20));
     const where: Record<string, unknown> = {};
     if (query.target) where.target = query.target;
     if (query.isActive !== undefined) where.isActive = query.isActive;
+    if (ownerId) where.createdBy = ownerId;
 
     const [rows, total] = await Promise.all([
       prisma.discount.findMany({
@@ -144,11 +145,12 @@ export class PrismaDiscountRepository implements DiscountRepository {
     return prisma.discount.count({ where: { isActive: true } });
   }
 
-  async listBoatOptions(search?: string): Promise<BoatOption[]> {
+  async listBoatOptions(search?: string, ownerId?: string): Promise<BoatOption[]> {
+    const where: Record<string, unknown> = {};
+    if (search) where.title = { contains: search, mode: "insensitive" };
+    if (ownerId) where.ownerId = ownerId;
     const rows = await prisma.boat.findMany({
-      where: search
-        ? { title: { contains: search, mode: "insensitive" } }
-        : undefined,
+      where: Object.keys(where).length ? where : undefined,
       select: { id: true, title: true },
       orderBy: { updatedAt: "desc" },
       take: 50,
@@ -156,15 +158,26 @@ export class PrismaDiscountRepository implements DiscountRepository {
     return rows.map((r) => ({ id: r.id, name: r.title?.trim() || "İsimsiz tekne" }));
   }
 
-  async listExperienceOptions(search?: string): Promise<BoatOption[]> {
+  async listExperienceOptions(search?: string, captainId?: string): Promise<BoatOption[]> {
+    const where: Record<string, unknown> = {};
+    if (search) where.title = { contains: search, mode: "insensitive" };
+    if (captainId) where.captainId = captainId;
     const rows = await prisma.experience.findMany({
-      where: search
-        ? { title: { contains: search, mode: "insensitive" } }
-        : undefined,
+      where: Object.keys(where).length ? where : undefined,
       select: { id: true, title: true },
       orderBy: { updatedAt: "desc" },
       take: 50,
     });
     return rows.map((r) => ({ id: r.id, name: r.title?.trim() || "İsimsiz deneyim" }));
+  }
+
+  async isBoatOwnedBy(boatId: string, ownerId: string): Promise<boolean> {
+    const count = await prisma.boat.count({ where: { id: boatId, ownerId } });
+    return count > 0;
+  }
+
+  async isExperienceOwnedBy(experienceId: string, captainId: string): Promise<boolean> {
+    const count = await prisma.experience.count({ where: { id: experienceId, captainId } });
+    return count > 0;
   }
 }

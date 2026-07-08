@@ -330,6 +330,51 @@ export const api = {
       method: "POST",
       body,
     }),
+
+  // ---- Discounts (admin-guarded) ----
+  listDiscounts: (query: import("@getyourboat/shared").DiscountListQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.target) params.set("target", query.target);
+    if (query.isActive !== undefined) params.set("isActive", String(query.isActive));
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<import("@getyourboat/shared").DiscountListResponse>(
+      `/admin/discounts${qs ? `?${qs}` : ""}`
+    );
+  },
+  createDiscount: (body: import("@getyourboat/shared").CreateDiscountInput) =>
+    request<{ discount: import("@getyourboat/shared").DiscountDTO }>("/admin/discounts", {
+      method: "POST",
+      body,
+    }),
+  updateDiscount: (
+    id: string,
+    body: import("@getyourboat/shared").UpdateDiscountInput
+  ) =>
+    request<{ discount: import("@getyourboat/shared").DiscountDTO }>(`/admin/discounts/${id}`, {
+      method: "PATCH",
+      body,
+    }),
+  toggleDiscount: (id: string) =>
+    request<{ discount: import("@getyourboat/shared").DiscountDTO }>(
+      `/admin/discounts/${id}/toggle`,
+      { method: "PATCH" }
+    ),
+  deleteDiscount: (id: string) =>
+    request<{ success: boolean }>(`/admin/discounts/${id}`, { method: "DELETE" }),
+  listDiscountBoatOptions: (search?: string) => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<{ items: { id: string; name: string }[] }>(
+      `/admin/discounts/boat-options${qs}`
+    );
+  },
+  listDiscountExperienceOptions: (search?: string) => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<{ items: { id: string; name: string }[] }>(
+      `/admin/discounts/experience-options${qs}`
+    );
+  },
 };
 
 /**

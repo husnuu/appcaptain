@@ -12,15 +12,20 @@ export interface BoatOption {
 }
 
 export interface DiscountRepository {
-  list(query: DiscountListQuery): Promise<DiscountListResponse>;
+  /** `ownerId` scopes the list to a captain's own discounts (undefined = all). */
+  list(query: DiscountListQuery, ownerId?: string): Promise<DiscountListResponse>;
   getById(id: string): Promise<DiscountDTO | null>;
   create(input: CreateDiscountInput, createdBy: string): Promise<DiscountDTO>;
   update(id: string, input: UpdateDiscountInput): Promise<DiscountDTO>;
   toggle(id: string): Promise<DiscountDTO>;
   remove(id: string): Promise<void>;
   countActive(): Promise<number>;
-  listBoatOptions(search?: string): Promise<BoatOption[]>;
-  listExperienceOptions(search?: string): Promise<BoatOption[]>;
+  /** `ownerId` scopes options to a captain's own boats (undefined = all). */
+  listBoatOptions(search?: string, ownerId?: string): Promise<BoatOption[]>;
+  /** `captainId` scopes options to a captain's own experiences (undefined = all). */
+  listExperienceOptions(search?: string, captainId?: string): Promise<BoatOption[]>;
+  isBoatOwnedBy(boatId: string, ownerId: string): Promise<boolean>;
+  isExperienceOwnedBy(experienceId: string, captainId: string): Promise<boolean>;
 }
 
 export interface DiscountRow {
