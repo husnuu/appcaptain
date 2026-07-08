@@ -65,6 +65,10 @@ export function isOwnerInputField(key: string): boolean {
 /** Belgede çelişkili veya bilinçli opsiyonel tutulan alanlar — pakette olsa da zorunlu sayılmaz. */
 export const ALWAYS_OPTIONAL_FIELD_KEYS = new Set<string>([
   "boat_plan",
+  // Kabin + Tuvalet: 0 değeri geçerli olduğundan zorunlu tutulmaz.
+  "total_toilets_just_for_customers",
+  "crew_members_included_in_the_price",
+  "number_of_crew_members",
 ]);
 
 /**

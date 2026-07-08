@@ -151,6 +151,7 @@ export function getRequiredFeatureKeysForStep(
   const scoped = filterFieldsByListingModels(fields, listingModelKeys);
   return getFieldsForWizardStep(scoped, step)
     .filter((f) => f.type === "feature" || f.type === "crew_option")
+    .filter((f) => !ALWAYS_OPTIONAL_FIELD_KEYS.has(f.key))
     .map((f) => f.key);
 }
 

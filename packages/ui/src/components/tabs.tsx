@@ -17,6 +17,8 @@ export interface TabsProps {
   items: TabItem[];
   activeId: string;
   onChange: (id: string) => void;
+  /** Called when a locked (disabled) tab is clicked, so the parent can warn. */
+  onLockedClick?: (id: string) => void;
   className?: string;
 }
 
@@ -24,7 +26,7 @@ export interface TabsProps {
  * Horizontal tab bar. Active tab uses the brand fill; the rest are light gray.
  * Keyboard accessible (arrow keys move focus between tabs).
  */
-export function Tabs({ items, activeId, onChange, className }: TabsProps) {
+export function Tabs({ items, activeId, onChange, onLockedClick, className }: TabsProps) {
   const onKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
@@ -55,7 +57,10 @@ export function Tabs({ items, activeId, onChange, className }: TabsProps) {
             tabIndex={active ? 0 : -1}
             onKeyDown={(e) => onKeyDown(e, i)}
             onClick={() => {
-              if (locked) return;
+              if (locked) {
+                onLockedClick?.(tab.id);
+                return;
+              }
               onChange(tab.id);
             }}
             className={cn(

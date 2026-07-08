@@ -16,6 +16,7 @@ import {
   faLock,
   faMoon,
   faSun,
+  faTriangleExclamation,
   LocationPicker,
   type IconDefinition,
 } from "@getyourboat/ui";
@@ -304,6 +305,9 @@ export function BoatTypeFeaturesStep({
   }, [boat.features]);
 
   const [activeTab, setActiveTab] = useState<FeatureSubTabId>("identity");
+  // Kilitli bir sekmeye tıklandığında gösterilen geçici amber uyarı (3 sn sonra kaybolur).
+  const [tabWarning, setTabWarning] = useState<FeatureSubTabId | null>(null);
+  const tabWarningTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [boatTypeKey, setBoatTypeKey] = useState(boat.boatType?.key ?? "");
   const [values, setValues] = useState<Record<string, string>>(initialFeatures);
   const [engineType, setEngineType] = useState<EngineType | "">(boat.engineType ?? "");
@@ -368,17 +372,55 @@ export function BoatTypeFeaturesStep({
     groups: filterFeatureGroupsBySubTab(config.featureGroups, tab.id),
   })).filter((t) => t.groups.length > 0);
 
+  // Alanların gerçekten bu tekne konfigürasyonunda gösterilip gösterilmediği.
+  // Açık tamamlanma kuralları yalnızca ekranda var olan alanlar için uygulanır;
+  // böylece config bir alanı hiç sunmuyorsa sekme kalıcı olarak kilitlenmez.
+  const availableFeatureKeys = useMemo(() => {
+    const set = new Set<string>();
+    for (const group of config.featureGroups) {
+      for (const feature of group.features) set.add(feature.key);
+    }
+    return set;
+  }, [config.featureGroups]);
+
   // Airbnb-style gating within the Features step: a sub-tab can only be opened
-  // once every required field of the preceding sub-tab is filled. Reachability
-  // is derived from the existing form state — no extra state is stored.
+  // once the preceding sub-tab is complete. Completion is derived from the
+  // existing form state — no extra state is stored. Config-required alanlara ek
+  // olarak dokümandaki net zorunlu alanları (tekne adı, kapasite, üretim yılı,
+  // boy, motor gücü) de şart koşuyoruz ki sekmeler boşken açılmasın.
   const isFilled = (key: string) => String(values[key] ?? "").trim().length > 0;
+  const numGreaterThan = (key: string, min: number) => {
+    const n = Number(values[key]);
+    return isFilled(key) && Number.isFinite(n) && n > min;
+  };
+  // Alan config'de yoksa bu kuralı atla (true), varsa gerçek kontrolü uygula.
+  const ruleFor = (key: string, check: () => boolean) =>
+    availableFeatureKeys.has(key) ? check() : true;
   const requiredKeysForTab = (tab: FeatureSubTabId) =>
     [...requiredFeatureKeys].filter((key) => featureFieldSubTab(key) === tab);
+
+  const identityComplete = boatTypeKey.trim().length > 0;
+  const specsComplete =
+    identityComplete &&
+    requiredKeysForTab("specs").every(isFilled) &&
+    ruleFor("boat_name", () => isFilled("boat_name")) &&
+    ruleFor("capacity", () => numGreaterThan("capacity", 0)) &&
+    ruleFor("year_of_manufacture", () => numGreaterThan("year_of_manufacture", 1900)) &&
+    ruleFor("length_ft_m", () => numGreaterThan("length_ft_m", 0));
+  const engineComplete =
+    specsComplete &&
+    engineType.trim().length > 0 &&
+    requiredKeysForTab("engine").every(isFilled) &&
+    // Motor gücü dolu VEYA motorsuz (yelkenli, motorsuz) seçili olmalı.
+    (engineType === EngineType.SAIL_NO_ENGINE ||
+      ruleFor("total_engine_power_hp", () => numGreaterThan("total_engine_power_hp", 0)));
+  const cabinsComplete = engineComplete && requiredKeysForTab("cabins").every(isFilled);
+
   const tabComplete: Record<FeatureSubTabId, boolean> = {
-    identity: boatTypeKey.trim().length > 0,
-    specs: requiredKeysForTab("specs").every(isFilled),
-    engine: engineType.trim().length > 0 && requiredKeysForTab("engine").every(isFilled),
-    cabins: requiredKeysForTab("cabins").every(isFilled),
+    identity: identityComplete,
+    specs: specsComplete,
+    engine: engineComplete,
+    cabins: cabinsComplete,
   };
   const tabReachable: Record<FeatureSubTabId, boolean> = {
     identity: true,
@@ -395,6 +437,17 @@ export function BoatTypeFeaturesStep({
   const firstLockedHint =
     FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])?.id &&
     TAB_LOCK_HINT[FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])!.id];
+  // Kilitli sekmeye tıklandığında amber uyarıyı göster ve 3 sn sonra gizle.
+  const showTabWarning = useCallback((id: FeatureSubTabId) => {
+    setTabWarning(id);
+    if (tabWarningTimeout.current) clearTimeout(tabWarningTimeout.current);
+    tabWarningTimeout.current = setTimeout(() => setTabWarning(null), 3000);
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (tabWarningTimeout.current) clearTimeout(tabWarningTimeout.current);
+    };
+  }, []);
   // Keep the active tab valid: if the current tab becomes unreachable, fall back
   // to the first reachable tab.
   useEffect(() => {
@@ -455,7 +508,14 @@ export function BoatTypeFeaturesStep({
         <>
           <BackButton onClick={goBack} show />
           <Button
-            disabled={busy || !boatTypeKey || !hasListingModels}
+            disabled={
+              busy ||
+              !boatTypeKey ||
+              !hasListingModels ||
+              // Aktif sekmenin zorunlu alanları dolmadan devam edilemez.
+              // Kabin + Tuvalet son sekme; tam doğrulama kaydetme anında çalışır.
+              (activeTab !== "cabins" && !tabComplete[activeTab])
+            }
             onClick={() =>
               run(save, {
                 onValidation: (errors) => {
@@ -498,9 +558,16 @@ export function BoatTypeFeaturesStep({
           onChange={(id) => {
             void flushFeaturesDraft();
             setActiveTab(id as FeatureSubTabId);
+            setTabWarning(null);
           }}
+          onLockedClick={(id) => showTabWarning(id as FeatureSubTabId)}
         />
-        {firstLockedHint ? (
+        {tabWarning ? (
+          <p className="mt-2 flex items-center gap-1.5 text-[13px] font-medium text-amber-600">
+            <FontAwesomeIcon icon={faTriangleExclamation} className="text-[12px]" aria-hidden />
+            {TAB_LOCK_HINT[tabWarning]}
+          </p>
+        ) : firstLockedHint ? (
           <p className="mt-2 text-[12px] text-gray-500">{firstLockedHint}</p>
         ) : null}
       </div>
