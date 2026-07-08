@@ -10,7 +10,7 @@ import type {
   ExperienceStatus,
   ExperienceStep,
 } from "@getyourboat/shared";
-import { computeExperienceProgress } from "@getyourboat/shared";
+import { computeExperienceProgress, experienceCompletionPercent } from "@getyourboat/shared";
 
 export interface ExperienceWriteBase {
   category?: ExperienceCategory | null;
@@ -124,9 +124,15 @@ export function toExperienceListItem(row: ExperienceRow): ExperienceListItemDTO 
     status: row.status as ExperienceStatus,
     category: (row.category as ExperienceCategory | null) ?? null,
     title: row.title || "İsimsiz taslak",
+    shortDescription: row.shortDescription,
     coverPhotoUrl: row.coverPhotoUrl,
+    durationMinutes: row.durationMinutes,
+    maxParticipants: row.maxParticipants,
     basePrice: Number(row.basePrice),
     currency: row.currency,
+    completionPercent: experienceCompletionPercent(
+      row.completedSteps as ExperienceStep[]
+    ),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

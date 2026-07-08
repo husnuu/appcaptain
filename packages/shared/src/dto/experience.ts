@@ -17,9 +17,14 @@ export interface ExperienceListItemDTO {
   status: ExperienceStatus;
   category: ExperienceCategory | null;
   title: string;
+  shortDescription: string;
   coverPhotoUrl: string;
+  durationMinutes: number;
+  maxParticipants: number;
   basePrice: number;
   currency: string;
+  /** Sihirbaz tamamlanma yüzdesi (0-100), taslak kartlarında gösterilir. */
+  completionPercent: number;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

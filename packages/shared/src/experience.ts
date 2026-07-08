@@ -64,6 +64,17 @@ export function experienceStepIndex(step: ExperienceStep): number {
   return EXPERIENCE_STEP_ORDER.indexOf(step);
 }
 
+/** Tamamlanan adımlardan yüzde (0-100) hesaplar. */
+export function experienceCompletionPercent(
+  completedSteps: ExperienceStep[]
+): number {
+  const total = EXPERIENCE_STEP_ORDER.length;
+  if (total === 0) return 0;
+  const done = new Set(completedSteps);
+  const count = EXPERIENCE_STEP_ORDER.filter((s) => done.has(s)).length;
+  return Math.round((count / total) * 100);
+}
+
 export interface ExperienceProgressState {
   completedSteps: ExperienceStep[];
   currentStep: ExperienceStep;
