@@ -10,6 +10,7 @@ import {
   deriveCompletedWizardSteps,
   toBoatDetailViewModel,
 } from "@getyourboat/shared";
+import { useAuth } from "../../../../components/auth-provider";
 import { Protected } from "../../../../components/protected";
 import { Alert, Spinner } from "../../../../components/ui";
 import { api, ApiError } from "../../../../lib/api";
@@ -21,11 +22,16 @@ export default function BoatPreviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  // Önizleme yeni sekmede açılabildiğinden erişim token'ı henüz bellekte olmayabilir.
+  // Oturum (refresh cookie'den) geri yüklenene kadar API isteğini bekletiyoruz;
+  // aksi halde token'sız istek 401 verip "giriş yapmanız gerekiyor" hatası çıkarır.
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [boat, setBoat] = useState<SerializedBoat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -45,7 +51,7 @@ export default function BoatPreviewPage({
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, authLoading, isAuthenticated]);
 
   const model = useMemo(() => (boat ? toBoatDetailViewModel(boat) : null), [boat]);
   const completionPercent = useMemo(() => {
