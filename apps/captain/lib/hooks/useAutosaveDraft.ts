@@ -163,6 +163,9 @@ export function useStepDraftAutosave({
   onSaved?: (boat: SerializedBoat) => void;
   onStatusChange?: (status: AutosaveStatus) => void;
 }) {
+  // getPayload'ı çağıranın verdiği `deps` değiştiğinde yeniden oluştururuz;
+  // bu bilinçli bir stabilizasyon deseni.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getPayloadStable = useCallback(getPayload, deps);
   const autosave = useAutosaveDraft({
     boatId,

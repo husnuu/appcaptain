@@ -649,6 +649,8 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       fieldErrors={fieldErrors}
     >
       {experience.coverPhotoUrl ? (
+        // Supabase'den gelen uzak URL; next/image için domain yapılandırması gerektirmesin diye <img>.
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={experience.coverPhotoUrl} alt="Kapak" className="h-40 w-full rounded-xl object-cover" />
       ) : (
         <Alert variant="info">Kapak fotoğrafı henüz yüklenmedi.</Alert>
@@ -683,6 +685,7 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       {experience.photoUrls.length > 0 ? (
         <div className="grid grid-cols-3 gap-2">
           {experience.photoUrls.map((url) => (
+            // eslint-disable-next-line @next/next/no-img-element
             <img key={url} src={url} alt="" className="h-24 w-full rounded-lg object-cover" />
           ))}
         </div>
