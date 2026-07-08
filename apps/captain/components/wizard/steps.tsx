@@ -318,7 +318,7 @@ export function BoatTypeFeaturesStep({
     boat.features.find((f) => f.key === "number_of_crew_members")?.value === "0"
   );
   const pendingBrandRequestRef = useRef<BrandModelPendingRequest | null>(null);
-  const { busy, fieldErrors, errorSummary, run, clearFieldError } = useStepSaver(onSaved);
+  const { busy, fieldErrors, run, clearFieldError } = useStepSaver(onSaved);
 
   // Kullanıcı bir alanı düzenlemeye başlayınca o alanın hatasını temizle;
   // hatalar yalnızca "Kaydet & Devam" sonrası görünür, düzeltince kaybolur.
@@ -409,7 +409,11 @@ export function BoatTypeFeaturesStep({
   const requiredKeysForTab = (tab: FeatureSubTabId) =>
     [...requiredFeatureKeys].filter((key) => featureFieldSubTab(key) === tab);
 
-  const identityComplete = boatTypeKey.trim().length > 0;
+  // Tekne Kimliği: Tip + Marka + Model üçü de dolu olmalı.
+  const identityComplete =
+    boatTypeKey.trim().length > 0 &&
+    (values["manufacturer_brand"] ?? "").trim().length > 0 &&
+    (values["model"] ?? "").trim().length > 0;
   const specsComplete =
     identityComplete &&
     requiredKeysForTab("specs").every(isFilled) &&
@@ -440,7 +444,7 @@ export function BoatTypeFeaturesStep({
   };
   const TAB_LOCK_HINT: Record<FeatureSubTabId, string> = {
     identity: "",
-    specs: 'Devam etmek için "Tekne Kimliği" bölümünü tamamlayın.',
+    specs: 'Devam etmek için önce "Tekne Kimliği"ni doldurun (Tip, Marka, Model).',
     engine: 'Devam etmek için "Tekne Özellikleri" bölümünü tamamlayın.',
     cabins: 'Devam etmek için "Motor" bölümünü tamamlayın.',
   };
@@ -540,12 +544,9 @@ export function BoatTypeFeaturesStep({
         </>
       }
     >
-      {/* Alan-hata banner'ı gösterilmez; hatalar ilgili alanın altında inline
-          gösteriliyor ve hatalı sekme kırmızı nokta ile işaretleniyor. Yalnızca
-          alan-dışı genel hatalar (ör. ağ hatası) burada gösterilir. */}
-      {errorSummary && Object.keys(fieldErrors).length === 0 ? (
-        <Alert>{errorSummary}</Alert>
-      ) : null}
+      {/* "X alan kontrol edilmeli" banner'ı hiçbir durumda gösterilmez; hatalar
+          yalnızca ilgili alanın altında inline gösteriliyor ve hatalı sekme
+          kırmızı nokta ile işaretleniyor. */}
       {!hasListingModels ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}

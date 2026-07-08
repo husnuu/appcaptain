@@ -1,28 +1,31 @@
 "use client";
 
-import { Spinner, cn, FontAwesomeIcon, faCircleCheck, faTriangleExclamation } from "@getyourboat/ui";
+import { cn, FontAwesomeIcon, faCircleCheck, faTriangleExclamation } from "@getyourboat/ui";
+import { useEffect, useState } from "react";
 import type { AutosaveStatus } from "../../lib/hooks/useAutosaveDraft";
-import { formatLastSavedAt } from "../../lib/hooks/useAutosaveDraft";
 
+/**
+ * Otomatik kayıt geri bildirimi. Kaydederken input altında dönen spinner
+ * göstermek yerine, kayıt tamamlanınca sağ üst köşede 2 saniyelik "Kaydedildi"
+ * toast'u gösterir. Hata durumunda satır içi uyarı gösterilir.
+ */
 export function AutosaveStatusIndicator({
   status,
-  lastSavedAt,
   className,
 }: {
   status: AutosaveStatus;
+  /** Korunuyor (çağıranlar geçiyor) ama artık kalıcı zaman etiketi gösterilmiyor. */
   lastSavedAt?: string | Date | null;
   className?: string;
 }) {
-  const savedLabel = formatLastSavedAt(lastSavedAt);
+  const [showToast, setShowToast] = useState(false);
 
-  if (status === "saving") {
-    return (
-      <p className={cn("flex items-center gap-2 text-caption text-gray-500", className)}>
-        <Spinner className="h-3.5 w-3.5" />
-        Kaydediliyor…
-      </p>
-    );
-  }
+  useEffect(() => {
+    if (status !== "saved") return;
+    setShowToast(true);
+    const timer = setTimeout(() => setShowToast(false), 2000);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   if (status === "error") {
     return (
@@ -33,14 +36,16 @@ export function AutosaveStatusIndicator({
     );
   }
 
-  if (status === "saved" || savedLabel) {
-    return (
-      <p className={cn("flex items-center gap-2 text-caption text-success-700", className)}>
-        <FontAwesomeIcon icon={faCircleCheck} className="text-[12px]" aria-hidden />
-        Tüm değişiklikler kaydedildi{savedLabel ? ` · ${savedLabel}` : ""}
-      </p>
-    );
-  }
+  if (!showToast) return null;
 
-  return null;
+  return (
+    <div
+      className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-full border border-success-200 bg-white px-4 py-2.5 text-body-sm font-medium text-success-700 shadow-md"
+      role="status"
+      aria-live="polite"
+    >
+      <FontAwesomeIcon icon={faCircleCheck} className="text-[14px]" aria-hidden />
+      Kaydedildi
+    </div>
+  );
 }
