@@ -305,6 +305,11 @@ export function BoatTypeFeaturesStep({
   }, [boat.features]);
 
   const [activeTab, setActiveTab] = useState<FeatureSubTabId>("identity");
+  // İleri geçiş yalnızca "Kaydet & Devam" ile olur. maxReachedTab, kullanıcının
+  // butonla ulaştığı en ileri sekmeyi tutar; sekmeye tıklayarak sadece bu
+  // sekmeye kadar (geri) gidilebilir, daha ileriye tıklanamaz.
+  const [maxReachedTab, setMaxReachedTab] = useState<FeatureSubTabId>("identity");
+  const didInitReached = useRef(false);
   // Kilitli bir sekmeye tıklandığında gösterilen geçici amber uyarı (3 sn sonra kaybolur).
   const [tabWarning, setTabWarning] = useState<FeatureSubTabId | null>(null);
   const tabWarningTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -436,21 +441,26 @@ export function BoatTypeFeaturesStep({
     engine: engineComplete,
     cabins: cabinsComplete,
   };
+
+  // Sekme sırası ve index yardımcıları.
+  const TAB_ID_ORDER = FEATURE_SUB_TABS.map((t) => t.id);
+  const tabIndex = (id: FeatureSubTabId) => TAB_ID_ORDER.indexOf(id);
+  const lastTabId = TAB_ID_ORDER[TAB_ID_ORDER.length - 1];
+
+  // Ulaşılabilirlik artık tamamlanmaya değil, "Kaydet & Devam" ile ulaşılan en
+  // ileri sekmeye (maxReachedTab) bağlı. Geri/aynı sekmeler serbest, ileri kilitli.
   const tabReachable: Record<FeatureSubTabId, boolean> = {
-    identity: true,
-    specs: tabComplete.identity,
-    engine: tabComplete.identity && tabComplete.specs,
-    cabins: tabComplete.identity && tabComplete.specs && tabComplete.engine,
+    identity: tabIndex("identity") <= tabIndex(maxReachedTab),
+    specs: tabIndex("specs") <= tabIndex(maxReachedTab),
+    engine: tabIndex("engine") <= tabIndex(maxReachedTab),
+    cabins: tabIndex("cabins") <= tabIndex(maxReachedTab),
   };
   const TAB_LOCK_HINT: Record<FeatureSubTabId, string> = {
     identity: "",
-    specs: 'Devam etmek için önce "Tekne Kimliği"ni doldurun (Tip, Marka, Model).',
-    engine: 'Devam etmek için "Tekne Özellikleri" bölümünü tamamlayın.',
-    cabins: 'Devam etmek için "Motor" bölümünü tamamlayın.',
+    specs: 'Bu bölüme geçmek için önce "Tekne Kimliği" adımını "Kaydet & Devam" ile tamamlayın.',
+    engine: 'Bu bölüme geçmek için önce "Tekne Özellikleri" adımını "Kaydet & Devam" ile tamamlayın.',
+    cabins: 'Bu bölüme geçmek için önce "Motor" adımını "Kaydet & Devam" ile tamamlayın.',
   };
-  const firstLockedHint =
-    FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])?.id &&
-    TAB_LOCK_HINT[FEATURE_SUB_TABS.find((t) => !tabReachable[t.id])!.id];
   // Kilitli sekmeye tıklandığında amber uyarıyı göster ve 3 sn sonra gizle.
   const showTabWarning = useCallback((id: FeatureSubTabId) => {
     setTabWarning(id);
@@ -462,21 +472,34 @@ export function BoatTypeFeaturesStep({
       if (tabWarningTimeout.current) clearTimeout(tabWarningTimeout.current);
     };
   }, []);
-  // Keep the active tab valid: if the current tab becomes unreachable, fall back
-  // to the first reachable tab.
+
+  // Kayıtlı tekne verisiyle geri dönen kullanıcılar tamamladıkları sekmelerde
+  // serbestçe gezebilsin diye maxReachedTab'ı ilk render'da bir kez ayarla.
+  // Bundan sonra ilerleme yalnızca "Kaydet & Devam" butonuyla olur.
   useEffect(() => {
-    if (!tabReachable[activeTab]) {
-      const fallback = FEATURE_SUB_TABS.find((t) => tabReachable[t.id])?.id ?? "identity";
-      if (fallback !== activeTab) setActiveTab(fallback);
+    if (didInitReached.current) return;
+    didInitReached.current = true;
+    let reached: FeatureSubTabId = "identity";
+    if (identityComplete) reached = "specs";
+    if (identityComplete && specsComplete) reached = "engine";
+    if (identityComplete && specsComplete && engineComplete) reached = "cabins";
+    if (reached !== "identity") {
+      setMaxReachedTab(reached);
+      setActiveTab(reached);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    tabReachable.identity,
-    tabReachable.specs,
-    tabReachable.engine,
-    tabReachable.cabins,
-  ]);
+  }, []);
+
+  // İlerleme: mevcut sekmeyi taslak olarak kaydet ve bir sonraki alt sekmeye geç.
+  const advanceToNextTab = useCallback(() => {
+    const next = TAB_ID_ORDER[tabIndex(activeTab) + 1];
+    if (!next) return;
+    void flushFeaturesDraft();
+    setMaxReachedTab((m) => (tabIndex(next) > tabIndex(m) ? next : m));
+    setActiveTab(next);
+    setTabWarning(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, flushFeaturesDraft]);
 
   function save() {
     const features = buildFeatureWritesFromValues(values);
@@ -528,16 +551,25 @@ export function BoatTypeFeaturesStep({
               !hasListingModels ||
               // Aktif sekmenin zorunlu alanları dolmadan devam edilemez.
               // Kabin + Tuvalet son sekme; tam doğrulama kaydetme anında çalışır.
-              (activeTab !== "cabins" && !tabComplete[activeTab])
+              (activeTab !== lastTabId && !tabComplete[activeTab])
             }
-            onClick={() =>
+            onClick={() => {
+              // Ara sekmelerde: taslağı kaydet ve bir sonraki alt sekmeye geç.
+              if (activeTab !== lastTabId) {
+                advanceToNextTab();
+                return;
+              }
+              // Son sekmede: tam doğrulama + kayıt, ardından sonraki adıma geç.
               run(save, {
                 onValidation: (errors) => {
                   const tab = firstSubTabWithErrors(errors);
-                  if (tab) setActiveTab(tab);
+                  if (tab) {
+                    setMaxReachedTab((m) => (tabIndex(tab) > tabIndex(m) ? tab : m));
+                    setActiveTab(tab);
+                  }
                 },
-              })
-            }
+              });
+            }}
           >
             <SaveLabel busy={busy} />
           </Button>
@@ -565,6 +597,13 @@ export function BoatTypeFeaturesStep({
                 className="inline-flex h-2 w-2 rounded-full bg-danger-500"
                 aria-label={`${tabErrorCounts[t.id]} hatalı alan`}
               />
+            ) : // Ulaşılmış, aktif olmayan ve tamamlanmış önceki sekmelerde yeşil tik.
+            t.id !== activeTab && tabComplete[t.id] ? (
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="text-[11px] text-success-600"
+                aria-label="Tamamlandı"
+              />
             ) : undefined,
           }))}
           activeId={activeTab}
@@ -580,8 +619,6 @@ export function BoatTypeFeaturesStep({
             <FontAwesomeIcon icon={faTriangleExclamation} className="text-[12px]" aria-hidden />
             {TAB_LOCK_HINT[tabWarning]}
           </p>
-        ) : firstLockedHint ? (
-          <p className="mt-2 text-[12px] text-gray-500">{firstLockedHint}</p>
         ) : null}
       </div>
 
