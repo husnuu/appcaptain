@@ -35,6 +35,7 @@ import {
   draftPricingSchema,
 } from "@getyourboat/shared";
 import { badRequest, conflict, notFound } from "../../../lib/errors.js";
+import { sanitizeStorageFileName } from "../../../lib/sanitize.js";
 import {
   DOCUMENTS_BUCKET,
   PHOTOS_BUCKET,
@@ -240,7 +241,7 @@ export async function deleteExtra(boatId: string, extraId: string) {
 /* --------------------------- Step 5: Photos ------------------------ */
 
 export async function createPhotoUploadUrl(boatId: string, fileName: string) {
-  const path = `${boatId}/${randomUUID()}-${fileName}`;
+  const path = `${boatId}/${randomUUID()}-${sanitizeStorageFileName(fileName)}`;
   const { data, error } = await getSupabaseAdmin()
     .storage.from(PHOTOS_BUCKET)
     .createSignedUploadUrl(path);
@@ -289,7 +290,7 @@ export async function deletePhoto(boatId: string, photoId: string) {
 /* ---------------------- Boat plan (Stay Included) ------------------ */
 
 export async function createBoatPlanUploadUrl(boatId: string, fileName: string) {
-  const path = `${boatId}/boat-plan/${randomUUID()}-${fileName}`;
+  const path = `${boatId}/boat-plan/${randomUUID()}-${sanitizeStorageFileName(fileName)}`;
   const { data, error } = await getSupabaseAdmin()
     .storage.from(PHOTOS_BUCKET)
     .createSignedUploadUrl(path);
@@ -329,7 +330,7 @@ export async function createDocumentUploadUrl(
   if (!(await boatRepository.documentTypeExists(documentTypeKey))) {
     throw badRequest("Unknown document type");
   }
-  const path = `${boatId}/${documentTypeKey}/${randomUUID()}-${fileName}`;
+  const path = `${boatId}/${documentTypeKey}/${randomUUID()}-${sanitizeStorageFileName(fileName)}`;
   const { data, error } = await getSupabaseAdmin()
     .storage.from(DOCUMENTS_BUCKET)
     .createSignedUploadUrl(path);

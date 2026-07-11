@@ -1,14 +1,12 @@
 "use client";
 
 import {
-  Badge,
   Button,
   FontAwesomeIcon,
   faArrowLeft,
   faEye,
   faHouse,
   faPaperPlane,
-  faPenToSquare,
 } from "@getyourboat/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -43,12 +41,14 @@ import {
 const PREVIEW_ID = "PREVIEW";
 type WizardStep = OnboardingStep | typeof PREVIEW_ID;
 
-const STATUS_VARIANT: Record<BoatStatus, "neutral" | "warning" | "success" | "danger"> = {
-  DRAFT: "neutral",
-  PENDING_REVIEW: "warning",
-  ACTIVE: "success",
-  REJECTED: "danger",
-  SUSPENDED: "danger",
+// Tıklanamaz durum rozeti renkleri (duruma göre). Butona benzemesin diye
+// pointer-events-none + küçük yuvarlak nokta ile durum göstergesi olarak sunulur.
+const STATUS_BADGE_CLASS: Record<BoatStatus, string> = {
+  DRAFT: "bg-amber-50 text-amber-700 border-amber-200",
+  PENDING_REVIEW: "bg-blue-50 text-blue-700 border-blue-200",
+  ACTIVE: "bg-green-50 text-green-700 border-green-200",
+  REJECTED: "bg-red-50 text-red-600 border-red-200",
+  SUSPENDED: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
 const STEP_COMPONENTS: Record<OnboardingStep, (p: StepProps) => JSX.Element> = {
@@ -202,12 +202,12 @@ export function Wizard({ boatId }: { boatId: string }) {
             <FontAwesomeIcon icon={faEye} className="text-[14px]" aria-hidden />
             Önizle
           </Button>
-          <Badge variant={STATUS_VARIANT[boat.status]}>
-            {boat.status === "DRAFT" ? (
-              <FontAwesomeIcon icon={faPenToSquare} className="text-[12px]" aria-hidden />
-            ) : null}
+          <span
+            className={`pointer-events-none flex select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${STATUS_BADGE_CLASS[boat.status]}`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden />
             {STATUS_LABELS[boat.status]}
-          </Badge>
+          </span>
         </div>
       </div>
 

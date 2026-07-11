@@ -7,6 +7,7 @@ import {
   experienceSchema,
 } from "@getyourboat/shared";
 import { badRequest, forbidden, notFound } from "../../../lib/errors.js";
+import { sanitizeStorageFileName } from "../../../lib/sanitize.js";
 import {
   EXPERIENCE_PHOTOS_BUCKET,
   getSupabaseAdmin,
@@ -136,7 +137,7 @@ export async function deleteExperience(id: string, captainId: string) {
 
 export async function createPhotoUploadUrl(id: string, captainId: string, fileName: string) {
   await getOwnedOrThrow(id, captainId);
-  const path = `${captainId}/${id}/${randomUUID()}-${fileName}`;
+  const path = `${captainId}/${id}/${randomUUID()}-${sanitizeStorageFileName(fileName)}`;
   const { data, error } = await getSupabaseAdmin()
     .storage.from(EXPERIENCE_PHOTOS_BUCKET)
     .createSignedUploadUrl(path);

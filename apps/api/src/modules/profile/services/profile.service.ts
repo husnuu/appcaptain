@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { profileRepository } from "@getyourboat/database";
 import type { ProfileSetupInput } from "@getyourboat/shared";
 import { badRequest } from "../../../lib/errors.js";
+import { sanitizeStorageFileName } from "../../../lib/sanitize.js";
 import { PHOTOS_BUCKET, getSupabaseAdmin, publicUrl } from "../../../lib/supabase.js";
 
 export function getProfile(userId: string) {
@@ -13,7 +14,7 @@ export function updateProfile(userId: string, input: ProfileSetupInput) {
 }
 
 export async function createAvatarUploadUrl(userId: string, fileName: string) {
-  const path = `profiles/${userId}/${randomUUID()}-${fileName}`;
+  const path = `profiles/${userId}/${randomUUID()}-${sanitizeStorageFileName(fileName)}`;
   const { data, error } = await getSupabaseAdmin()
     .storage.from(PHOTOS_BUCKET)
     .createSignedUploadUrl(path);
