@@ -232,3 +232,22 @@ export const DiscountDayFilter = {
 } as const;
 export type DiscountDayFilter =
   (typeof DiscountDayFilter)[keyof typeof DiscountDayFilter];
+
+/* ------------------------------ Bookings ------------------------------ */
+
+export const BookingStatus = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  CANCELLED: "CANCELLED",
+  COMPLETED: "COMPLETED",
+} as const;
+export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
+
+export const RentalType = {
+  HOURLY: "HOURLY",
+  DAILY: "DAILY",
+  WEEKLY: "WEEKLY",
+  STAY: "STAY",
+} as const;
+export type RentalType = (typeof RentalType)[keyof typeof RentalType];

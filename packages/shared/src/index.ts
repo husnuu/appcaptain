@@ -4,6 +4,7 @@ export * from "./onboarding";
 export * from "./experience";
 export * from "./brand-model";
 export * from "./discount";
+export * from "./booking";
 export * from "./units";
 export * from "./hull-material";
 export * from "./cabin-engine";
@@ -13,6 +14,7 @@ export * from "./dto/cabin";
 export * from "./dto/experience";
 export * from "./dto/brand-model";
 export * from "./dto/discount";
+export * from "./dto/booking";
 export * from "./dto/dashboard";
 export * from "./dto/boat-detail";
 export * from "./dto/profile";
@@ -29,6 +31,7 @@ export * from "./validation/messaging";
 export * from "./validation/experience";
 export * from "./validation/brand-model";
 export * from "./validation/discount";
+export * from "./validation/booking";
 
 /* Cross-cutting API envelope types. */
 export interface Paginated<T> {

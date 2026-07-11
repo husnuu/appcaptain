@@ -71,4 +71,7 @@ export {
   faShieldHalved,
   faRightToBracket,
   faArrowRightFromBracket,
+  faCalendarCheck,
+  faEnvelope,
+  faPhone,
 } from "@fortawesome/free-solid-svg-icons";

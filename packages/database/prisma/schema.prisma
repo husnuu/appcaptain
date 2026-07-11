@@ -17,7 +17,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-/* ================================ Enums ================================ */
+/**
+ * ================================ Enums ================================
+ */
 
 enum UserRole {
   CUSTOMER
@@ -73,6 +75,21 @@ enum ReservationStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum RentalType {
+  HOURLY
+  DAILY
+  WEEKLY
+  STAY
 }
 
 enum PaymentStatus {
@@ -198,7 +215,9 @@ enum DiscountDayFilter {
   WEEKEND
 }
 
-/* ===================== Captain profiles (auth + boats) ================= */
+/**
+ * ===================== Captain profiles (auth + boats) =================
+ */
 // Standalone captain accounts — email/password auth via apps/api JWT.
 
 model Profile {
@@ -216,14 +235,14 @@ model Profile {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  boats            Boat[]         @relation("BoatOwner")
-  reviewedBoats    Boat[]         @relation("BoatReviewer")
-  reviewedDocs     BoatDocument[] @relation("DocumentReviewer")
-  refreshTokens    RefreshToken[]
-  captainConversations Conversation[] @relation("ConversationCaptain")
-  experiences      Experience[]
-  brandModelRequests BrandModelRequest[]
-  createdDiscounts Discount[]     @relation("DiscountCreatedBy")
+  boats                Boat[]              @relation("BoatOwner")
+  reviewedBoats        Boat[]              @relation("BoatReviewer")
+  reviewedDocs         BoatDocument[]      @relation("DocumentReviewer")
+  refreshTokens        RefreshToken[]
+  captainConversations Conversation[]      @relation("ConversationCaptain")
+  experiences          Experience[]
+  brandModelRequests   BrandModelRequest[]
+  createdDiscounts     Discount[]          @relation("DiscountCreatedBy")
 
   @@map("profiles")
 }
@@ -241,7 +260,9 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-/* ============================ Config / Lookups ========================= */
+/**
+ * ============================ Config / Lookups =========================
+ */
 // All rows below are seeded from the requirements JSON (single source of truth).
 
 /// A SEAHUB "package" the field set is scoped to (e.g. seahub_hourly).
@@ -379,10 +400,10 @@ model BoatTypeOption {
 
 /// Listing / rental models (hourly, daily, overnight, weekly_charter). Companion config.
 model ListingModelOption {
-  id        String                @id @default(cuid())
-  key       String                @unique
+  id        String              @id @default(cuid())
+  key       String              @unique
   label     String
-  sortOrder Int                   @default(0)
+  sortOrder Int                 @default(0)
   boats     BoatListingModel[]
   pricing   BoatPricing[]
   seasonal  BoatSeasonalPrice[]
@@ -390,16 +411,18 @@ model ListingModelOption {
   @@map("listing_model_options")
 }
 
-/* ========================= Boat brands / models (lookup) ================= */
+/**
+ * ========================= Boat brands / models (lookup) =================
+ */
 
 model BoatBrand {
-  id        String           @id @default(uuid()) @db.Uuid
-  name      String           @unique
+  id        String            @id @default(uuid()) @db.Uuid
+  name      String            @unique
   category  BoatBrandCategory
   logoUrl   String?
-  isActive  Boolean          @default(true)
-  source    DataSource       @default(MANUAL)
-  createdAt DateTime         @default(now())
+  isActive  Boolean           @default(true)
+  source    DataSource        @default(MANUAL)
+  createdAt DateTime          @default(now())
   models    BoatModel[]
 
   @@index([category])
@@ -435,19 +458,21 @@ model BrandModelRequest {
 }
 
 model CabinConfiguration {
-  id        String     @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   boatId    String
-  boat      Boat       @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  boat      Boat      @relation(fields: [boatId], references: [id], onDelete: Cascade)
   cabinType CabinType
   wcType    WcType?
-  quantity  Int        @default(1)
-  createdAt DateTime   @default(now())
+  quantity  Int       @default(1)
+  createdAt DateTime  @default(now())
 
   @@index([boatId])
   @@map("cabin_configurations")
 }
 
-/* ============================ Boats (operational) ===================== */
+/**
+ * ============================ Boats (operational) =====================
+ */
 
 model Boat {
   id      String  @id @default(cuid())
@@ -463,47 +488,48 @@ model Boat {
   engineType  EngineType?
 
   // Step 4 — Description & rules
-  title          String?
-  description    String?
-  rulesText      String?
-  checkInNotes   String?
-  checkOutNotes  String?
+  title           String?
+  description     String?
+  rulesText       String?
+  checkInNotes    String?
+  checkOutNotes   String?
   structuredRules Json?
 
   // Status & onboarding progress
-  status            BoatStatus       @default(DRAFT)
-  currentStep       OnboardingStep   @default(LISTING_MODEL)
-  activeStep        OnboardingStep   @default(LISTING_MODEL)
-  completedSteps    OnboardingStep[] @default([])
-  isReadyForReview  Boolean          @default(false)
-  lastSavedAt       DateTime?
+  status           BoatStatus       @default(DRAFT)
+  currentStep      OnboardingStep   @default(LISTING_MODEL)
+  activeStep       OnboardingStep   @default(LISTING_MODEL)
+  completedSteps   OnboardingStep[] @default([])
+  isReadyForReview Boolean          @default(false)
+  lastSavedAt      DateTime?
 
   // Review workflow
   submittedAt     DateTime?
   reviewedAt      DateTime?
-  reviewedById    String?  @db.Uuid
-  reviewedBy      Profile? @relation("BoatReviewer", fields: [reviewedById], references: [id])
+  reviewedById    String?   @db.Uuid
+  reviewedBy      Profile?  @relation("BoatReviewer", fields: [reviewedById], references: [id])
   rejectionReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations to onboarding sub-resources
-  listingModels BoatListingModel[]
-  featureValues BoatFeatureValue[]
-  amenities     BoatAmenity[]
-  photos        BoatPhoto[]
-  pricing       BoatPricing[]
-  seasonalPrices BoatSeasonalPrice[]
-  extras        BoatExtra[]
-  documents     BoatDocument[]
+  listingModels       BoatListingModel[]
+  featureValues       BoatFeatureValue[]
+  amenities           BoatAmenity[]
+  photos              BoatPhoto[]
+  pricing             BoatPricing[]
+  seasonalPrices      BoatSeasonalPrice[]
+  extras              BoatExtra[]
+  documents           BoatDocument[]
   cabinConfigurations CabinConfiguration[]
 
   // Legacy marketplace relations (phase 0)
-  reservations  Reservation[]
-  reviews       Review[]
+  reservations Reservation[]
+  reviews      Review[]
 
-  discounts     Discount[]
+  discounts Discount[]
+  bookings  Booking[]
 
   @@index([ownerId])
   @@index([status])
@@ -511,66 +537,68 @@ model Boat {
   @@map("boats")
 }
 
-/* ============================ Experiences ============================= */
+/**
+ * ============================ Experiences =============================
+ */
 
 model Experience {
-  id                    String                @id @default(uuid()) @db.Uuid
-  captainId             String                @db.Uuid
-  captain               Profile               @relation(fields: [captainId], references: [id], onDelete: Cascade)
-  status                ExperienceStatus      @default(DRAFT)
-  currentStep           ExperienceStep        @default(CATEGORY)
-  completedSteps        ExperienceStep[]      @default([])
+  id             String           @id @default(uuid()) @db.Uuid
+  captainId      String           @db.Uuid
+  captain        Profile          @relation(fields: [captainId], references: [id], onDelete: Cascade)
+  status         ExperienceStatus @default(DRAFT)
+  currentStep    ExperienceStep   @default(CATEGORY)
+  completedSteps ExperienceStep[] @default([])
 
-  category              ExperienceCategory?
-  title                 String                @default("")
-  referenceCode         String?
-  shortDescription      String                @default("")
-  fullDescription       String                @default("")
-  highlights            String[]              @default([])
-  keywords              String[]              @default([])
+  category         ExperienceCategory?
+  title            String              @default("")
+  referenceCode    String?
+  shortDescription String              @default("")
+  fullDescription  String              @default("")
+  highlights       String[]            @default([])
+  keywords         String[]            @default([])
 
-  included              String[]              @default([])
-  notIncluded           String[]              @default([])
-  notAllowed            String[]              @default([])
-  toBring               String[]              @default([])
-  knowBeforeYouGo       String[]              @default([])
+  included              String[] @default([])
+  notIncluded           String[] @default([])
+  notAllowed            String[] @default([])
+  toBring               String[] @default([])
+  knowBeforeYouGo       String[] @default([])
   emergencyContactPhone String?
 
-  durationMinutes       Int                   @default(60)
-  meetingPoint          String                @default("")
-  meetingPointLat       Float?
-  meetingPointLng       Float?
-  meetingTime           String                @default("")
-  endPoint              String                @default("")
-  endPointLat           Float?
-  endPointLng           Float?
-  isSameEndPoint        Boolean               @default(true)
-  languages             String[]              @default([])
-  minParticipants       Int                   @default(1)
-  maxParticipants       Int                   @default(10)
-  minAge                Int?
-  ticketType            String?
-  requiredEquipment     String[]              @default([])
-  accessibilityInfo     String?
-  accessibilityOptions  String[]              @default([])
+  durationMinutes      Int      @default(60)
+  meetingPoint         String   @default("")
+  meetingPointLat      Float?
+  meetingPointLng      Float?
+  meetingTime          String   @default("")
+  endPoint             String   @default("")
+  endPointLat          Float?
+  endPointLng          Float?
+  isSameEndPoint       Boolean  @default(true)
+  languages            String[] @default([])
+  minParticipants      Int      @default(1)
+  maxParticipants      Int      @default(10)
+  minAge               Int?
+  ticketType           String?
+  requiredEquipment    String[] @default([])
+  accessibilityInfo    String?
+  accessibilityOptions String[] @default([])
 
-  basePrice             Decimal               @default(0) @db.Decimal(10, 2)
-  currency              String                @default("TRY")
-  pricingType           ExperiencePricingType @default(PER_PERSON)
-  childDiscountPercent  Int?
+  basePrice            Decimal               @default(0) @db.Decimal(10, 2)
+  currency             String                @default("TRY")
+  pricingType          ExperiencePricingType @default(PER_PERSON)
+  childDiscountPercent Int?
 
   cancellationPolicy     CancellationPolicyType @default(FREE_24H)
   cancellationPolicyText String?
 
-  coverPhotoUrl         String                @default("")
-  photoUrls             String[]              @default([])
-  videoUrl              String?
+  coverPhotoUrl String   @default("")
+  photoUrls     String[] @default([])
+  videoUrl      String?
 
-  reviewNote            String?
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  reviewNote String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  discounts             Discount[]
+  discounts Discount[]
 
   @@index([captainId])
   @@index([status])
@@ -578,35 +606,37 @@ model Experience {
   @@map("experiences")
 }
 
-/* ============================== Discounts ============================== */
+/**
+ * ============================== Discounts ==============================
+ */
 
 model Discount {
-  id           String            @id @default(cuid())
-  name         String
-  description  String?
+  id          String  @id @default(cuid())
+  name        String
+  description String?
 
-  type         DiscountType
-  value        Float
+  type  DiscountType
+  value Float
 
   target       DiscountTarget
   boatId       String?
-  experienceId String?           @db.Uuid
+  experienceId String?        @db.Uuid
 
-  startDate    DateTime?
-  endDate      DateTime?
+  startDate DateTime?
+  endDate   DateTime?
 
-  timeStart    String?
-  timeEnd      String?
+  timeStart String?
+  timeEnd   String?
 
-  dayFilter    DiscountDayFilter @default(ALL)
+  dayFilter DiscountDayFilter @default(ALL)
 
-  isActive     Boolean           @default(true)
-  maxUses      Int?
-  usedCount    Int               @default(0)
+  isActive  Boolean @default(true)
+  maxUses   Int?
+  usedCount Int     @default(0)
 
-  createdBy    String            @db.Uuid
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdBy String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   boat       Boat?       @relation(fields: [boatId], references: [id], onDelete: SetNull)
   experience Experience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
@@ -617,6 +647,47 @@ model Discount {
   @@index([boatId])
   @@index([experienceId])
   @@map("discounts")
+}
+
+/**
+ * ============================== Bookings ==============================
+ */
+
+/// Guest booking requests submitted from a public listing (no account
+/// required). The boat's captain approves or rejects each request. Distinct
+/// from the marketplace `Reservation`, which requires a registered customer.
+model Booking {
+  id        String @id @default(cuid())
+  boatId    String
+  captainId String @db.Uuid
+
+  guestName  String
+  guestEmail String
+  guestPhone String?
+  guestCount Int
+
+  rentalType RentalType
+  startDate  DateTime
+  endDate    DateTime
+  startTime  String?
+  endTime    String?
+
+  totalPrice Float?
+  currency   String  @default("EUR")
+  message    String?
+
+  status        BookingStatus @default(PENDING)
+  rejectionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boat Boat @relation(fields: [boatId], references: [id], onDelete: Cascade)
+
+  @@index([boatId])
+  @@index([captainId])
+  @@index([status])
+  @@map("bookings")
 }
 
 /// Which listing models a boat supports (hourly + daily, etc.).
@@ -742,7 +813,9 @@ model BoatDocument {
   @@map("boat_documents")
 }
 
-/* ===================== Legacy marketplace (phase 0) ==================== */
+/**
+ * ===================== Legacy marketplace (phase 0) ====================
+ */
 
 model User {
   id           String   @id @default(cuid())
@@ -755,10 +828,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  captainProfile CaptainProfile?
-  reservations   Reservation[]   @relation("CustomerReservations")
-  reviews        Review[]
-  customerConversations Conversation[] @relation("ConversationCustomer")
+  captainProfile        CaptainProfile?
+  reservations          Reservation[]   @relation("CustomerReservations")
+  reviews               Review[]
+  customerConversations Conversation[]  @relation("ConversationCustomer")
 
   @@index([role])
 }
@@ -791,9 +864,9 @@ model Reservation {
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
-  payment Payment?
-  payout  Payout?
-  review  Review?
+  payment      Payment?
+  payout       Payout?
+  review       Review?
   conversation Conversation?
 
   @@index([boatId])
@@ -833,16 +906,16 @@ model Payout {
 }
 
 model Conversation {
-  id            String   @id @default(cuid())
-  reservationId String   @unique
+  id            String      @id @default(cuid())
+  reservationId String      @unique
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   customerId    String
-  customer      User     @relation("ConversationCustomer", fields: [customerId], references: [id])
-  captainId     String   @db.Uuid
-  captain       Profile  @relation("ConversationCaptain", fields: [captainId], references: [id])
+  customer      User        @relation("ConversationCustomer", fields: [customerId], references: [id])
+  captainId     String      @db.Uuid
+  captain       Profile     @relation("ConversationCaptain", fields: [captainId], references: [id])
   messages      Message[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([customerId])
   @@index([captainId])

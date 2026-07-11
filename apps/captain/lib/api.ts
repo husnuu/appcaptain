@@ -375,6 +375,39 @@ export const api = {
       `/admin/discounts/experience-options${qs}`
     );
   },
+
+  // ---- Bookings (guest requests → captain approves) ----
+  createBooking: (body: import("@getyourboat/shared").CreateBookingInput) =>
+    request<{ booking: import("@getyourboat/shared").BookingDTO }>("/bookings", {
+      method: "POST",
+      body,
+      auth: false,
+    }),
+  getBoatAvailability: (boatId: string) =>
+    request<{ blockedRanges: import("@getyourboat/shared").BookingBlockedRange[] }>(
+      `/bookings/boat/${boatId}/availability`,
+      { auth: false }
+    ),
+  listCaptainBookings: (query: import("@getyourboat/shared").BookingListQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<import("@getyourboat/shared").BookingListResponse>(
+      `/bookings/captain${qs ? `?${qs}` : ""}`
+    );
+  },
+  approveBooking: (id: string, totalPrice?: number | null) =>
+    request<{ booking: import("@getyourboat/shared").BookingDTO }>(
+      `/bookings/${id}/approve`,
+      { method: "PATCH", body: { totalPrice } }
+    ),
+  rejectBooking: (id: string, rejectionNote?: string | null) =>
+    request<{ booking: import("@getyourboat/shared").BookingDTO }>(
+      `/bookings/${id}/reject`,
+      { method: "PATCH", body: { rejectionNote } }
+    ),
 };
 
 /**

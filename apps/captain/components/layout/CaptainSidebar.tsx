@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   NavItem,
   Sidebar,
   SidebarBrand,
   faAnchor,
+  faCalendarCheck,
   faCalendarDays,
   faGaugeHigh,
   faRightFromBracket,
@@ -18,6 +20,8 @@ import {
   faGear,
   type IconDefinition,
 } from "@getyourboat/ui";
+import { BookingStatus } from "@getyourboat/shared";
+import { api } from "../../lib/api";
 import { useAuth } from "../auth-provider";
 
 export type SidebarKey =
@@ -26,6 +30,7 @@ export type SidebarKey =
   | "boats"
   | "experiences"
   | "calendar"
+  | "bookings"
   | "discounts"
   | "payments"
   | "legal"
@@ -43,6 +48,7 @@ const PRIMARY: NavLink[] = [
   { key: "boats", label: "Teknelerim", icon: faAnchor, href: "/boats" },
   { key: "experiences", label: "Deneyimlerim", icon: faStar, href: "/experiences" },
   { key: "calendar", label: "Takvim", icon: faCalendarDays, href: "/calendar" },
+  { key: "bookings", label: "Rezervasyonlar", icon: faCalendarCheck, href: "/bookings" },
   { key: "messages", label: "Mesajlar", icon: faComments, href: "/messages" },
   { key: "payments", label: "Ödemeler", icon: faWallet, href: "/payments" },
   { key: "discounts", label: "İndirim", icon: faPercent, href: "/discounts" },
@@ -51,7 +57,25 @@ const PRIMARY: NavLink[] = [
 
 export function CaptainSidebar({ active }: { active: SidebarKey }) {
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, isAuthenticated } = useAuth();
+  const [pendingBookings, setPendingBookings] = useState(0);
+
+  // Bekleyen rezervasyon talebi sayısını rozet için çek (yalnızca giriş yapılmışsa).
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    void api
+      .listCaptainBookings({ status: BookingStatus.PENDING, limit: 1 })
+      .then((res) => {
+        if (!cancelled) setPendingBookings(res.pendingCount);
+      })
+      .catch(() => {
+        /* rozet kritik değil; hatayı yut */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const go = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -89,7 +113,12 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
             active={active === item.key}
             onClick={go(item.href)}
           >
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {item.key === "bookings" && pendingBookings > 0 ? (
+              <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-500 px-1.5 text-[11px] font-bold text-white">
+                {pendingBookings}
+              </span>
+            ) : null}
           </NavItem>
         ))}
       </nav>

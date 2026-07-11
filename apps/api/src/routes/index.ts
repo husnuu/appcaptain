@@ -7,6 +7,7 @@ import { messagingModule } from "../modules/messaging/index.js";
 import { experiencesModule } from "../modules/experiences/index.js";
 import { boatBrandsModule } from "../modules/boat-brands/index.js";
 import { discountsModule } from "../modules/discounts/index.js";
+import { bookingsModule } from "../modules/bookings/index.js";
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthRoutes);
@@ -17,5 +18,6 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(experiencesModule, { prefix: "/api/v1" });
   await app.register(boatBrandsModule, { prefix: "/api/v1" });
   await app.register(discountsModule, { prefix: "/api/v1" });
+  await app.register(bookingsModule, { prefix: "/api/v1" });
   // TODO: reservations, payments, reviews, payouts
 }

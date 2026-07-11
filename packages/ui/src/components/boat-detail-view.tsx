@@ -18,6 +18,7 @@ import {
   faBolt,
   faCalendarDays,
   faCheck,
+  faChevronRight,
   faCircleCheck,
   faCircleInfo,
   faClock,
@@ -26,15 +27,30 @@ import {
   faImage,
   faLayerGroup,
   faLocationDot,
+  faMinus,
+  faPlus,
   faRightToBracket,
   faRulerHorizontal,
   faShieldHalved,
   faShip,
+  faSpinner,
   faSun,
   faTriangleExclamation,
   faUsers,
+  faXmark,
   type IconDefinition,
 } from "../icons";
+
+/** Guest-facing booking request payload emitted by the interactive card. */
+export interface BoatBookingFormValues {
+  startDate: string;
+  endDate: string;
+  guestCount: number;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  message?: string;
+}
 
 export interface BoatDetailViewProps {
   model: BoatDetailViewModel;
@@ -43,6 +59,14 @@ export interface BoatDetailViewProps {
   bookingLabel?: string;
   /** Show placeholder text for empty sections (draft preview). */
   showPlaceholders?: boolean;
+  /** Max guests for the booking stepper (defaults to a permissive value). */
+  maxGuests?: number;
+  /**
+   * When provided (and not disabled), the booking card becomes an interactive
+   * date/guest/contact form that calls this on submit. Without it the card
+   * renders a static CTA (used by the captain preview).
+   */
+  onSubmitBooking?: (values: BoatBookingFormValues) => Promise<void>;
   className?: string;
 }
 
@@ -311,22 +335,17 @@ function badgeTone(kind: "cancellation" | "approval", label: string) {
     : "bg-gray-50 text-gray-600 border-gray-200";
 }
 
-function BookingCard({
+function PricingHeader({
   model,
-  bookingDisabled,
-  bookingLabel,
   showPlaceholders,
 }: {
   model: BoatDetailViewModel;
-  bookingDisabled: boolean;
-  bookingLabel: string;
   showPlaceholders: boolean;
 }) {
   const primary = model.pricing[0] ?? null;
   const secondary = model.pricing.slice(1);
-
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-xl">
+    <>
       {primary ? (
         <div className="mb-5">
           <div className="flex items-baseline gap-2">
@@ -394,19 +413,258 @@ function BookingCard({
           <span className="font-medium text-ink">Yakıt:</span> {model.fuelCostNote}
         </p>
       ) : null}
+    </>
+  );
+}
 
-      <button
-        type="button"
-        disabled={bookingDisabled}
-        className={cn(
-          "w-full rounded-2xl py-3.5 text-body-sm font-bold transition-all",
-          bookingDisabled
-            ? "cursor-not-allowed bg-gray-200 text-gray-400"
-            : "bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg"
-        )}
-      >
-        {bookingDisabled ? "Önizleme modunda rezervasyon yapılamaz" : bookingLabel}
-      </button>
+const fieldClass =
+  "w-full rounded-xl border border-gray-200 px-3 py-2.5 text-body-sm text-gray-800 focus:border-brand-500 focus:outline-none";
+
+/** Interactive date + guest + contact form (public web). */
+function BookingForm({
+  maxGuests,
+  onSubmitBooking,
+}: {
+  maxGuests: number;
+  onSubmitBooking: (values: BoatBookingFormValues) => Promise<void>;
+}) {
+  const [step, setStep] = React.useState<"dates" | "form" | "success">("dates");
+  const [startDate, setStartDate] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
+  const [guestCount, setGuestCount] = React.useState(1);
+  const [form, setForm] = React.useState({ name: "", email: "", phone: "", message: "" });
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const submit = async () => {
+    if (!startDate || !endDate) {
+      setError("Lütfen tarih seçin.");
+      return;
+    }
+    if (!form.name.trim() || !form.email.trim()) {
+      setError("Ad ve e-posta zorunludur.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      await onSubmitBooking({
+        startDate,
+        endDate,
+        guestCount,
+        guestName: form.name.trim(),
+        guestEmail: form.email.trim(),
+        guestPhone: form.phone.trim() || undefined,
+        message: form.message.trim() || undefined,
+      });
+      setStep("success");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Talep gönderilemedi.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (step === "success") {
+    return (
+      <div className="py-6 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-100">
+          <FontAwesomeIcon icon={faCheck} className="text-[26px] text-success-600" aria-hidden />
+        </div>
+        <h3 className="text-lg font-bold text-ink">Talep Gönderildi!</h3>
+        <p className="mt-1 text-body-sm text-gray-500">
+          Kaptan en kısa sürede sizinle iletişime geçecek.
+        </p>
+        <p className="mt-1 text-caption text-gray-400">Ortalama yanıt süresi: 2-4 saat</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="mb-2 flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-gray-400">
+          <FontAwesomeIcon icon={faCalendarDays} className="text-[12px] text-brand-600" aria-hidden />
+          Tarih Seçin
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block">
+            <span className="mb-1 block text-caption text-gray-500">Giriş</span>
+            <input
+              type="date"
+              value={startDate}
+              min={today}
+              onChange={(e) => setStartDate(e.target.value)}
+              className={fieldClass}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-caption text-gray-500">Çıkış</span>
+            <input
+              type="date"
+              value={endDate}
+              min={startDate || today}
+              onChange={(e) => setEndDate(e.target.value)}
+              className={fieldClass}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 flex items-center gap-1.5 text-caption text-gray-500">
+          <FontAwesomeIcon icon={faUsers} className="text-[12px]" aria-hidden />
+          Misafir Sayısı
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Azalt"
+            onClick={() => setGuestCount((g) => Math.max(1, g - 1))}
+            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
+          >
+            <FontAwesomeIcon icon={faMinus} className="text-[12px]" aria-hidden />
+          </button>
+          <span className="w-6 text-center text-body-sm font-bold text-ink">{guestCount}</span>
+          <button
+            type="button"
+            aria-label="Artır"
+            onClick={() => setGuestCount((g) => Math.min(maxGuests, g + 1))}
+            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
+          >
+            <FontAwesomeIcon icon={faPlus} className="text-[12px]" aria-hidden />
+          </button>
+          <span className="text-caption text-gray-400">maks. {maxGuests}</span>
+        </div>
+      </div>
+
+      {step === "form" ? (
+        <div className="space-y-2.5 border-t border-gray-100 pt-4">
+          <input
+            type="text"
+            placeholder="Ad Soyad *"
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            className={fieldClass}
+          />
+          <input
+            type="email"
+            placeholder="E-posta *"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            className={fieldClass}
+          />
+          <input
+            type="tel"
+            placeholder="Telefon"
+            value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            className={fieldClass}
+          />
+          <textarea
+            placeholder="Notunuz (opsiyonel)"
+            rows={3}
+            value={form.message}
+            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+            className={cn(fieldClass, "resize-none")}
+          />
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="flex items-start gap-2 rounded-xl border border-danger-200 bg-danger-50 p-3">
+          <FontAwesomeIcon icon={faXmark} className="mt-0.5 shrink-0 text-danger-500" aria-hidden />
+          <p className="text-caption text-danger-600">{error}</p>
+        </div>
+      ) : null}
+
+      {step === "dates" ? (
+        <button
+          type="button"
+          onClick={() => {
+            if (!startDate || !endDate) {
+              setError("Lütfen önce tarih seçin.");
+              return;
+            }
+            setError("");
+            setStep("form");
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 py-3.5 text-body-sm font-bold text-white shadow-md transition-all hover:bg-brand-700 hover:shadow-lg"
+        >
+          Rezervasyon Talebi Gönder
+          <FontAwesomeIcon icon={faChevronRight} className="text-[14px]" aria-hidden />
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 py-3.5 text-body-sm font-bold text-white shadow-md transition-all hover:bg-brand-700 disabled:opacity-60"
+          >
+            <FontAwesomeIcon
+              icon={submitting ? faSpinner : faCheck}
+              spin={submitting}
+              className="text-[14px]"
+              aria-hidden
+            />
+            {submitting ? "Gönderiliyor…" : "Talebi Onayla & Gönder"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStep("dates");
+              setError("");
+            }}
+            className="w-full py-2 text-caption text-gray-500 transition-colors hover:text-gray-700"
+          >
+            ← Geri dön
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BookingCard({
+  model,
+  bookingDisabled,
+  bookingLabel,
+  showPlaceholders,
+  maxGuests,
+  onSubmitBooking,
+}: {
+  model: BoatDetailViewModel;
+  bookingDisabled: boolean;
+  bookingLabel: string;
+  showPlaceholders: boolean;
+  maxGuests: number;
+  onSubmitBooking?: (values: BoatBookingFormValues) => Promise<void>;
+}) {
+  const interactive = !bookingDisabled && !!onSubmitBooking;
+
+  return (
+    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-xl">
+      <PricingHeader model={model} showPlaceholders={showPlaceholders} />
+
+      {interactive ? (
+        <BookingForm maxGuests={maxGuests} onSubmitBooking={onSubmitBooking!} />
+      ) : (
+        <button
+          type="button"
+          disabled={bookingDisabled}
+          className={cn(
+            "w-full rounded-2xl py-3.5 text-body-sm font-bold transition-all",
+            bookingDisabled
+              ? "cursor-not-allowed bg-gray-200 text-gray-400"
+              : "bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg"
+          )}
+        >
+          {bookingDisabled ? "Önizleme modunda rezervasyon yapılamaz" : bookingLabel}
+        </button>
+      )}
 
       <p className="mt-4 flex items-center justify-center gap-1.5 text-caption text-gray-400">
         <FontAwesomeIcon icon={faLocationDot} className="text-[12px]" aria-hidden />
@@ -427,6 +685,8 @@ export function BoatDetailView({
   bookingDisabled = false,
   bookingLabel = "Rezervasyon Yap",
   showPlaceholders = false,
+  maxGuests = 50,
+  onSubmitBooking,
   className,
 }: BoatDetailViewProps) {
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
@@ -645,6 +905,8 @@ export function BoatDetailView({
               bookingDisabled={bookingDisabled}
               bookingLabel={bookingLabel}
               showPlaceholders={showPlaceholders}
+              maxGuests={maxGuests}
+              onSubmitBooking={onSubmitBooking}
             />
           </div>
         </aside>
