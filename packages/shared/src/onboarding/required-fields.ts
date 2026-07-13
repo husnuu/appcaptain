@@ -133,6 +133,14 @@ export function getPetPolicyFieldKeys(
   return PET_POLICY_FIELD_KEYS.filter((key) => visible.has(key));
 }
 
+/**
+ * Pricing-step fields that are collected elsewhere and must not be required
+ * when saving the Pricing step. `boat_rules_and_policies` moved to the
+ * Description step (structured Yes/No toggles stored in structuredRules), so
+ * the Pricing form neither renders nor submits it.
+ */
+const PRICING_STEP_EXCLUDED_KEYS = new Set<string>(["boat_rules_and_policies"]);
+
 export function getRequiredPricingFieldKeys(
   fields: OnboardingFieldDTO[],
   listingModelKeys: string[]
@@ -140,7 +148,10 @@ export function getRequiredPricingFieldKeys(
   const scoped = filterFieldsByListingModels(fields, listingModelKeys);
   return getFieldsForWizardStep(scoped, OnboardingStep.PRICING)
     .map((f) => f.key)
-    .filter((key) => !INCLUDED_FEE_SKIP_KEYS.has(key));
+    .filter(
+      (key) =>
+        !INCLUDED_FEE_SKIP_KEYS.has(key) && !PRICING_STEP_EXCLUDED_KEYS.has(key)
+    );
 }
 
 export function getRequiredFeatureKeysForStep(
