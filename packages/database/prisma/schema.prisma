@@ -534,6 +534,8 @@ model Boat {
   calendarBlocks CalendarBlock[]
   priceOverrides CalendarPriceOverride[]
 
+  guestConversations GuestConversation[]
+
   @@index([ownerId])
   @@index([status])
   @@index([boatTypeKey])
@@ -687,10 +689,94 @@ model Booking {
 
   boat Boat @relation(fields: [boatId], references: [id], onDelete: Cascade)
 
+  guestConversation GuestConversation?
+  bookingPayment    BookingPayment?
+
   @@index([boatId])
   @@index([captainId])
   @@index([status])
   @@map("bookings")
+}
+
+enum GuestSenderType {
+  CAPTAIN
+  GUEST
+  SYSTEM
+}
+
+/// Guest-scoped conversation between a boat's captain and a (non-registered)
+/// guest, seeded from a `Booking` request. Distinct from the marketplace
+/// `Conversation`, which is tied to a `Reservation` + registered `User`.
+model GuestConversation {
+  id          String   @id @default(uuid())
+  boatId      String?
+  bookingId   String?  @unique
+  captainId   String   @db.Uuid
+  guestEmail  String
+  guestName   String
+  lastMessage String?
+  lastAt      DateTime @default(now())
+  unreadCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  messages GuestMessage[]
+  boat     Boat?    @relation(fields: [boatId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([captainId, lastAt])
+  @@map("guest_conversations")
+}
+
+model GuestMessage {
+  id             String          @id @default(uuid())
+  conversationId String
+  senderType     GuestSenderType
+  senderName     String
+  content        String
+  attachmentUrl  String?
+  isRead         Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+
+  conversation GuestConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("guest_messages")
+}
+
+enum BookingPaymentStatus {
+  PENDING
+  PAID
+  PAYOUT_SENT
+  REFUNDED
+  FAILED
+}
+
+/// Earnings/payout tracking for a guest `Booking`. Separate from the legacy
+/// `Payment`/`Payout` models, which are `Reservation`/Stripe based.
+model BookingPayment {
+  id         String               @id @default(uuid())
+  bookingId  String               @unique
+  captainId  String               @db.Uuid
+  guestName  String
+  guestEmail String
+  boatName   String
+  amount     Float
+  commission Float
+  netAmount  Float
+  currency   String               @default("EUR")
+  status     BookingPaymentStatus @default(PENDING)
+  method     String?
+  paidAt     DateTime?
+  payoutAt   DateTime?
+  invoiceUrl String?
+  note       String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([captainId, createdAt])
+  @@map("booking_payments")
 }
 
 enum BlockReason {

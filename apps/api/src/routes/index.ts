@@ -9,6 +9,8 @@ import { boatBrandsModule } from "../modules/boat-brands/index.js";
 import { discountsModule } from "../modules/discounts/index.js";
 import { bookingsModule } from "../modules/bookings/index.js";
 import { bookingCalendarModule } from "../modules/booking-calendar/index.js";
+import { guestMessagingModule } from "../modules/guest-messaging/index.js";
+import { paymentsModule } from "../modules/payments/index.js";
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthRoutes);
@@ -21,5 +23,7 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(discountsModule, { prefix: "/api/v1" });
   await app.register(bookingsModule, { prefix: "/api/v1" });
   await app.register(bookingCalendarModule, { prefix: "/api/v1" });
-  // TODO: reservations, payments, reviews, payouts
+  await app.register(guestMessagingModule, { prefix: "/api/v1" });
+  await app.register(paymentsModule, { prefix: "/api/v1" });
+  // TODO: reservations, reviews, payouts
 }

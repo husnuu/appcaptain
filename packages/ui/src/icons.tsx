@@ -75,4 +75,8 @@ export {
   faCalendarCheck,
   faEnvelope,
   faPhone,
+  faFilter,
+  faReceipt,
+  faCookieBite,
+  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";

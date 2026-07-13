@@ -2,7 +2,12 @@ import type {
   BookingListQuery,
   CreateBookingInput,
 } from "@getyourboat/shared";
-import { bookingRepository } from "@getyourboat/database";
+import { PLATFORM_COMMISSION_RATE } from "@getyourboat/shared";
+import {
+  bookingPaymentRepository,
+  bookingRepository,
+  guestConversationRepository,
+} from "@getyourboat/database";
 import { conflict, forbidden, notFound } from "../../../lib/errors.js";
 
 export async function createBooking(input: CreateBookingInput) {
@@ -19,7 +24,24 @@ export async function createBooking(input: CreateBookingInput) {
     );
   }
 
-  return bookingRepository.create(input, captainId);
+  const booking = await bookingRepository.create(input, captainId);
+
+  // Best-effort: open a guest conversation seeded from the request note so the
+  // captain can reply. A messaging failure must not fail the booking itself.
+  try {
+    await guestConversationRepository.getOrCreateForBooking({
+      bookingId: booking.id,
+      captainId,
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      boatId: booking.boatId,
+      initialMessage: booking.message ?? null,
+    });
+  } catch {
+    /* ignore — conversation can be created later */
+  }
+
+  return booking;
 }
 
 export function getAvailability(boatId: string) {
@@ -45,7 +67,31 @@ export async function approveBooking(
   totalPrice?: number | null
 ) {
   await loadOwnedBooking(id, captainId);
-  return bookingRepository.approve(id, totalPrice);
+  const booking = await bookingRepository.approve(id, totalPrice);
+
+  // Best-effort: open a PENDING payment record (gross - 15% commission) so the
+  // captain sees expected earnings. Skipped when no amount is known yet.
+  try {
+    const amount = booking.totalPrice ?? 0;
+    if (amount > 0 && !(await bookingPaymentRepository.existsForBooking(id))) {
+      const commission = Math.round(amount * PLATFORM_COMMISSION_RATE * 100) / 100;
+      await bookingPaymentRepository.create({
+        bookingId: id,
+        captainId: booking.captainId,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        boatName: booking.boat?.name ?? "İsimsiz tekne",
+        amount,
+        commission,
+        netAmount: Math.round((amount - commission) * 100) / 100,
+        currency: booking.currency,
+      });
+    }
+  } catch {
+    /* ignore — payment can be reconciled later */
+  }
+
+  return booking;
 }
 
 export async function rejectBooking(

@@ -261,6 +261,43 @@ export const api = {
       { method: "POST", body: { body } }
     ),
 
+  // ---- Guest messaging (booking-based) ----
+  listGuestConversations: () =>
+    request<{ conversations: import("@getyourboat/shared").GuestConversationDTO[] }>(
+      "/guest-conversations"
+    ),
+  guestUnreadCount: () =>
+    request<{ count: number }>("/guest-conversations/unread-count"),
+  getGuestConversation: (id: string) =>
+    request<{ conversation: import("@getyourboat/shared").GuestConversationDTO }>(
+      `/guest-conversations/${id}`
+    ),
+  getGuestMessages: (id: string) =>
+    request<{ messages: import("@getyourboat/shared").GuestMessageDTO[] }>(
+      `/guest-conversations/${id}/messages`
+    ),
+  sendGuestMessage: (id: string, content: string) =>
+    request<{ message: import("@getyourboat/shared").GuestMessageDTO }>(
+      `/guest-conversations/${id}/messages`,
+      { method: "POST", body: { content } }
+    ),
+
+  // ---- Payments (booking earnings) ----
+  listPayments: (query: import("@getyourboat/shared").BookingPaymentListQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<import("@getyourboat/shared").BookingPaymentListResponse>(
+      `/payments${qs ? `?${qs}` : ""}`
+    );
+  },
+  getPayment: (id: string) =>
+    request<{ payment: import("@getyourboat/shared").BookingPaymentDTO }>(
+      `/payments/${id}`
+    ),
+
   // ---- Experiences ----
   myExperiences: () =>
     request<{ items: import("@getyourboat/shared").ExperienceListItemDTO[] }>(

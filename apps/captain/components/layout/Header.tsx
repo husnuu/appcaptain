@@ -73,15 +73,14 @@ export function Header() {
   const [localeBusy, setLocaleBusy] = useState(false);
   const [localeError, setLocaleError] = useState<string | null>(null);
 
-  const { data: conversations } = useQuery({
-    queryKey: ["header-conversations"],
-    queryFn: () => api.listConversations().then((r) => r.items),
+  const { data: unreadData } = useQuery({
+    queryKey: ["header-guest-unread"],
+    queryFn: () => api.guestUnreadCount(),
     enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
-  const unreadTotal =
-    conversations?.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0) ?? 0;
+  const unreadTotal = unreadData?.count ?? 0;
 
   useEffect(() => {
     const initial = readStoredLocale();

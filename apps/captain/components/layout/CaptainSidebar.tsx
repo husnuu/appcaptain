@@ -59,8 +59,10 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
   const router = useRouter();
   const { signOut, isAuthenticated } = useAuth();
   const [pendingBookings, setPendingBookings] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  // Bekleyen rezervasyon talebi sayısını rozet için çek (yalnızca giriş yapılmışsa).
+  // Bekleyen rezervasyon talebi + okunmamış mesaj sayısını rozet için çek
+  // (yalnızca giriş yapılmışsa; rozetler kritik değil, hataları yut).
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
@@ -69,9 +71,13 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
       .then((res) => {
         if (!cancelled) setPendingBookings(res.pendingCount);
       })
-      .catch(() => {
-        /* rozet kritik değil; hatayı yut */
-      });
+      .catch(() => {});
+    void api
+      .guestUnreadCount()
+      .then((res) => {
+        if (!cancelled) setUnreadMessages(res.count);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -117,6 +123,11 @@ export function CaptainSidebar({ active }: { active: SidebarKey }) {
             {item.key === "bookings" && pendingBookings > 0 ? (
               <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-500 px-1.5 text-[11px] font-bold text-white">
                 {pendingBookings}
+              </span>
+            ) : null}
+            {item.key === "messages" && unreadMessages > 0 ? (
+              <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-500 px-1.5 text-[11px] font-bold text-white">
+                {unreadMessages > 9 ? "9+" : unreadMessages}
               </span>
             ) : null}
           </NavItem>
