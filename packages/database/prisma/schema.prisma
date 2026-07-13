@@ -531,6 +531,9 @@ model Boat {
   discounts Discount[]
   bookings  Booking[]
 
+  calendarBlocks CalendarBlock[]
+  priceOverrides CalendarPriceOverride[]
+
   @@index([ownerId])
   @@index([status])
   @@index([boatTypeKey])
@@ -688,6 +691,52 @@ model Booking {
   @@index([captainId])
   @@index([status])
   @@map("bookings")
+}
+
+enum BlockReason {
+  MAINTENANCE
+  OWNER_USE
+  MANUAL
+  OTHER
+}
+
+/// Captain-defined unavailability on a boat's calendar. A day-range block
+/// (startTime/endTime null) closes whole days; an hourly block closes a time
+/// window on a single day. Blocks apply to the boat regardless of listing model.
+model CalendarBlock {
+  id        String      @id @default(uuid())
+  boatId    String
+  boat      Boat        @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  reason    BlockReason @default(MANUAL)
+  note      String?
+  startDate DateTime
+  endDate   DateTime
+  startTime String? // 'HH:mm' — hourly blocks only
+  endTime   String? // 'HH:mm' — hourly blocks only
+  createdBy String // userId
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([boatId, startDate, endDate])
+  @@map("calendar_blocks")
+}
+
+/// Per-day (or per-slot) price override set from the calendar grid.
+model CalendarPriceOverride {
+  id        String   @id @default(uuid())
+  boatId    String
+  boat      Boat     @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  date      String // 'YYYY-MM-DD'
+  startTime String? // hourly slots only
+  endTime   String? // hourly slots only
+  price     Float
+  currency  String   @default("EUR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([boatId, date, startTime, endTime])
+  @@index([boatId, date])
+  @@map("calendar_price_overrides")
 }
 
 /// Which listing models a boat supports (hourly + daily, etc.).

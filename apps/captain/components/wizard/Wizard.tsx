@@ -4,6 +4,7 @@ import {
   Button,
   FontAwesomeIcon,
   faArrowLeft,
+  faCalendarDays,
   faEye,
   faHouse,
   faPaperPlane,
@@ -194,6 +195,14 @@ export function Wizard({ boatId }: { boatId: string }) {
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <Button
+            variant="outline"
+            className="border-2 border-brand-200 font-semibold text-brand-700 hover:bg-brand-50"
+            onClick={() => router.push(`/boats/${boat.id}/calendar`)}
+          >
+            <FontAwesomeIcon icon={faCalendarDays} className="text-[14px]" aria-hidden />
+            Takvim
+          </Button>
           <Button
             variant="outline"
             className="border-2 border-brand-500 font-semibold text-brand-600 hover:bg-brand-50"

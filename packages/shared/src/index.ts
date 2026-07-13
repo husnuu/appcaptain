@@ -5,6 +5,7 @@ export * from "./experience";
 export * from "./brand-model";
 export * from "./discount";
 export * from "./booking";
+export * from "./booking-calendar";
 export * from "./units";
 export * from "./hull-material";
 export * from "./cabin-engine";

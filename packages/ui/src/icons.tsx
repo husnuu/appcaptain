@@ -18,6 +18,7 @@ export type { IconDefinition };
 export {
   faCheck,
   faChevronDown,
+  faChevronLeft,
   faChevronRight,
   faArrowLeft,
   faArrowRight,

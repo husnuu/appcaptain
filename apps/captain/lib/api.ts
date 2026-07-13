@@ -408,6 +408,40 @@ export const api = {
       `/bookings/${id}/reject`,
       { method: "PATCH", body: { rejectionNote } }
     ),
+
+  // ---- Calendar / availability ----
+  getCalendarAvailability: (
+    boatId: string,
+    query: { rangeStart: string; rangeEnd: string; model: string }
+  ) => {
+    const params = new URLSearchParams(query);
+    return request<import("@getyourboat/shared").AvailabilityMap>(
+      `/boats/${boatId}/calendar/availability?${params.toString()}`,
+      { auth: false }
+    );
+  },
+  listCalendarBlocks: (boatId: string) =>
+    request<{ blocks: import("@getyourboat/shared").CalendarBlockDTO[] }>(
+      `/boats/${boatId}/calendar/blocks`
+    ),
+  createCalendarBlock: (
+    boatId: string,
+    body: Omit<import("@getyourboat/shared").CreateBlockInput, "boatId">
+  ) =>
+    request<{ block: import("@getyourboat/shared").CalendarBlockDTO }>(
+      `/boats/${boatId}/calendar/blocks`,
+      { method: "POST", body }
+    ),
+  deleteCalendarBlock: (blockId: string) =>
+    request<void>(`/calendar/blocks/${blockId}`, { method: "DELETE" }),
+  setCalendarPriceOverride: (
+    boatId: string,
+    body: Omit<import("@getyourboat/shared").SetPriceOverrideInput, "boatId">
+  ) =>
+    request<{ override: import("@getyourboat/shared").PriceOverride }>(
+      `/boats/${boatId}/calendar/price-override`,
+      { method: "POST", body }
+    ),
 };
 
 /**
