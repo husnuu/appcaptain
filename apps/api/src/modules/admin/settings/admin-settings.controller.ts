@@ -4,6 +4,16 @@ import { prisma } from "@getyourboat/database";
 import { createAuditLog } from "../audit.js";
 import { HttpError } from "../../../lib/errors.js";
 
+// Only these keys may be written through the settings endpoint.
+// Per-owner commission overrides are managed via PATCH /users/:id/commission.
+// Internal rate-limit and JTI revocation keys are managed internally and never exposed.
+const ALLOWED_SETTING_KEYS = new Set([
+  "commission_rate",
+  "maintenance_mode",
+  "max_booking_days",
+  "min_booking_hours",
+]);
+
 const settingSchema = z.object({
   value: z.string().min(0).max(2000),
 });
@@ -36,6 +46,7 @@ export async function adminSettingsRoutes(app: FastifyInstance) {
 
   app.put("/settings/:key", { onRequest: [app.requireSuperAdmin] }, async (req) => {
     const { key } = req.params as { key: string };
+    if (!ALLOWED_SETTING_KEYS.has(key)) throw new HttpError(400, "Unknown setting key", "BAD_REQUEST");
     const parsed = settingSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, "Invalid value", "BAD_REQUEST");
 
@@ -64,7 +75,8 @@ export async function adminSettingsRoutes(app: FastifyInstance) {
     const parsed = bulkSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");
 
-    const entries = Object.entries(parsed.data.settings);
+    const entries = Object.entries(parsed.data.settings).filter(([k]) => ALLOWED_SETTING_KEYS.has(k));
+    if (entries.length === 0) throw new HttpError(400, "No valid setting keys provided", "BAD_REQUEST");
     await Promise.all(
       entries.map(([key, value]) =>
         prisma.systemSetting.upsert({

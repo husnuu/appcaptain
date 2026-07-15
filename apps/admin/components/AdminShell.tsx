@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon, faGlobe, faCircleQuestion, cn, buttonVariants } from "@getyourboat/ui";
-import { clearAdminToken } from "../lib/auth";
+import { api } from "../lib/api";
 
 const LOCALES = [
   { value: "tr", label: "Türkçe", short: "TR" },
@@ -60,8 +60,7 @@ export function AdminTopBar() {
   }
 
   function logout() {
-    clearAdminToken();
-    router.push("/login");
+    api.logout().finally(() => router.push("/login"));
   }
 
   return (

@@ -11,8 +11,6 @@ import {
   type DiscountListResponse,
   type UpdateDiscountInput,
 } from "@getyourboat/shared";
-import { getAdminToken, setAdminToken } from "./auth";
-
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const V1 = `${BASE}/api/v1`;
 
@@ -26,21 +24,18 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: { method?: string; body?: unknown; auth?: boolean } = {}
+  options: { method?: string; body?: unknown } = {}
 ): Promise<T> {
-  const { method = "GET", body, auth = true } = options;
+  const { method = "GET", body } = options;
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) {
-    const token = getAdminToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
 
   const res = await fetch(`${V1}${path}`, {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
+    credentials: "include", // sends httpOnly cookie automatically on every request
   });
 
   const text = await res.text();
@@ -52,17 +47,19 @@ async function request<T>(
 }
 
 export const api = {
-  login: async (email: string, password: string) => {
-    const data = await request<{
+  login: (email: string, password: string) =>
+    request<{
       token: string;
       admin: { id: string; email: string; fullName: string; role: string };
-    }>("/admin/auth/login", { method: "POST", body: { email, password }, auth: false });
-    setAdminToken(data.token);
-    return data;
-  },
-  logout: () => {
-    setAdminToken(null);
-  },
+    }>("/admin/auth/login", { method: "POST", body: { email, password } }),
+
+  logout: () =>
+    request<{ ok: boolean }>("/admin/auth/logout", { method: "POST" }).catch(() => {}),
+
+  me: () =>
+    request<{ admin: { id: string; email: string; fullName: string; role: string; isActive: boolean } }>(
+      "/admin/auth/me"
+    ),
 
   // --- Boats ---
   listBoats: (query: { status?: string; search?: string; page?: number; limit?: number } = {}) => {

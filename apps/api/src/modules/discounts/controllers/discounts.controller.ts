@@ -10,7 +10,7 @@ import {
 import { parseDetailed } from "../../../lib/validate.js";
 import * as service from "../services/discount.service.js";
 import type { DiscountActor } from "../services/discount.service.js";
-import { verifyAdminToken } from "../../../plugins/admin-auth.js";
+import { verifyAdminToken, ADMIN_TOKEN_COOKIE } from "../../../plugins/admin-auth.js";
 
 function listQuery(req: FastifyRequest): DiscountListQuery {
   const q = req.query as {
@@ -47,14 +47,16 @@ const actorOf = (req: FastifyRequest): DiscountActor => {
  * Paths stay under `/admin` for API compatibility with the admin panel.
  */
 export async function adminDiscountRoutes(app: FastifyInstance) {
-  // Accept either admin JWT (admin panel) or captain JWT (captain app).
+  // Accept either admin JWT (httpOnly cookie from admin panel) or captain JWT (Bearer header).
   app.addHook("onRequest", async (req, reply) => {
-    const raw = req.headers.authorization;
-    const token = raw?.startsWith("Bearer ") ? raw.slice(7).trim() : null;
-    if (token) {
-      const adminUser = verifyAdminToken(token);
+    const cookieToken = req.cookies?.[ADMIN_TOKEN_COOKIE] ?? null;
+    if (cookieToken) {
+      const adminUser = await verifyAdminToken(cookieToken);
       if (adminUser) { req.adminUser = adminUser; return; }
+      // Cookie present but invalid — reject rather than falling through to captain auth
+      return reply.code(401).send({ message: "Unauthorized" });
     }
+    // No admin cookie — try captain Bearer token
     await app.requireAuth(req, reply);
   });
 

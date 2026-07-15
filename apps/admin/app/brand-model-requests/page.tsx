@@ -19,8 +19,6 @@ import {
   BOAT_BRAND_CATEGORY_LABELS,
   type BrandModelRequestDTO,
 } from "../../lib/api";
-import { getAdminToken } from "../../lib/auth";
-
 export default function BrandModelRequestsPage() {
   const router = useRouter();
   const [items, setItems] = useState<BrandModelRequestDTO[]>([]);
@@ -29,10 +27,6 @@ export default function BrandModelRequestsPage() {
   const [categories, setCategories] = useState<Record<string, BoatBrandCategory>>({});
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace("/login");
-      return;
-    }
     load();
   }, [router]);
 

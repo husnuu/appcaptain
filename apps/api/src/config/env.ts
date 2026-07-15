@@ -40,7 +40,7 @@ const envSchema = z.object({
       }
     }),
   ADMIN_ORIGIN: z.string().default("http://localhost:3001"),
-  ADMIN_JWT_SECRET: z.string().min(8).default("change-me-admin-secret-in-production"),
+  ADMIN_JWT_SECRET: z.string().min(32),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 

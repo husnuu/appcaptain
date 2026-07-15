@@ -1,16 +1,6 @@
-const TOKEN_KEY = "gyb_admin_token";
-
-export function getAdminToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setAdminToken(token: string | null): void {
-  if (typeof window === "undefined") return;
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
-}
-
+// Token is managed server-side via httpOnly cookie set by POST /admin/auth/login.
+// The frontend never reads or writes the token directly.
+// Call api.logout() to revoke the session server-side and clear the cookie.
 export function clearAdminToken(): void {
-  setAdminToken(null);
+  // No-op — kept for any legacy imports during migration
 }
