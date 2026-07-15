@@ -179,11 +179,18 @@ export function AdminTopBar() {
 }
 
 const NAV_ITEMS = [
+  { href: "/", label: "Dashboard", exact: true },
   { href: "/boats", label: "İlanlar" },
   { href: "/users", label: "Kullanıcılar" },
+  { href: "/reservations", label: "Rezervasyonlar" },
+  { href: "/finance", label: "Finans" },
+  { href: "/reviews", label: "Yorumlar" },
+  { href: "/notifications", label: "Bildirimler" },
   { href: "/discounts", label: "İndirimler" },
   { href: "/brands", label: "Markalar" },
   { href: "/brand-model-requests", label: "Marka Talepleri" },
+  { href: "/settings", label: "Ayarlar" },
+  { href: "/audit-log", label: "Denetim Kaydı" },
 ];
 
 function AdminSidebar() {
@@ -198,7 +205,7 @@ function AdminSidebar() {
                 href={item.href}
                 className={cn(
                   "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  pathname.startsWith(item.href)
+                  (item.exact ? pathname === item.href : pathname.startsWith(item.href))
                     ? "bg-brand-50 text-brand-700"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 )}

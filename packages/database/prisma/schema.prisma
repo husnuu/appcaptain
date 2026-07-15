@@ -1012,6 +1012,16 @@ model CalendarMockReservation {
   @@map("calendar_mock_reservations")
 }
 
+/* ======================== System Settings ========================== */
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
 /* ======================== Super Admin ========================== */
 
 model AdminUser {
