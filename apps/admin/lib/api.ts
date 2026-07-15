@@ -53,19 +53,75 @@ async function request<T>(
 
 export const api = {
   login: async (email: string, password: string) => {
-    const data = await request<{ accessToken: string; user: { role: string } }>(
-      "/auth/login",
-      { method: "POST", body: { email, password }, auth: false }
-    );
-    if (data.user.role !== "ADMIN") {
-      throw new ApiError(403, "Admin hesabı gerekli");
-    }
-    setAdminToken(data.accessToken);
+    const data = await request<{
+      token: string;
+      admin: { id: string; email: string; fullName: string; role: string };
+    }>("/admin/auth/login", { method: "POST", body: { email, password }, auth: false });
+    setAdminToken(data.token);
     return data;
   },
   logout: () => {
     setAdminToken(null);
   },
+
+  // --- Boats ---
+  listBoats: (query: { status?: string; search?: string; page?: number; limit?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (query.search) params.set("search", query.search);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<{
+      items: {
+        id: string;
+        title: string | null;
+        status: string;
+        approvalType: string;
+        boatTypeKey: string | null;
+        submittedAt: string | null;
+        updatedAt: string;
+        owner: { id: string; email: string | null; fullName: string | null };
+      }[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/admin/boats${qs ? `?${qs}` : ""}`);
+  },
+  updateBoatStatus: (id: string, body: { status: string; rejectionReason?: string }) =>
+    request<{ boat: { id: string; status: string; rejectionReason: string | null } }>(
+      `/admin/boats/${id}/status`,
+      { method: "PATCH", body }
+    ),
+
+  // --- Users ---
+  listUsers: (query: { search?: string; page?: number; limit?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (query.search) params.set("search", query.search);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<{
+      items: {
+        id: string;
+        email: string | null;
+        fullName: string | null;
+        phone: string | null;
+        role: string;
+        isVerified: boolean;
+        createdAt: string;
+        _count: { boats: number };
+      }[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/admin/users${qs ? `?${qs}` : ""}`);
+  },
+  suspendUser: (id: string, suspend: boolean) =>
+    request<{ profile: { id: string; email: string | null; isVerified: boolean } }>(
+      `/admin/users/${id}/suspend`,
+      { method: "PATCH", body: { suspend } }
+    ),
 
   listBrands: (category?: BoatBrandCategory) => {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";

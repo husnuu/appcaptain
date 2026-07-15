@@ -197,6 +197,27 @@ enum EngineType {
   SAIL_NO_ENGINE
 }
 
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  SUPPORT
+}
+
+enum BookingModel {
+  HOURLY
+  DAILY
+  STAY_INCLUDED
+  WEEKLY
+}
+
+enum BlockReason {
+  MAINTENANCE
+  OWNER_USE
+  MANUAL
+  OTHER
+}
+
 enum DiscountType {
   PERCENTAGE
   FIXED
@@ -530,6 +551,9 @@ model Boat {
 
   discounts Discount[]
   bookings  Booking[]
+
+  calendarBlocks           CalendarBlock[]
+  calendarMockReservations CalendarMockReservation[]
 
   @@index([ownerId])
   @@index([status])
@@ -950,4 +974,74 @@ model Review {
   createdAt     DateTime    @default(now())
 
   @@index([boatId])
+}
+
+/* ======================== Booking calendar ========================== */
+
+model CalendarBlock {
+  id          String        @id @default(cuid())
+  boatId      String
+  boat        Boat          @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  model       BookingModel?
+  reason      BlockReason
+  note        String?
+  startDate   DateTime
+  endDate     DateTime
+  startTime   String?
+  endTime     String?
+  createdBy   String?       @db.Uuid
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([boatId, startDate, endDate])
+  @@map("calendar_blocks")
+}
+
+model CalendarMockReservation {
+  id        String       @id @default(cuid())
+  boatId    String
+  boat      Boat         @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  model     BookingModel @default(DAILY)
+  startDate DateTime
+  endDate   DateTime
+  guestName String       @default("Test Misafiri")
+  note      String?
+  createdAt DateTime     @default(now())
+
+  @@index([boatId])
+  @@map("calendar_mock_reservations")
+}
+
+/* ======================== Super Admin ========================== */
+
+model AdminUser {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  role         AdminRole @default(MODERATOR)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+model AuditLog {
+  id         String    @id @default(cuid())
+  adminId    String    @db.Uuid
+  admin      AdminUser @relation(fields: [adminId], references: [id])
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
