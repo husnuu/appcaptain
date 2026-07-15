@@ -26,7 +26,7 @@ function extractBearer(req: FastifyRequest): string | null {
   return header.slice("Bearer ".length).trim();
 }
 
-function verifyAdminToken(token: string): AdminAuthUser | null {
+export function verifyAdminToken(token: string): AdminAuthUser | null {
   try {
     const payload = jwt.verify(token, env.ADMIN_JWT_SECRET) as {
       sub: string;
