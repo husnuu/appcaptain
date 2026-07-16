@@ -51,6 +51,14 @@ const envSchema = z.object({
   SUPABASE_PHOTOS_BUCKET: z.string().default("boat-photos"),
   SUPABASE_DOCUMENTS_BUCKET: z.string().default("boat-documents"),
   SUPABASE_EXPERIENCE_PHOTOS_BUCKET: z.string().default("experience-photos"),
+
+  // Email (optional — skip sending gracefully if not configured)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_SECURE: z.coerce.boolean().default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default("noreply@getyourboat.com"),
 });
 
 export const env = envSchema.parse(process.env);

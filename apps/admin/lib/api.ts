@@ -67,6 +67,9 @@ export const api = {
       status?: string;
       search?: string;
       boatTypeKey?: string;
+      location?: string;
+      priceMin?: number;
+      priceMax?: number;
       dateFrom?: string;
       dateTo?: string;
       page?: number;
@@ -77,6 +80,9 @@ export const api = {
     if (query.status) params.set("status", query.status);
     if (query.search) params.set("search", query.search);
     if (query.boatTypeKey) params.set("boatTypeKey", query.boatTypeKey);
+    if (query.location) params.set("location", query.location);
+    if (query.priceMin !== undefined) params.set("priceMin", String(query.priceMin));
+    if (query.priceMax !== undefined) params.set("priceMax", String(query.priceMax));
     if (query.dateFrom) params.set("dateFrom", query.dateFrom);
     if (query.dateTo) params.set("dateTo", query.dateTo);
     if (query.page) params.set("page", String(query.page));
@@ -93,6 +99,7 @@ export const api = {
         createdAt: string;
         updatedAt: string;
         owner: { id: string; email: string | null; fullName: string | null };
+        featureValues: { featureKey: string; value: string | null }[];
       }[];
       total: number;
       page: number;
@@ -101,11 +108,48 @@ export const api = {
   },
   getBoatTypes: () =>
     request<{ types: { key: string; label: string }[] }>("/admin/boats/types"),
+  getBoatCities: () =>
+    request<{ cities: string[] }>("/admin/boats/cities"),
+  getBoat: (id: string) =>
+    request<{
+      boat: {
+        id: string;
+        title: string | null;
+        description: string | null;
+        rulesText: string | null;
+        checkInNotes: string | null;
+        checkOutNotes: string | null;
+        status: string;
+        boatTypeKey: string | null;
+        rejectionReason: string | null;
+        createdAt: string;
+        updatedAt: string;
+        submittedAt: string | null;
+        reviewedAt: string | null;
+        owner: { id: string; email: string | null; fullName: string | null; phone: string | null };
+        photos: { id: string; publicUrl: string | null; storagePath: string; isCover: boolean; sortOrder: number; altText: string | null }[];
+        documents: { id: string; documentTypeKey: string; status: string; publicUrl: string | null }[];
+        listingModels: { listingModelKey: string }[];
+        pricing: { listingModelKey: string; price: number; currency: string }[];
+        featureValues: { featureKey: string; value: string | null }[];
+        stats: { reservationCount: number; totalRevenue: number; reviewCount: number; averageRating: number | null };
+      };
+    }>(`/admin/boats/${id}`),
+  updateBoat: (id: string, body: { title?: string; description?: string; boatTypeKey?: string; rulesText?: string; checkInNotes?: string; checkOutNotes?: string }) =>
+    request<{ boat: { id: string } }>(`/admin/boats/${id}`, { method: "PATCH", body }),
   updateBoatStatus: (id: string, body: { status: string; rejectionReason?: string }) =>
-    request<{ boat: { id: string; status: string; rejectionReason: string | null } }>(
+    request<{ boat: { id: string; status: string; rejectionReason: string | null }; emailSent: boolean }>(
       `/admin/boats/${id}/status`,
       { method: "PATCH", body }
     ),
+  updateBoatPricing: (id: string, listingModelKey: string, body: { price: number; currency: string }) =>
+    request<{ ok: boolean }>(`/admin/boats/${id}/pricing/${listingModelKey}`, { method: "PATCH", body }),
+  deleteBoatPhoto: (boatId: string, photoId: string) =>
+    request<{ deleted: string }>(`/admin/boats/${boatId}/photos/${photoId}`, { method: "DELETE" }),
+  reorderBoatPhotos: (boatId: string, photos: { id: string; sortOrder: number }[]) =>
+    request<{ ok: boolean }>(`/admin/boats/${boatId}/photos/reorder`, { method: "PATCH", body: { photos } }),
+  setBoatPhotoCover: (boatId: string, photoId: string) =>
+    request<{ ok: boolean }>(`/admin/boats/${boatId}/photos/${photoId}/cover`, { method: "PATCH", body: {} }),
   bulkBoatStatus: (body: { ids: string[]; status: string; rejectionReason?: string }) =>
     request<{ updated: number }>("/admin/boats/bulk-status", { method: "POST", body }),
   bulkDeleteBoats: (ids: string[]) =>
@@ -124,6 +168,8 @@ export const api = {
         email: string | null;
         fullName: string | null;
         phone: string | null;
+        companyName: string | null;
+        address: string | null;
         role: string;
         isVerified: boolean;
         createdAt: string;

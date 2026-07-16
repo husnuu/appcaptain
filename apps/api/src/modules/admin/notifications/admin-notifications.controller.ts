@@ -33,7 +33,12 @@ export async function adminNotificationsRoutes(app: FastifyInstance) {
     return { items, total, page, limit };
   });
 
-  // Send broadcast notification (logged; actual email/push delivery wired separately)
+  // Send broadcast notification.
+  // WIRING STATUS (2026-07-16): this endpoint ONLY writes to AuditLog — no emails or push
+  // messages are actually delivered. recipientCount is calculated but not acted on.
+  // To wire real delivery: import sendEmail() from lib/email.ts, query the target profiles,
+  // and call sendEmail() per recipient (or batch via your email provider's bulk API).
+  // For push notifications: a Notification model + captain-side polling/websocket is needed.
   app.post("/notifications/broadcast", { onRequest: [app.requireSuperAdmin] }, async (req) => {
     const parsed = broadcastSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");

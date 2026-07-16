@@ -41,6 +41,8 @@ export async function adminUsersRoutes(app: FastifyInstance) {
           email: true,
           fullName: true,
           phone: true,
+          companyName: true,
+          address: true,
           role: true,
           isVerified: true,
           createdAt: true,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { api, ApiError } from "../../lib/api";
 
 type Boat = Awaited<ReturnType<typeof api.listBoats>>["items"][number];
@@ -43,9 +44,13 @@ export default function AdminBoatsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [boatTypeKey, setBoatTypeKey] = useState("");
+  const [location, setLocation] = useState("");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [boatTypes, setBoatTypes] = useState<{ key: string; label: string }[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -53,9 +58,10 @@ export default function AdminBoatsPage() {
   const limit = 20;
   const totalPages = Math.ceil(total / limit);
 
-  // Fetch available boat types once on mount
+  // Fetch filter options once on mount
   useEffect(() => {
     api.getBoatTypes().then((res) => setBoatTypes(res.types)).catch(() => {});
+    api.getBoatCities().then((res) => setCitySuggestions(res.cities)).catch(() => {});
   }, []);
 
   const load = useCallback(
@@ -68,6 +74,9 @@ export default function AdminBoatsPage() {
           status: status || undefined,
           search: search || undefined,
           boatTypeKey: boatTypeKey || undefined,
+          location: location || undefined,
+          priceMin: priceMin ? Number(priceMin) : undefined,
+          priceMax: priceMax ? Number(priceMax) : undefined,
           dateFrom: dateFrom || undefined,
           dateTo: dateTo || undefined,
           page: p,
@@ -81,7 +90,7 @@ export default function AdminBoatsPage() {
         setLoading(false);
       }
     },
-    [status, search, boatTypeKey, dateFrom, dateTo]
+    [status, search, boatTypeKey, location, priceMin, priceMax, dateFrom, dateTo]
   );
 
   useEffect(() => {
@@ -209,6 +218,19 @@ export default function AdminBoatsPage() {
               <option key={t.key} value={t.key}>{t.label}</option>
             ))}
           </select>
+          {/* Location */}
+          <input
+            list="city-suggestions"
+            type="text"
+            placeholder="Şehir, bölge veya ülke..."
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") applySearch(); }}
+            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40"
+          />
+          <datalist id="city-suggestions">
+            {citySuggestions.map((c) => <option key={c} value={c} />)}
+          </datalist>
           {/* Search button */}
           <button
             type="button"
@@ -219,9 +241,9 @@ export default function AdminBoatsPage() {
           </button>
         </div>
 
-        {/* Date range row */}
+        {/* Date range + price range row */}
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs font-medium text-gray-500">Tarih aralığı:</span>
+          <span className="text-xs font-medium text-gray-500">Tarih:</span>
           <input
             type="date"
             value={dateFrom}
@@ -241,7 +263,34 @@ export default function AdminBoatsPage() {
               onClick={() => { setDateFrom(""); setDateTo(""); }}
               className="text-xs text-gray-400 hover:text-gray-600"
             >
-              ✕ Temizle
+              ✕
+            </button>
+          )}
+          <span className="text-xs font-medium text-gray-500 ml-2">Fiyat (€):</span>
+          <input
+            type="number"
+            min={0}
+            placeholder="Min"
+            value={priceMin}
+            onChange={(e) => setPriceMin(e.target.value)}
+            className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-xs text-gray-400">–</span>
+          <input
+            type="number"
+            min={0}
+            placeholder="Max"
+            value={priceMax}
+            onChange={(e) => setPriceMax(e.target.value)}
+            className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {(priceMin || priceMax) && (
+            <button
+              type="button"
+              onClick={() => { setPriceMin(""); setPriceMax(""); }}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              ✕
             </button>
           )}
           <button
@@ -251,9 +300,6 @@ export default function AdminBoatsPage() {
           >
             Filtrele
           </button>
-          <span className="text-xs text-gray-400 italic">
-            Bölge ve fiyat filtresi: yakında
-          </span>
         </div>
       </div>
 
@@ -283,8 +329,16 @@ export default function AdminBoatsPage() {
             <button
               type="button"
               disabled={bulkBusy}
+              onClick={() => bulkChangeStatus("REJECTED")}
+              className="rounded-md bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+            >
+              Reddet
+            </button>
+            <button
+              type="button"
+              disabled={bulkBusy}
               onClick={bulkDelete}
-              className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="rounded-md bg-red-700 px-3 py-1 text-xs font-medium text-white hover:bg-red-800 disabled:opacity-50"
             >
               Sil
             </button>
@@ -319,6 +373,7 @@ export default function AdminBoatsPage() {
                   />
                 </th>
                 <th className="px-4 py-3 text-left">İlan</th>
+                <th className="px-4 py-3 text-left">Lokasyon</th>
                 <th className="px-4 py-3 text-left">Kaptan</th>
                 <th className="px-4 py-3 text-left">Durum</th>
                 <th className="px-4 py-3 text-left">Oluşturulma</th>
@@ -344,6 +399,14 @@ export default function AdminBoatsPage() {
                     <div className="text-xs text-gray-400">{boat.boatTypeKey ?? "—"}</div>
                     <div className="text-xs text-gray-300 font-mono">{boat.id.slice(0, 8)}…</div>
                   </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {(() => {
+                      const city = boat.featureValues.find((f) => f.featureKey === "city")?.value;
+                      const country = boat.featureValues.find((f) => f.featureKey === "country")?.value;
+                      if (city && country) return `${city}, ${country}`;
+                      return city ?? country ?? "—";
+                    })()}
+                  </td>
                   <td className="px-4 py-3">
                     <div>{boat.owner.fullName ?? "—"}</div>
                     <div className="text-xs text-gray-400">{boat.owner.email ?? "—"}</div>
@@ -360,6 +423,12 @@ export default function AdminBoatsPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/boats/${boat.id}`}
+                        className="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                      >
+                        Detay
+                      </Link>
                       {boat.status === "PENDING_REVIEW" && (
                         <>
                           <button

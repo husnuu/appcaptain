@@ -87,6 +87,7 @@ export default function AdminUsersPage() {
             <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">Kullanıcı</th>
+                <th className="px-4 py-3 text-left">Şirket / Adres</th>
                 <th className="px-4 py-3 text-left">Telefon</th>
                 <th className="px-4 py-3 text-left">İlanlar</th>
                 <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
@@ -100,6 +101,17 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-900">{user.fullName ?? "—"}</div>
                     <div className="text-xs text-gray-400">{user.email ?? "—"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {user.companyName ? (
+                      <div className="text-sm font-medium text-gray-800">{user.companyName}</div>
+                    ) : null}
+                    {user.address ? (
+                      <div className="text-xs text-gray-400">{user.address}</div>
+                    ) : null}
+                    {!user.companyName && !user.address ? (
+                      <span className="text-gray-400">—</span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 text-gray-500">{user.phone ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-500">{user._count.boats}</td>
