@@ -362,10 +362,12 @@ export const api = {
     }>("/admin/dashboard"),
 
   // --- Reservations ---
-  listReservations: (query: { status?: string; search?: string; page?: number; limit?: number } = {}) => {
+  listReservations: (query: { status?: string; search?: string; dateFrom?: string; dateTo?: string; page?: number; limit?: number } = {}) => {
     const params = new URLSearchParams();
     if (query.status) params.set("status", query.status);
     if (query.search) params.set("search", query.search);
+    if (query.dateFrom) params.set("dateFrom", query.dateFrom);
+    if (query.dateTo) params.set("dateTo", query.dateTo);
     if (query.page) params.set("page", String(query.page));
     if (query.limit) params.set("limit", String(query.limit));
     const qs = params.toString();
@@ -385,16 +387,65 @@ export const api = {
         rejectionNote: string | null;
         createdAt: string;
         boat: { id: string; title: string | null; owner: { id: string; fullName: string | null; email: string | null } };
+        bookingPayment: { status: string; amount: number; currency: string } | null;
       }[];
       total: number;
       page: number;
       limit: number;
     }>(`/admin/reservations${qs ? `?${qs}` : ""}`);
   },
+  getReservation: (id: string) =>
+    request<{
+      booking: {
+        id: string;
+        guestName: string | null;
+        guestEmail: string | null;
+        guestPhone: string | null;
+        guestCount: number | null;
+        rentalType: string;
+        startDate: string;
+        endDate: string | null;
+        startTime: string | null;
+        endTime: string | null;
+        totalPrice: number | null;
+        currency: string | null;
+        message: string | null;
+        status: string;
+        rejectionNote: string | null;
+        createdAt: string;
+        updatedAt: string;
+        boat: {
+          id: string;
+          title: string | null;
+          boatTypeKey: string | null;
+          owner: { id: string; fullName: string | null; email: string | null; phone: string | null };
+        };
+        bookingPayment: {
+          id: string;
+          amount: number;
+          commission: number;
+          netAmount: number;
+          currency: string;
+          status: string;
+          method: string | null;
+          paidAt: string | null;
+          payoutAt: string | null;
+          invoiceUrl: string | null;
+          note: string | null;
+          createdAt: string;
+        } | null;
+        guestConversation: { id: string } | null;
+      };
+    }>(`/admin/reservations/${id}`),
   cancelReservation: (id: string, note?: string) =>
-    request<{ booking: { id: string; status: string } }>(
+    request<{ booking: { id: string; status: string; rejectionNote: string | null } }>(
       `/admin/reservations/${id}/cancel`,
       { method: "PATCH", body: { note } }
+    ),
+  refundReservation: (id: string, note?: string) =>
+    request<{ booking: { id: string; status: string }; payment: { id: string; status: string; amount: number; currency: string } }>(
+      `/admin/reservations/${id}/refund`,
+      { method: "POST", body: { note } }
     ),
 
   // --- Finance ---
