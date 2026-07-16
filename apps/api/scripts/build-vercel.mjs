@@ -60,7 +60,7 @@ await esbuild.build({
     "utf-8-validate",
   ],
   alias: {
-    "@getyourboat/database": join(monorepoRoot, "packages/database/dist/index.js"),
+    "@getyourboat/database": join(monorepoRoot, "packages/database/dist/index.cjs"),
     "@getyourboat/shared": join(monorepoRoot, "packages/shared/dist/index.js"),
   },
 });
