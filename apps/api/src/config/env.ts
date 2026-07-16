@@ -39,6 +39,8 @@ const envSchema = z.object({
         }
       }
     }),
+  ADMIN_ORIGIN: z.string().default("http://localhost:3001"),
+  ADMIN_JWT_SECRET: z.string().min(32),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
@@ -56,3 +58,6 @@ export type Env = z.infer<typeof envSchema>;
 
 /** Parsed list from CAPTAIN_ORIGIN (comma-separated). */
 export const captainOrigins = parseCaptainOrigins(env.CAPTAIN_ORIGIN);
+
+/** Parsed list from ADMIN_ORIGIN (comma-separated). */
+export const adminOrigins = parseCaptainOrigins(env.ADMIN_ORIGIN);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { AdminAppLayout } from "../components/AdminAppLayout";
 import "./globals.css";
 

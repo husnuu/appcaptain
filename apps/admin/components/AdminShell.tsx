@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon, faGlobe, faCircleQuestion, cn, buttonVariants } from "@getyourboat/ui";
-import { clearAdminToken } from "../lib/auth";
+import { api } from "../lib/api";
 
 const LOCALES = [
   { value: "tr", label: "Türkçe", short: "TR" },
@@ -60,8 +60,7 @@ export function AdminTopBar() {
   }
 
   function logout() {
-    clearAdminToken();
-    router.push("/login");
+    api.logout().finally(() => router.push("/login"));
   }
 
   return (
@@ -178,11 +177,56 @@ export function AdminTopBar() {
   );
 }
 
+const NAV_ITEMS = [
+  { href: "/", label: "Dashboard", exact: true },
+  { href: "/boats", label: "İlanlar" },
+  { href: "/users", label: "Kullanıcılar" },
+  { href: "/reservations", label: "Rezervasyonlar" },
+  { href: "/finance", label: "Finans" },
+  { href: "/reviews", label: "Yorumlar" },
+  { href: "/notifications", label: "Bildirimler" },
+  { href: "/discounts", label: "İndirimler" },
+  { href: "/brands", label: "Markalar" },
+  { href: "/brand-model-requests", label: "Marka Talepleri" },
+  { href: "/settings", label: "Ayarlar" },
+  { href: "/audit-log", label: "Denetim Kaydı" },
+];
+
+function AdminSidebar() {
+  const pathname = usePathname();
+  return (
+    <nav className="hidden w-56 shrink-0 border-r border-gray-200 bg-white md:block">
+      <div className="sticky top-14 pt-4 pb-8">
+        <ul className="space-y-0.5 px-3">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  (item.exact ? pathname === item.href : pathname.startsWith(item.href))
+                    ? "bg-brand-50 text-brand-700"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                )}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminTopBar />
-      <div>{children}</div>
+      <div className="flex">
+        <AdminSidebar />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   );
 }

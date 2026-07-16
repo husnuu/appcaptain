@@ -10,6 +10,7 @@ import {
 import { parseDetailed } from "../../../lib/validate.js";
 import * as service from "../services/discount.service.js";
 import type { DiscountActor } from "../services/discount.service.js";
+import { verifyAdminToken, ADMIN_TOKEN_COOKIE } from "../../../plugins/admin-auth.js";
 
 function listQuery(req: FastifyRequest): DiscountListQuery {
   const q = req.query as {
@@ -35,10 +36,10 @@ const idParam = (req: FastifyRequest) => (req.params as { id: string }).id;
 const searchQuery = (req: FastifyRequest) =>
   (req.query as { search?: string }).search?.trim() || undefined;
 
-const actorOf = (req: FastifyRequest): DiscountActor => ({
-  userId: req.authUser!.id,
-  isAdmin: req.authUser!.role === "ADMIN",
-});
+const actorOf = (req: FastifyRequest): DiscountActor => {
+  if (req.adminUser) return { userId: req.adminUser.id, isAdmin: true };
+  return { userId: req.authUser!.id, isAdmin: req.authUser!.role === "ADMIN" };
+};
 
 /**
  * Discount management. Any authenticated captain manages their own discounts
@@ -46,7 +47,18 @@ const actorOf = (req: FastifyRequest): DiscountActor => ({
  * Paths stay under `/admin` for API compatibility with the admin panel.
  */
 export async function adminDiscountRoutes(app: FastifyInstance) {
-  app.addHook("onRequest", app.requireAuth);
+  // Accept either admin JWT (httpOnly cookie from admin panel) or captain JWT (Bearer header).
+  app.addHook("onRequest", async (req, reply) => {
+    const cookieToken = req.cookies?.[ADMIN_TOKEN_COOKIE] ?? null;
+    if (cookieToken) {
+      const adminUser = await verifyAdminToken(cookieToken);
+      if (adminUser) { req.adminUser = adminUser; return; }
+      // Cookie present but invalid — reject rather than falling through to captain auth
+      return reply.code(401).send({ message: "Unauthorized" });
+    }
+    // No admin cookie — try captain Bearer token
+    await app.requireAuth(req, reply);
+  });
 
   app.get("/admin/discounts", async (req) => {
     return service.listDiscounts(listQuery(req), actorOf(req));

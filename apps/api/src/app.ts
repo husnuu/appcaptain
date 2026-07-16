@@ -3,9 +3,10 @@ import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import { authPlugin } from "./plugins/auth.js";
 import { captainAuthPlugin } from "./plugins/captain-auth.js";
+import { adminAuthPlugin } from "./plugins/admin-auth.js";
 import { registerRoutes } from "./routes/index.js";
 import { HttpError } from "./lib/errors.js";
-import { captainOrigins } from "./config/env.js";
+import { captainOrigins, adminOrigins } from "./config/env.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -18,12 +19,13 @@ export async function buildApp() {
   });
 
   await app.register(cors, {
-    origin: captainOrigins,
+    origin: [...captainOrigins, ...adminOrigins],
     credentials: true,
   });
   await app.register(cookie);
   await app.register(authPlugin); // legacy JWT (phase 0)
   await app.register(captainAuthPlugin);
+  await app.register(adminAuthPlugin);
   await registerRoutes(app);
 
   app.setErrorHandler((error: FastifyError, _req, reply) => {

@@ -22,8 +22,6 @@ import {
   type BoatBrandDTO,
   type BoatModelDTO,
 } from "../../lib/api";
-import { getAdminToken } from "../../lib/auth";
-
 export default function BrandsPage() {
   const router = useRouter();
   const [brands, setBrands] = useState<BoatBrandDTO[]>([]);
@@ -40,10 +38,6 @@ export default function BrandsPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace("/login");
-      return;
-    }
     loadBrands();
   }, [router, filterCategory]);
 

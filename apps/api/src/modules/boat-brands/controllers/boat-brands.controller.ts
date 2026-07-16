@@ -49,7 +49,7 @@ export async function captainBoatBrandRoutes(app: FastifyInstance) {
 
 /** Admin brand catalog + pending request moderation. */
 export async function adminBoatBrandRoutes(app: FastifyInstance) {
-  app.addHook("onRequest", app.requireAdmin);
+  app.addHook("onRequest", app.requireAdminAuth);
 
   app.get("/admin/boat-brands", async (req) => {
     const items = await service.listBrands(categoryQuery(req), false);

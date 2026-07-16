@@ -29,7 +29,6 @@ import {
   type DiscountDTO,
 } from "@getyourboat/shared";
 import { api, ApiError } from "../../lib/api";
-import { getAdminToken } from "../../lib/auth";
 
 const TARGET_FILTERS: (DiscountTarget | "ALL")[] = [
   "ALL",
@@ -58,10 +57,6 @@ export default function DiscountsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace("/login");
-      return;
-    }
     void load();
   }, [router]);
 

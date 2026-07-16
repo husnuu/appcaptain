@@ -13,16 +13,16 @@ execSync("pnpm --filter @getyourboat/database db:generate", {
 
 await esbuild.build({
   entryPoints: [join(root, "src/index.ts")],
-  outfile: join(root, "dist/index.js"),
+  outfile: join(root, "dist/index.cjs"),
   bundle: true,
   platform: "node",
   target: "node20",
-  format: "esm",
+  format: "cjs",
   logLevel: "info",
-  external: ["@prisma/client", "bcryptjs"],
+  external: ["bcryptjs"],
   alias: {
     "@getyourboat/shared": join(monorepoRoot, "packages/shared/dist/index.js"),
   },
 });
 
-console.log("Built @getyourboat/database -> dist/index.js");
+console.log("Built @getyourboat/database -> dist/index.cjs");

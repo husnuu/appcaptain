@@ -233,6 +233,16 @@ export const DiscountDayFilter = {
 export type DiscountDayFilter =
   (typeof DiscountDayFilter)[keyof typeof DiscountDayFilter];
 
+/* ------------------------------ Admin ------------------------------ */
+
+export const AdminRole = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
+  MODERATOR: "MODERATOR",
+  SUPPORT: "SUPPORT",
+} as const;
+export type AdminRole = (typeof AdminRole)[keyof typeof AdminRole];
+
 /* ------------------------------ Bookings ------------------------------ */
 
 export const BookingStatus = {

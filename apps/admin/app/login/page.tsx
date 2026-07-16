@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
     setError(null);
     try {
       await api.login(email, password);
-      router.push("/brands");
+      router.push("/boats");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Giriş başarısız");
     } finally {
