@@ -1,15 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../../lib/api";
 
 type User = Awaited<ReturnType<typeof api.listUsers>>["items"][number];
+
+const STATUS_OPTIONS = [
+  { value: "", label: "Tüm Durumlar" },
+  { value: "active", label: "Aktif" },
+  { value: "suspended", label: "Askıda" },
+];
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
@@ -21,7 +29,7 @@ export default function AdminUsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.listUsers({ search: search || undefined, page: p, limit });
+      const res = await api.listUsers({ search: search || undefined, status: status || undefined, page: p, limit });
       setUsers(res.items);
       setTotal(res.total);
     } catch (err) {
@@ -53,19 +61,28 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Kullanıcı Yönetimi</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Kaptan Hesapları</h1>
         <span className="text-sm text-gray-500">{total} kullanıcı</span>
       </div>
 
       <div className="mb-4 flex gap-3">
         <input
           type="text"
-          placeholder="Ad, e-posta veya telefon ara..."
+          placeholder="Ad, e-posta, şirket veya telefon ara..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { setPage(1); load(1); } }}
           className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
+        <select
+          value={status}
+          onChange={(e) => { setStatus(e.target.value); setPage(1); setTimeout(() => load(1), 0); }}
+          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        >
+          {STATUS_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
         <button
           type="button"
           onClick={() => { setPage(1); load(1); }}
@@ -88,6 +105,7 @@ export default function AdminUsersPage() {
               <tr>
                 <th className="px-4 py-3 text-left">Kullanıcı</th>
                 <th className="px-4 py-3 text-left">Şirket / Adres</th>
+                <th className="px-4 py-3 text-left">Rozet</th>
                 <th className="px-4 py-3 text-left">Telefon</th>
                 <th className="px-4 py-3 text-left">İlanlar</th>
                 <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
@@ -113,6 +131,15 @@ export default function AdminUsersPage() {
                       <span className="text-gray-400">—</span>
                     ) : null}
                   </td>
+                  <td className="px-4 py-3">
+                    {user.badge ? (
+                      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
+                        {user.badge}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-500">{user.phone ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-500">{user._count.boats}</td>
                   <td className="px-4 py-3 text-gray-400">
@@ -124,14 +151,22 @@ export default function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      disabled={actionBusy === user.id}
-                      onClick={() => toggleSuspend(user)}
-                      className={`rounded-md px-2.5 py-1 text-xs font-medium text-white disabled:opacity-50 ${user.isVerified ? "bg-orange-600 hover:bg-orange-700" : "bg-blue-600 hover:bg-blue-700"}`}
-                    >
-                      {user.isVerified ? "Askıya Al" : "Askıyı Kaldır"}
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                      >
+                        Detay
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={actionBusy === user.id}
+                        onClick={() => toggleSuspend(user)}
+                        className={`rounded-md px-2.5 py-1 text-xs font-medium text-white disabled:opacity-50 ${user.isVerified ? "bg-orange-600 hover:bg-orange-700" : "bg-blue-600 hover:bg-blue-700"}`}
+                      >
+                        {user.isVerified ? "Askıya Al" : "Askıyı Kaldır"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

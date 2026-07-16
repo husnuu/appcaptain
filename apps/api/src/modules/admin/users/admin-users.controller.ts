@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@getyourboat/database";
 import { createAuditLog } from "../audit.js";
 import { HttpError } from "../../../lib/errors.js";
-import { sendPasswordResetEmail } from "../../../lib/email.js";
+import { sendPasswordResetEmail, sendOwnerWarningEmail } from "../../../lib/email.js";
 
 const suspendSchema = z.object({
   suspend: z.boolean(),
@@ -16,10 +16,11 @@ const guestSuspendSchema = z.object({
 });
 
 export async function adminUsersRoutes(app: FastifyInstance) {
-  // List boat owners
+  // List boat owners with search + status filter
   app.get("/users", { onRequest: [app.requireAdminAuth] }, async (req) => {
     const query = req.query as {
       search?: string;
+      status?: string;
       page?: string;
       limit?: string;
     };
@@ -34,8 +35,11 @@ export async function adminUsersRoutes(app: FastifyInstance) {
         { email: { contains: query.search, mode: "insensitive" } },
         { fullName: { contains: query.search, mode: "insensitive" } },
         { phone: { contains: query.search, mode: "insensitive" } },
+        { companyName: { contains: query.search, mode: "insensitive" } },
       ];
     }
+    if (query.status === "active") where.isVerified = true;
+    if (query.status === "suspended") where.isVerified = false;
 
     const [items, total] = await Promise.all([
       prisma.profile.findMany({
@@ -51,6 +55,7 @@ export async function adminUsersRoutes(app: FastifyInstance) {
           companyName: true,
           address: true,
           role: true,
+          badge: true,
           isVerified: true,
           createdAt: true,
           _count: { select: { boats: true } },
@@ -62,9 +67,10 @@ export async function adminUsersRoutes(app: FastifyInstance) {
     return { items, total, page, limit };
   });
 
-  // Get single owner profile
+  // Get full owner profile: boats with per-boat stats, earnings, commission, avg rating
   app.get("/users/:id", { onRequest: [app.requireAdminAuth] }, async (req) => {
     const { id } = req.params as { id: string };
+
     const profile = await prisma.profile.findUnique({
       where: { id },
       select: {
@@ -73,22 +79,143 @@ export async function adminUsersRoutes(app: FastifyInstance) {
         fullName: true,
         phone: true,
         companyName: true,
+        address: true,
         role: true,
+        badge: true,
         isVerified: true,
         createdAt: true,
         updatedAt: true,
         boats: {
+          orderBy: { createdAt: "desc" },
           select: {
             id: true,
             title: true,
             status: true,
+            boatTypeKey: true,
             createdAt: true,
+            _count: { select: { bookings: true } },
+            reviews: { select: { rating: true } },
           },
         },
       },
     });
     if (!profile) throw new HttpError(404, "User not found", "NOT_FOUND");
-    return { profile };
+
+    // Aggregate earnings from BookingPayment (captainId is a UUID string)
+    const [earningsAgg, recentPayments] = await Promise.all([
+      prisma.bookingPayment.aggregate({
+        where: { captainId: id },
+        _sum: { amount: true, commission: true, netAmount: true },
+        _count: { id: true },
+      }),
+      prisma.bookingPayment.findMany({
+        where: { captainId: id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: {
+          id: true,
+          boatName: true,
+          amount: true,
+          commission: true,
+          netAmount: true,
+          currency: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    // Flatten ratings from all boats for avg
+    const allRatings = profile.boats.flatMap((b) => b.reviews.map((r) => r.rating));
+    const avgRating = allRatings.length > 0
+      ? allRatings.reduce((s, r) => s + r, 0) / allRatings.length
+      : null;
+
+    const boats = profile.boats.map((b) => {
+      const ratings = b.reviews.map((r) => r.rating);
+      const boatAvgRating = ratings.length > 0 ? ratings.reduce((s, r) => s + r, 0) / ratings.length : null;
+      return {
+        id: b.id,
+        title: b.title,
+        status: b.status,
+        boatTypeKey: b.boatTypeKey,
+        createdAt: b.createdAt,
+        bookingCount: b._count.bookings,
+        reviewCount: ratings.length,
+        avgRating: boatAvgRating,
+      };
+    });
+
+    return {
+      profile: {
+        ...profile,
+        boats,
+        stats: {
+          boatCount: profile.boats.length,
+          totalRevenue: earningsAgg._sum.amount ?? 0,
+          totalCommission: earningsAgg._sum.commission ?? 0,
+          totalNetAmount: earningsAgg._sum.netAmount ?? 0,
+          bookingCount: earningsAgg._count.id,
+          avgRating,
+        },
+        recentPayments,
+      },
+    };
+  });
+
+  // Set or clear a badge on a boat owner profile
+  app.patch("/users/:id/badge", { onRequest: [app.requireSuperAdmin] }, async (req) => {
+    const { id } = req.params as { id: string };
+    const parsed = z.object({ badge: z.string().max(64).nullable() }).safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");
+
+    const profile = await prisma.profile.findUnique({ where: { id } });
+    if (!profile) throw new HttpError(404, "User not found", "NOT_FOUND");
+
+    const updated = await prisma.profile.update({
+      where: { id },
+      data: { badge: parsed.data.badge },
+      select: { id: true, email: true, badge: true },
+    });
+
+    await createAuditLog({
+      adminId: req.adminUser!.id,
+      action: parsed.data.badge ? "OWNER_BADGE_SET" : "OWNER_BADGE_REMOVED",
+      targetType: "Profile",
+      targetId: id,
+      metadata: { email: profile.email, badge: parsed.data.badge },
+      ip: req.ip,
+    });
+
+    return { profile: updated };
+  });
+
+  // Send a warning email to a boat owner
+  app.post("/users/:id/warn", { onRequest: [app.requireSuperAdmin] }, async (req) => {
+    const { id } = req.params as { id: string };
+    const parsed = z.object({ message: z.string().min(1).max(2000) }).safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");
+
+    const profile = await prisma.profile.findUnique({ where: { id } });
+    if (!profile) throw new HttpError(404, "User not found", "NOT_FOUND");
+    if (!profile.email) throw new HttpError(400, "Owner has no email address", "BAD_REQUEST");
+
+    const emailSent = await sendOwnerWarningEmail({
+      to: profile.email,
+      name: profile.fullName ?? profile.email,
+      message: parsed.data.message,
+    });
+
+    await createAuditLog({
+      adminId: req.adminUser!.id,
+      action: "OWNER_WARNING_SENT",
+      targetType: "Profile",
+      targetId: id,
+      metadata: { email: profile.email, message: parsed.data.message, emailSent },
+      ip: req.ip,
+    });
+
+    return { emailSent };
   });
 
   // ── Guest user (User model) endpoints ────────────────────────────────

@@ -132,6 +132,39 @@ export async function sendPasswordResetEmail(opts: {
   }
 }
 
+// Triggered by POST /admin/users/:id/warn — sends a warning to a boat owner.
+export async function sendOwnerWarningEmail(opts: {
+  to: string;
+  name: string;
+  message: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: "Hesabınızla İlgili Önemli Bir Bildirim – GetYourBoat",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">Önemli Bildirim</h2>
+          <p>Sayın ${opts.name},</p>
+          <p>GetYourBoat admin ekibi hesabınızla ilgili aşağıdaki uyarıyı iletmek istemektedir:</p>
+          <div style="background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;margin:16px 0;border-radius:4px;">
+            ${opts.message}
+          </div>
+          <p>Sorularınız için destek ekibimize ulaşabilirsiniz.</p>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Sends notification to all active admin users when a boat is submitted for review.
 // Queries admin emails from DB so no env var config needed — all active admins are notified.
 export async function sendModeratorNewListingEmail(opts: {

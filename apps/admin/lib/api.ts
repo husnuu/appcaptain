@@ -156,10 +156,11 @@ export const api = {
   bulkDeleteBoats: (ids: string[]) =>
     request<{ deleted: number }>("/admin/boats/bulk", { method: "DELETE", body: { ids } }),
 
-  // --- Users ---
-  listUsers: (query: { search?: string; page?: number; limit?: number } = {}) => {
+  // --- Owner (Profile) Users ---
+  listUsers: (query: { search?: string; status?: string; page?: number; limit?: number } = {}) => {
     const params = new URLSearchParams();
     if (query.search) params.set("search", query.search);
+    if (query.status) params.set("status", query.status);
     if (query.page) params.set("page", String(query.page));
     if (query.limit) params.set("limit", String(query.limit));
     const qs = params.toString();
@@ -172,6 +173,7 @@ export const api = {
         companyName: string | null;
         address: string | null;
         role: string;
+        badge: string | null;
         isVerified: boolean;
         createdAt: string;
         _count: { boats: number };
@@ -181,11 +183,62 @@ export const api = {
       limit: number;
     }>(`/admin/users${qs ? `?${qs}` : ""}`);
   },
+  getOwner: (id: string) =>
+    request<{
+      profile: {
+        id: string;
+        email: string | null;
+        fullName: string | null;
+        phone: string | null;
+        companyName: string | null;
+        address: string | null;
+        role: string;
+        badge: string | null;
+        isVerified: boolean;
+        createdAt: string;
+        updatedAt: string;
+        boats: {
+          id: string;
+          title: string | null;
+          status: string;
+          boatTypeKey: string | null;
+          createdAt: string;
+          bookingCount: number;
+          reviewCount: number;
+          avgRating: number | null;
+        }[];
+        stats: {
+          boatCount: number;
+          totalRevenue: number;
+          totalCommission: number;
+          totalNetAmount: number;
+          bookingCount: number;
+          avgRating: number | null;
+        };
+        recentPayments: {
+          id: string;
+          boatName: string;
+          amount: number;
+          commission: number;
+          netAmount: number;
+          currency: string;
+          status: string;
+          createdAt: string;
+        }[];
+      };
+    }>(`/admin/users/${id}`),
   suspendUser: (id: string, suspend: boolean) =>
     request<{ profile: { id: string; email: string | null; isVerified: boolean } }>(
       `/admin/users/${id}/suspend`,
       { method: "PATCH", body: { suspend } }
     ),
+  setOwnerBadge: (id: string, badge: string | null) =>
+    request<{ profile: { id: string; email: string | null; badge: string | null } }>(
+      `/admin/users/${id}/badge`,
+      { method: "PATCH", body: { badge } }
+    ),
+  warnOwner: (id: string, message: string) =>
+    request<{ emailSent: boolean }>(`/admin/users/${id}/warn`, { method: "POST", body: { message } }),
 
   // --- Guest Users ---
   listGuests: (query: { search?: string; status?: string; dateFrom?: string; dateTo?: string; country?: string; page?: number; limit?: number } = {}) => {
