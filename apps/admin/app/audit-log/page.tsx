@@ -63,46 +63,40 @@ export default function AuditLogPage() {
             ) : items.length === 0 ? (
               <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">Kayıt bulunamadı</td></tr>
             ) : items.map((log) => (
-              <>
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2.5">
-                    <span className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-gray-700">
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="text-gray-800 text-xs">{log.admin.fullName}</div>
-                    <div className="text-gray-400 text-xs">{log.admin.role}</div>
-                  </td>
-                  <td className="px-4 py-2.5 text-xs text-gray-600">
-                    {log.targetType && <span>{log.targetType}</span>}
-                    {log.targetId && <span className="ml-1 text-gray-400">#{log.targetId.slice(0, 8)}</span>}
-                  </td>
-                  <td className="px-4 py-2.5 text-xs text-gray-500">{log.ip ?? "—"}</td>
-                  <td className="px-4 py-2.5 text-xs text-gray-500">
-                    {new Date(log.createdAt).toLocaleString("tr-TR")}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {log.metadata && (
-                      <button
-                        onClick={() => setExpanded(expanded === log.id ? null : log.id)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        {expanded === log.id ? "Gizle" : "Göster"}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-                {expanded === log.id && (
-                  <tr key={`${log.id}-meta`}>
-                    <td colSpan={6} className="bg-gray-50 px-4 py-2">
-                      <pre className="text-xs text-gray-700 overflow-auto max-h-40">
-                        {JSON.stringify(log.metadata, null, 2)}
-                      </pre>
-                    </td>
-                  </tr>
-                )}
-              </>
+              <tr key={log.id} className="hover:bg-gray-50 [&+tr[data-meta]]:bg-gray-50">
+                <td className="px-4 py-2.5">
+                  <span className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-gray-700">
+                    {log.action}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <div className="text-gray-800 text-xs">{log.admin.fullName}</div>
+                  <div className="text-gray-400 text-xs">{log.admin.role}</div>
+                </td>
+                <td className="px-4 py-2.5 text-xs text-gray-600">
+                  {log.targetType && <span>{log.targetType}</span>}
+                  {log.targetId && <span className="ml-1 text-gray-400">#{log.targetId.slice(0, 8)}</span>}
+                </td>
+                <td className="px-4 py-2.5 text-xs text-gray-500">{log.ip ?? "—"}</td>
+                <td className="px-4 py-2.5 text-xs text-gray-500">
+                  {new Date(log.createdAt).toLocaleString("tr-TR")}
+                </td>
+                <td className="px-4 py-2.5">
+                  {log.metadata && (
+                    <button
+                      onClick={() => setExpanded(expanded === log.id ? null : log.id)}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      {expanded === log.id ? "Gizle" : "Göster"}
+                    </button>
+                  )}
+                  {expanded === log.id && (
+                    <pre className="mt-1 text-xs text-gray-700 overflow-auto max-h-40 bg-gray-100 rounded p-2">
+                      {JSON.stringify(log.metadata, null, 2)}
+                    </pre>
+                  )}
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>

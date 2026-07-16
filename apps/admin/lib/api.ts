@@ -62,10 +62,23 @@ export const api = {
     ),
 
   // --- Boats ---
-  listBoats: (query: { status?: string; search?: string; page?: number; limit?: number } = {}) => {
+  listBoats: (
+    query: {
+      status?: string;
+      search?: string;
+      boatTypeKey?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ) => {
     const params = new URLSearchParams();
     if (query.status) params.set("status", query.status);
     if (query.search) params.set("search", query.search);
+    if (query.boatTypeKey) params.set("boatTypeKey", query.boatTypeKey);
+    if (query.dateFrom) params.set("dateFrom", query.dateFrom);
+    if (query.dateTo) params.set("dateTo", query.dateTo);
     if (query.page) params.set("page", String(query.page));
     if (query.limit) params.set("limit", String(query.limit));
     const qs = params.toString();
@@ -77,6 +90,7 @@ export const api = {
         approvalType: string;
         boatTypeKey: string | null;
         submittedAt: string | null;
+        createdAt: string;
         updatedAt: string;
         owner: { id: string; email: string | null; fullName: string | null };
       }[];
@@ -85,11 +99,17 @@ export const api = {
       limit: number;
     }>(`/admin/boats${qs ? `?${qs}` : ""}`);
   },
+  getBoatTypes: () =>
+    request<{ types: { key: string; label: string }[] }>("/admin/boats/types"),
   updateBoatStatus: (id: string, body: { status: string; rejectionReason?: string }) =>
     request<{ boat: { id: string; status: string; rejectionReason: string | null } }>(
       `/admin/boats/${id}/status`,
       { method: "PATCH", body }
     ),
+  bulkBoatStatus: (body: { ids: string[]; status: string; rejectionReason?: string }) =>
+    request<{ updated: number }>("/admin/boats/bulk-status", { method: "POST", body }),
+  bulkDeleteBoats: (ids: string[]) =>
+    request<{ deleted: number }>("/admin/boats/bulk", { method: "DELETE", body: { ids } }),
 
   // --- Users ---
   listUsers: (query: { search?: string; page?: number; limit?: number } = {}) => {
@@ -152,6 +172,7 @@ export const api = {
       stats: {
         totalProfiles: number;
         totalOwners: number;
+        totalCaptains: number;
         activeListings: number;
         pendingListings: number;
         suspendedListings: number;
@@ -165,9 +186,10 @@ export const api = {
         platformCommission: number;
         cancellationRate: number;
         commissionRate: number;
+        pendingVerifications: number;
       };
       recentActivity: { id: string; action: string; targetType: string | null; targetId: string | null; createdAt: string; admin: { fullName: string; email: string } }[];
-      weeklyTrend: { date: string; count: number; revenue: number }[];
+      weeklyTrend: { date: string; count: number; revenue: number; commission: number }[];
     }>("/admin/dashboard"),
 
   // --- Reservations ---

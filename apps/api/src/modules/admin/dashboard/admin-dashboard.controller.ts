@@ -16,6 +16,7 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
     const [
       totalProfiles,
       totalOwners,
+      totalCaptains,
       activeListings,
       pendingListings,
       suspendedListings,
@@ -26,10 +27,12 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
       completedBookings,
       todayBookings,
       revenueResult,
+      pendingVerifications,
       recentActivity,
     ] = await Promise.all([
       prisma.profile.count(),
       prisma.profile.count({ where: { role: "OWNER" } }),
+      prisma.user.count({ where: { role: "CAPTAIN" } }),
       prisma.boat.count({ where: { status: "ACTIVE" } }),
       prisma.boat.count({ where: { status: "PENDING_REVIEW" } }),
       prisma.boat.count({ where: { status: "SUSPENDED" } }),
@@ -43,6 +46,7 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
         where: { status: { in: ["APPROVED", "COMPLETED"] } },
         _sum: { totalPrice: true },
       }),
+      prisma.boatDocument.count({ where: { status: "PENDING" } }),
       prisma.auditLog.findMany({
         take: 15,
         orderBy: { createdAt: "desc" },
@@ -55,22 +59,22 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
     const cancellationRate =
       totalBookings > 0 ? Math.round((cancelledBookings / totalBookings) * 100) : 0;
 
-    // Weekly booking trend — last 14 days
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
-    twoWeeksAgo.setHours(0, 0, 0, 0);
+    // Booking trend — last 30 days (frontend slices to 7 or 30 for weekly/monthly toggle)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
 
     const recentBookings = await prisma.booking.findMany({
-      where: { createdAt: { gte: twoWeeksAgo } },
+      where: { createdAt: { gte: thirtyDaysAgo } },
       select: { createdAt: true, totalPrice: true, status: true },
     });
 
-    const trendMap = new Map<string, { count: number; revenue: number }>();
-    for (let i = 13; i >= 0; i--) {
+    const trendMap = new Map<string, { count: number; revenue: number; commission: number }>();
+    for (let i = 29; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
-      trendMap.set(key, { count: 0, revenue: 0 });
+      trendMap.set(key, { count: 0, revenue: 0, commission: 0 });
     }
     for (const b of recentBookings) {
       const key = b.createdAt.toISOString().slice(0, 10);
@@ -78,7 +82,9 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
       if (slot) {
         slot.count += 1;
         if (b.status === "APPROVED" || b.status === "COMPLETED") {
-          slot.revenue += b.totalPrice ?? 0;
+          const rev = b.totalPrice ?? 0;
+          slot.revenue += rev;
+          slot.commission += rev * commissionRate;
         }
       }
     }
@@ -86,12 +92,14 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
       date,
       count: v.count,
       revenue: Math.round(v.revenue),
+      commission: Math.round(v.commission),
     }));
 
     return {
       stats: {
         totalProfiles,
         totalOwners,
+        totalCaptains,
         activeListings,
         pendingListings,
         suspendedListings,
@@ -105,6 +113,7 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
         platformCommission: Math.round(platformCommission),
         cancellationRate,
         commissionRate: commissionRate * 100,
+        pendingVerifications,
       },
       recentActivity,
       weeklyTrend,

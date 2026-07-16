@@ -9,12 +9,34 @@ const statusSchema = z.object({
   rejectionReason: z.string().optional(),
 });
 
+const bulkStatusSchema = z.object({
+  ids: z.array(z.string()).min(1).max(100),
+  status: z.enum(["ACTIVE", "SUSPENDED", "REJECTED"]),
+  rejectionReason: z.string().optional(),
+});
+
+const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1).max(100),
+});
+
 export async function adminBoatsRoutes(app: FastifyInstance) {
+  // List available boat type keys (for filter dropdown)
+  app.get("/boats/types", { onRequest: [app.requireAdminAuth] }, async () => {
+    const types = await prisma.boatTypeOption.findMany({
+      orderBy: { sortOrder: "asc" },
+      select: { key: true, label: true },
+    });
+    return { types };
+  });
+
   // List all boats with filters
   app.get("/boats", { onRequest: [app.requireAdminAuth] }, async (req) => {
     const query = req.query as {
       status?: string;
       search?: string;
+      boatTypeKey?: string;
+      dateFrom?: string;
+      dateTo?: string;
       page?: string;
       limit?: string;
     };
@@ -25,8 +47,22 @@ export async function adminBoatsRoutes(app: FastifyInstance) {
 
     const where: Record<string, unknown> = {};
     if (query.status) where.status = query.status;
+    if (query.boatTypeKey) where.boatTypeKey = query.boatTypeKey;
+
+    if (query.dateFrom || query.dateTo) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.dateFrom) dateFilter.gte = new Date(query.dateFrom);
+      if (query.dateTo) {
+        const to = new Date(query.dateTo);
+        to.setHours(23, 59, 59, 999);
+        dateFilter.lte = to;
+      }
+      where.createdAt = dateFilter;
+    }
+
     if (query.search) {
       where.OR = [
+        { id: { contains: query.search, mode: "insensitive" } },
         { title: { contains: query.search, mode: "insensitive" } },
         { owner: { email: { contains: query.search, mode: "insensitive" } } },
         { owner: { fullName: { contains: query.search, mode: "insensitive" } } },
@@ -74,7 +110,7 @@ export async function adminBoatsRoutes(app: FastifyInstance) {
     return { boat };
   });
 
-  // Update boat status (approve / reject / suspend)
+  // Update single boat status (approve / reject / suspend)
   app.patch("/boats/:id/status", { onRequest: [app.requireAdminAuth] }, async (req) => {
     const { id } = req.params as { id: string };
     const parsed = statusSchema.safeParse(req.body);
@@ -105,5 +141,69 @@ export async function adminBoatsRoutes(app: FastifyInstance) {
     });
 
     return { boat: updated };
+  });
+
+  // Bulk status change (approve / suspend / reject multiple boats)
+  app.post("/boats/bulk-status", { onRequest: [app.requireAdminAuth] }, async (req) => {
+    const parsed = bulkStatusSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");
+
+    const { ids, status, rejectionReason } = parsed.data;
+
+    const { count } = await prisma.boat.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        status,
+        rejectionReason: status === "REJECTED" ? (rejectionReason ?? null) : null,
+        reviewedAt: new Date(),
+      },
+    });
+
+    await createAuditLog({
+      adminId: req.adminUser!.id,
+      action: `BULK_BOAT_STATUS_CHANGED_TO_${status}`,
+      targetType: "Boat",
+      targetId: ids.join(","),
+      metadata: { ids, newStatus: status, count },
+      ip: req.ip,
+    });
+
+    return { updated: count };
+  });
+
+  // Bulk delete boats
+  app.delete("/boats/bulk", { onRequest: [app.requireAdminAuth] }, async (req) => {
+    const parsed = bulkDeleteSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Invalid input", "BAD_REQUEST");
+
+    const { ids } = parsed.data;
+
+    await prisma.$transaction(async (tx) => {
+      // Resolve legacy reservations that block FK deletion
+      const reservations = await tx.reservation.findMany({
+        where: { boatId: { in: ids } },
+        select: { id: true },
+      });
+      const reservationIds = reservations.map((r) => r.id);
+
+      if (reservationIds.length > 0) {
+        await tx.payout.deleteMany({ where: { reservationId: { in: reservationIds } } });
+        await tx.review.deleteMany({ where: { reservationId: { in: reservationIds } } });
+        await tx.reservation.deleteMany({ where: { id: { in: reservationIds } } });
+      }
+
+      await tx.boat.deleteMany({ where: { id: { in: ids } } });
+    });
+
+    await createAuditLog({
+      adminId: req.adminUser!.id,
+      action: "BULK_BOATS_DELETED",
+      targetType: "Boat",
+      targetId: ids.join(","),
+      metadata: { ids, count: ids.length },
+      ip: req.ip,
+    });
+
+    return { deleted: ids.length };
   });
 }
