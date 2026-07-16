@@ -187,6 +187,75 @@ export const api = {
       { method: "PATCH", body: { suspend } }
     ),
 
+  // --- Guest Users ---
+  listGuests: (query: { search?: string; status?: string; dateFrom?: string; dateTo?: string; country?: string; page?: number; limit?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (query.search) params.set("search", query.search);
+    if (query.status) params.set("status", query.status);
+    if (query.dateFrom) params.set("dateFrom", query.dateFrom);
+    if (query.dateTo) params.set("dateTo", query.dateTo);
+    if (query.country) params.set("country", query.country);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<{
+      items: {
+        id: string;
+        email: string;
+        name: string;
+        phone: string | null;
+        country: string | null;
+        role: string;
+        isSuspended: boolean;
+        bannedAt: string | null;
+        createdAt: string;
+        _count: { reservations: number; reviews: number };
+      }[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/admin/users/guests${qs ? `?${qs}` : ""}`);
+  },
+  getGuest: (id: string) =>
+    request<{
+      user: {
+        id: string;
+        email: string;
+        name: string;
+        phone: string | null;
+        country: string | null;
+        role: string;
+        isSuspended: boolean;
+        bannedAt: string | null;
+        createdAt: string;
+        reservations: {
+          id: string;
+          startDate: string;
+          endDate: string;
+          guests: number;
+          totalPrice: string | null;
+          status: string;
+          createdAt: string;
+          boat: { id: string; title: string | null };
+        }[];
+        reviews: {
+          id: string;
+          rating: number;
+          comment: string | null;
+          createdAt: string;
+          boat: { id: string; title: string | null };
+        }[];
+        stats: { reservationCount: number; reviewCount: number; totalSpending: number };
+      };
+    }>(`/admin/users/guests/${id}`),
+  suspendGuest: (id: string, body: { suspend: boolean; permanent?: boolean }) =>
+    request<{ user: { id: string; email: string; isSuspended: boolean; bannedAt: string | null } }>(
+      `/admin/users/guests/${id}/suspend`,
+      { method: "PATCH", body }
+    ),
+  resetGuestPassword: (id: string) =>
+    request<{ emailSent: boolean }>(`/admin/users/guests/${id}/reset-password`, { method: "POST", body: {} }),
+
   listBrands: (category?: BoatBrandCategory) => {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
     return request<{ items: BoatBrandDTO[] }>(`/admin/boat-brands${qs}`);

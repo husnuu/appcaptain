@@ -970,15 +970,20 @@ model BoatDocument {
  */
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String
   phone        String?
   avatarUrl    String?
-  role         UserRole @default(CUSTOMER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  country      String?
+  role         UserRole  @default(CUSTOMER)
+  isSuspended  Boolean   @default(false)
+  bannedAt     DateTime?
+  passwordResetToken          String?   @unique
+  passwordResetTokenExpiresAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   captainProfile        CaptainProfile?
   reservations          Reservation[]   @relation("CustomerReservations")
@@ -986,6 +991,7 @@ model User {
   customerConversations Conversation[]  @relation("ConversationCustomer")
 
   @@index([role])
+  @@index([isSuspended])
 }
 
 model CaptainProfile {

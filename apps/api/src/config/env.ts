@@ -52,6 +52,9 @@ const envSchema = z.object({
   SUPABASE_DOCUMENTS_BUCKET: z.string().default("boat-documents"),
   SUPABASE_EXPERIENCE_PHOTOS_BUCKET: z.string().default("experience-photos"),
 
+  // Captain app URL used to build password-reset links in emails (no trailing slash)
+  CAPTAIN_APP_URL: z.string().default("http://localhost:3002"),
+
   // Email (optional — skip sending gracefully if not configured)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),

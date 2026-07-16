@@ -94,6 +94,44 @@ export async function sendBoatApprovalEmail(opts: {
   }
 }
 
+// Triggered by POST /admin/users/guests/:id/reset-password.
+// The captain app must handle /reset-password?token=xxx to complete the flow.
+export async function sendPasswordResetEmail(opts: {
+  to: string;
+  name: string;
+  token: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  const resetUrl = `${env.CAPTAIN_APP_URL}/reset-password?token=${opts.token}`;
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: "Şifre Sıfırlama – GetYourBoat",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">Şifre Sıfırlama</h2>
+          <p>Merhaba ${opts.name},</p>
+          <p>Hesabınız için bir şifre sıfırlama talebi alındı. Aşağıdaki bağlantıya tıklayarak yeni şifrenizi belirleyebilirsiniz.</p>
+          <div style="margin: 24px 0; text-align: center;">
+            <a href="${resetUrl}" style="background:#1e3a5f;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+              Şifremi Sıfırla
+            </a>
+          </div>
+          <p style="color:#666;font-size:13px;">Bu bağlantı 24 saat geçerlidir. Eğer bu talebi siz yapmadıysanız bu e-postayı dikkate almayınız.</p>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Sends notification to all active admin users when a boat is submitted for review.
 // Queries admin emails from DB so no env var config needed — all active admins are notified.
 export async function sendModeratorNewListingEmail(opts: {
