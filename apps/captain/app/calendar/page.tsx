@@ -1,118 +1,1310 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Alert,
+  Button,
   EmptyState,
   FontAwesomeIcon,
-  Skeleton,
-  cn,
+  Modal,
+  Select,
+  Spinner,
   faAnchor,
-  faCalendarDays,
-  faChevronRight,
+  faArrowLeft,
+  faArrowRight,
+  faTrash,
 } from "@getyourboat/ui";
+import {
+  BlockReason,
+  BookingModel,
+} from "@getyourboat/shared";
+import type {
+  BlockResponseDTO,
+  MockReservationDTO,
+} from "@getyourboat/shared";
 import { useAuth } from "../../components/auth-provider";
 import { AppShell } from "../../components/layout/AppShell";
+import { api, ApiError } from "../../lib/api";
 import { useMyBoats } from "../../lib/hooks";
-import { STATUS_LABELS } from "../../lib/onboarding";
-import type { BoatStatus } from "../../lib/types";
+import type { SerializedBoat } from "../../lib/types";
 
-const STATUS_BADGE_STYLES: Record<BoatStatus, string> = {
-  DRAFT: "bg-amber-100 text-amber-800",
-  PENDING_REVIEW: "bg-blue-100 text-blue-700",
-  ACTIVE: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  SUSPENDED: "bg-red-100 text-red-700",
+// Maps seeded listing model keys → BookingModel enum values
+const KEY_TO_MODEL: Record<string, BookingModel> = {
+  hourly: BookingModel.HOURLY,
+  daily: BookingModel.DAILY,
+  overnight: BookingModel.STAY_INCLUDED,
+  weekly_charter: BookingModel.WEEKLY,
 };
 
-function CalendarContent() {
-  const router = useRouter();
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const { data: boats, loading, error } = useMyBoats(!authLoading && isAuthenticated);
+const MODEL_TO_KEY: Record<BookingModel, string> = {
+  [BookingModel.HOURLY]:        "hourly",
+  [BookingModel.DAILY]:         "daily",
+  [BookingModel.STAY_INCLUDED]: "overnight",
+  [BookingModel.WEEKLY]:        "weekly_charter",
+};
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Skeleton className="h-24 rounded-2xl" />
-        <Skeleton className="h-24 rounded-2xl" />
-        <Skeleton className="h-24 rounded-2xl" />
-      </div>
-    );
+const MODEL_LABELS: Record<BookingModel, string> = {
+  HOURLY: "Saatlik",
+  DAILY: "Günlük",
+  STAY_INCLUDED: "Konaklamalı",
+  WEEKLY: "Haftalık",
+};
+
+const MODEL_UNIT: Record<BookingModel, string> = {
+  HOURLY: "/saat",
+  DAILY: "/gece",
+  STAY_INCLUDED: "/gece",
+  WEEKLY: "/hafta",
+};
+
+const REASON_LABELS: Record<string, string> = {
+  MAINTENANCE: "Bakım",
+  OWNER_USE: "Kişisel Kullanım",
+  MANUAL: "Manuel Blokaj",
+  OTHER: "Diğer",
+};
+
+// Orange for all owner-created blocks (maintenance, personal use, etc.)
+const BLOCK_COLOR = "#F97316";
+
+// Distinct per-model colors for customer reservations
+const RESERVATION_COLORS: Record<BookingModel, string> = {
+  [BookingModel.HOURLY]:        "#F87171", // pastel red
+  [BookingModel.DAILY]:         "#3B82F6", // blue
+  [BookingModel.STAY_INCLUDED]: "#A855F7", // purple
+  [BookingModel.WEEKLY]:        "#10B981", // green
+};
+
+// Fallback for unknown model
+const BOOKED_COLOR = "#6366F1";
+
+const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const MONTH_NAMES = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+];
+
+type ViewMode = "monthly" | "weekly" | "daily";
+
+// Day cell data enriched with block/reservation model for coloring
+type RichDay = {
+  date: string;
+  status: "AVAILABLE" | "BLOCKED" | "BOOKED";
+  blockModel?: BookingModel;   // set for BLOCKED days
+  bookedModel?: BookingModel;  // set for BOOKED days (mock reservation model)
+};
+
+function toYMD(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function parseDate(s: string): Date {
+  return new Date(`${s}T00:00:00.000Z`);
+}
+
+function addDays(s: string, n: number): string {
+  const d = parseDate(s);
+  d.setUTCDate(d.getUTCDate() + n);
+  return toYMD(d);
+}
+
+function getMondayOf(d: Date): string {
+  const dow = d.getUTCDay();
+  const offset = dow === 0 ? 6 : dow - 1;
+  const monday = new Date(d);
+  monday.setUTCDate(d.getUTCDate() - offset);
+  return toYMD(monday);
+}
+
+function formatPrice(price: number, currency: string): string {
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency, maximumFractionDigits: 0 }).format(price);
+}
+
+// Build a map of date → { status, blockModel } from blocks + mock reservations
+function buildDayMap(
+  blocks: BlockResponseDTO[],
+  mockReservations: MockReservationDTO[],
+): Record<string, RichDay> {
+  const map: Record<string, RichDay> = {};
+
+  for (const block of blocks) {
+    let cur = parseDate(block.startDate);
+    const end = parseDate(block.endDate);
+    while (cur <= end) {
+      const d = toYMD(cur);
+      if (!map[d]) map[d] = { date: d, status: "BLOCKED", blockModel: block.model as BookingModel };
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
   }
 
-  if (error) {
-    return <Alert variant="danger">{error}</Alert>;
+  for (const res of mockReservations) {
+    let cur = parseDate(res.startDate);
+    const end = parseDate(res.endDate);
+    while (cur <= end) {
+      const d = toYMD(cur);
+      if (!map[d]) map[d] = { date: d, status: "BOOKED", bookedModel: res.model as BookingModel };
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
   }
 
-  if (!boats || boats.length === 0) {
-    return (
-      <EmptyState
-        title="Takvim için tekne yok"
-        description="Önce bir tekne ekleyin; müsaitlik takvimi tekne bazında yönetilir."
-      />
-    );
+  return map;
+}
+
+// ─── Day cell (month / week grid) ─────────────────────────────────────────────
+
+function DayCell({
+  day,
+  isPast,
+  isRangeStart,
+  isInHoverRange,
+  isRangeEnd,
+  pricingMap,
+  primaryModelKey,
+  onClick,
+  onMouseEnter,
+}: {
+  day: RichDay;
+  isPast: boolean;
+  isRangeStart: boolean;
+  isInHoverRange: boolean;
+  isRangeEnd: boolean;
+  pricingMap: PricingMap;
+  primaryModelKey: string | undefined;
+  onClick: (day: RichDay) => void;
+  onMouseEnter: () => void;
+}) {
+  const isBlocked = day.status === "BLOCKED";
+  const isBooked = day.status === "BOOKED";
+  const dateNum = Number(day.date.slice(8));
+
+  let cls =
+    "flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-lg text-sm font-medium transition-all ";
+  let style: React.CSSProperties | undefined;
+
+  if (isBlocked) {
+    cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
+    style = { backgroundColor: BLOCK_COLOR };
+  } else if (isBooked) {
+    const color = day.bookedModel ? RESERVATION_COLORS[day.bookedModel] : BOOKED_COLOR;
+    cls += isPast ? "cursor-default opacity-50 text-white" : "text-white";
+    style = { backgroundColor: color, opacity: isPast ? 0.5 : 0.75 };
+  } else if (isPast) {
+    cls += "cursor-default text-white/20";
+  } else if (isRangeStart || isRangeEnd) {
+    cls += "bg-white font-semibold text-gray-900";
+  } else if (isInHoverRange) {
+    cls += "bg-white/20 text-white";
+  } else {
+    cls += "bg-white/5 text-white hover:bg-white/15";
   }
+
+  // Pick the price for this cell: use the cell's own model when blocked/booked,
+  // otherwise fall back to the primary (first) model's price
+  const cellModelKey = isBlocked
+    ? (day.blockModel ? MODEL_TO_KEY[day.blockModel] : primaryModelKey)
+    : isBooked
+      ? (day.bookedModel ? MODEL_TO_KEY[day.bookedModel] : primaryModelKey)
+      : primaryModelKey;
+  const cellPriceEntry = cellModelKey ? pricingMap[cellModelKey] : undefined;
+  const cellPrice =
+    cellPriceEntry && cellPriceEntry.price > 0
+      ? formatPrice(cellPriceEntry.price, cellPriceEntry.currency)
+      : undefined;
+  const showPrice = cellPrice && !isPast;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {boats.map((boat) => {
-        const cover = boat.photos?.[0]?.publicUrl;
+    <button
+      onClick={() => onClick(day)}
+      onMouseEnter={onMouseEnter}
+      className={cls.trim()}
+      style={style}
+      disabled={isBooked || isPast}
+      title={
+        isBlocked
+          ? `Blokeli${day.blockModel ? ` (${MODEL_LABELS[day.blockModel]})` : ""} — listeden kaldır`
+          : isBooked
+            ? `${day.bookedModel ? `${MODEL_LABELS[day.bookedModel]} ` : ""}Rezervasyon (Test)`
+            : isRangeStart
+              ? "Başlangıç seçildi — bitiş gününe tıkla (aynı güne tıkla → tek gün)"
+              : undefined
+      }
+    >
+      <span>{dateNum}</span>
+      {showPrice && (
+        <span className="text-[9px] font-normal leading-none text-white/70">{cellPrice}</span>
+      )}
+    </button>
+  );
+}
+
+// ─── Monthly calendar ──────────────────────────────────────────────────────────
+
+function MonthCalendar({
+  year,
+  month,
+  dayMap,
+  rangePickStart,
+  hoverDate,
+  pricingMap,
+  primaryModelKey,
+  onDayClick,
+  onDayHover,
+}: {
+  year: number;
+  month: number;
+  dayMap: Record<string, RichDay>;
+  rangePickStart: string | null;
+  hoverDate: string | null;
+  pricingMap: PricingMap;
+  primaryModelKey: string | undefined;
+  onDayClick: (day: RichDay) => void;
+  onDayHover: (date: string) => void;
+}) {
+  const today = toYMD(new Date());
+  const firstOfMonth = toYMD(new Date(Date.UTC(year, month, 1)));
+  const lastOfMonth = toYMD(new Date(Date.UTC(year, month + 1, 0)));
+
+  const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const leadOffset = firstDow === 0 ? 6 : firstDow - 1;
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const totalMain = leadOffset + daysInMonth;
+  const trailOffset = totalMain % 7 === 0 ? 0 : 7 - (totalMain % 7);
+  const totalCells = totalMain + trailOffset;
+
+  const cells = Array.from({ length: totalCells }, (_, i) => {
+    const date = toYMD(new Date(Date.UTC(year, month, 1 - leadOffset + i)));
+    return {
+      day: dayMap[date] ?? { date, status: "AVAILABLE" as const },
+      isOverflow: date < firstOfMonth || date > lastOfMonth,
+    };
+  });
+
+  const rangeMin =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate ? rangePickStart : hoverDate
+      : rangePickStart;
+  const rangeMax =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate ? hoverDate : rangePickStart
+      : null;
+
+  return (
+    <div className="mt-4">
+      <div className="mb-2 grid grid-cols-7 gap-1">
+        {DAY_NAMES.map((n) => (
+          <div key={n} className="text-center text-caption font-semibold text-white/50">{n}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map(({ day: cell, isOverflow }) => (
+          <DayCell
+            key={cell.date}
+            day={cell}
+            isPast={cell.date < today || isOverflow}
+            isRangeStart={cell.date === rangePickStart}
+            isRangeEnd={!!rangeMax && cell.date === rangeMax && cell.date !== rangePickStart}
+            isInHoverRange={!!(rangeMin && rangeMax && cell.date > rangeMin && cell.date < rangeMax)}
+            pricingMap={pricingMap}
+            primaryModelKey={primaryModelKey}
+            onClick={onDayClick}
+            onMouseEnter={() => cell.date >= today && !isOverflow && onDayHover(cell.date)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Weekly calendar (time-grid, Google Calendar style) ───────────────────────
+
+function WeekCalendar({
+  weekStart,
+  blocks,
+  mockReservations,
+  rangePickStart,
+  hoverDate,
+  onDayClick,
+  onDayHover,
+}: {
+  weekStart: string;
+  blocks: BlockResponseDTO[];
+  mockReservations: MockReservationDTO[];
+  rangePickStart: string | null;
+  hoverDate: string | null;
+  onDayClick: (day: RichDay) => void;
+  onDayHover: (date: string) => void;
+}) {
+  const today = toYMD(new Date());
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  const rangeMin =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate ? rangePickStart : hoverDate
+      : rangePickStart;
+  const rangeMax =
+    rangePickStart && hoverDate
+      ? rangePickStart <= hoverDate ? hoverDate : rangePickStart
+      : null;
+
+  const dayData = days.map((date) => {
+    const dayBlocks = blocks.filter((b) => b.startDate <= date && b.endDate >= date);
+    const dayRes = mockReservations.filter((r) => r.startDate <= date && r.endDate >= date);
+    const fullDayBlock = dayBlocks.find((b) => b.model !== BookingModel.HOURLY) ?? null;
+    const fullDayRes = dayRes[0] ?? null;
+    const hourlyBlocks = dayBlocks.filter((b) => b.model === BookingModel.HOURLY);
+    const isPast = date < today;
+    const isRangeStart = date === rangePickStart;
+    const isInRange = !!(rangeMin && rangeMax && date > rangeMin && date < rangeMax);
+    const richDay: RichDay = fullDayBlock
+      ? { date, status: "BLOCKED", blockModel: fullDayBlock.model as BookingModel }
+      : fullDayRes
+        ? { date, status: "BOOKED", bookedModel: fullDayRes.model as BookingModel }
+        : { date, status: "AVAILABLE" };
+    return { date, fullDayBlock, fullDayRes, hourlyBlocks, isPast, isRangeStart, isInRange, richDay };
+  });
+
+  return (
+    <div className="mt-4">
+      {/* Day header row */}
+      <div className="grid border-b border-white/10 pb-2" style={{ gridTemplateColumns: "3.5rem repeat(7, 1fr)" }}>
+        <div />
+        {dayData.map(({ date, isPast }) => {
+          const jsDate = parseDate(date);
+          const dayLabel = DAY_NAMES[jsDate.getUTCDay() === 0 ? 6 : jsDate.getUTCDay() - 1]!;
+          const isToday = date === today;
+          return (
+            <div key={date} className="text-center px-0.5">
+              <div className="text-xs font-semibold text-white/50">{dayLabel}</div>
+              <div className={`mt-0.5 text-sm ${isToday ? "font-bold text-white" : isPast ? "text-white/25" : "text-white/75"}`}>
+                {jsDate.getUTCDate()}
+                <span className={`ml-1 text-[10px] font-normal ${isPast ? "text-white/20" : "text-white/35"}`}>
+                  {MONTH_NAMES[jsDate.getUTCMonth()]!.slice(0, 3)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Scrollable time grid */}
+      <div className="mt-1 overflow-y-auto" style={{ maxHeight: "26rem" }}>
+        {Array.from({ length: DAILY_END - DAILY_START }, (_, i) => {
+          const h = DAILY_START + i;
+          const startTime = `${String(h).padStart(2, "0")}:00`;
+          const endTime = `${String(h + 1).padStart(2, "0")}:00`;
+
+          return (
+            <div
+              key={h}
+              className="grid border-t border-white/5"
+              style={{ gridTemplateColumns: "3.5rem repeat(7, 1fr)", height: "2.5rem" }}
+            >
+              <div className="flex items-start justify-end pr-2 pt-0.5">
+                <span className="text-[10px] font-mono text-white/30">{startTime}</span>
+              </div>
+
+              {dayData.map(({ date, fullDayBlock, fullDayRes, hourlyBlocks, isPast, isRangeStart, isInRange, richDay }) => {
+                let bgColor: string | undefined;
+                let cellLabel: string | undefined;
+                let isBooked = false;
+
+                if (fullDayBlock) {
+                  bgColor = BLOCK_COLOR;
+                  if (i === 0) cellLabel = `Blokaj — ${MODEL_LABELS[fullDayBlock.model as BookingModel]}`;
+                } else if (fullDayRes) {
+                  bgColor = RESERVATION_COLORS[fullDayRes.model as BookingModel] ?? BOOKED_COLOR;
+                  isBooked = true;
+                  if (i === 0) cellLabel = `${MODEL_LABELS[fullDayRes.model as BookingModel]} Rezervasyonu`;
+                } else {
+                  const slotBlock = hourlyBlocks.find(
+                    (b) => b.startTime && b.endTime && b.startTime < endTime && b.endTime > startTime,
+                  );
+                  if (slotBlock) {
+                    bgColor = BLOCK_COLOR;
+                    cellLabel = "Saatlik Blokaj";
+                  }
+                }
+
+                const isOccupied = !!bgColor;
+                const isAvailableAndFuture = !isOccupied && !isPast;
+                const rangeHighlight = isRangeStart ? "bg-white/20" : isInRange ? "bg-white/10" : "";
+
+                return (
+                  <button
+                    key={date}
+                    disabled={isOccupied || isPast}
+                    className={[
+                      "border-l border-white/5 flex items-start px-1 pt-0.5 overflow-hidden text-left w-full",
+                      isAvailableAndFuture ? `hover:bg-white/10 cursor-pointer ${rangeHighlight}` : "cursor-default",
+                    ].join(" ")}
+                    style={bgColor ? { backgroundColor: bgColor, opacity: isPast ? 0.3 : isBooked ? 0.82 : 1 } : undefined}
+                    onClick={() => { if (isAvailableAndFuture) onDayClick(richDay); }}
+                    onMouseEnter={() => { if (isAvailableAndFuture) onDayHover(date); }}
+                  >
+                    {cellLabel && (
+                      <span className="text-[9px] font-semibold text-white leading-tight truncate">{cellLabel}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Daily calendar (hourly timeline) ─────────────────────────────────────────
+
+const DAILY_START = 8;
+const DAILY_END = 22;
+
+function DailyCalendar({
+  date,
+  blocks,
+  mockReservations,
+}: {
+  date: string;
+  blocks: BlockResponseDTO[];
+  mockReservations: MockReservationDTO[];
+}) {
+  const today = toYMD(new Date());
+  const isPastDay = date < today;
+
+  const dayBlocks = blocks.filter((b) => b.startDate <= date && b.endDate >= date);
+  const dayReservations = mockReservations.filter((r) => r.startDate <= date && r.endDate >= date);
+
+  const slots = Array.from({ length: DAILY_END - DAILY_START }, (_, i) => {
+    const h = DAILY_START + i;
+    const startTime = `${String(h).padStart(2, "0")}:00`;
+    const endTime = `${String(h + 1).padStart(2, "0")}:00`;
+
+    // Non-HOURLY owner block covers the entire day
+    const fullDayBlock = dayBlocks.find((b) => b.model !== BookingModel.HOURLY);
+    if (fullDayBlock) {
+      return { startTime, endTime, status: "BLOCKED" as const, blockModel: fullDayBlock.model as BookingModel, bookedModel: undefined };
+    }
+
+    // Mock reservation covers the entire day
+    if (dayReservations.length > 0) {
+      const res = dayReservations[0]!;
+      return { startTime, endTime, status: "BOOKED" as const, blockModel: undefined, bookedModel: res.model as BookingModel };
+    }
+
+    // HOURLY block overlapping this slot
+    const slotBlock = dayBlocks.find(
+      (b) =>
+        b.model === BookingModel.HOURLY &&
+        b.startTime && b.endTime &&
+        b.startTime < endTime && b.endTime > startTime,
+    );
+    if (slotBlock) {
+      return { startTime, endTime, status: "BLOCKED" as const, blockModel: BookingModel.HOURLY, bookedModel: undefined };
+    }
+
+    return { startTime, endTime, status: "AVAILABLE" as const, blockModel: undefined, bookedModel: undefined };
+  });
+
+  return (
+    <div className="mt-4 space-y-0.5">
+      {slots.map(({ startTime, endTime, status, blockModel, bookedModel }) => {
+        const isBlocked = status === "BLOCKED";
+        const isBooked = status === "BOOKED";
+        const bgColor = isBlocked ? BLOCK_COLOR : isBooked ? (bookedModel ? RESERVATION_COLORS[bookedModel] : BOOKED_COLOR) : undefined;
         return (
-          <button
-            key={boat.id}
-            onClick={() => router.push(`/boats/${boat.id}/calendar`)}
-            className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 text-left transition hover:border-brand-300 hover:shadow-sm"
+          <div
+            key={startTime}
+            className={[
+              "flex items-center gap-3 rounded px-3 py-2 text-sm",
+              (isBlocked || isBooked) ? "text-white" : isPastDay ? "text-white/20" : "bg-white/5 text-white/70",
+            ].join(" ")}
+            style={bgColor ? { backgroundColor: bgColor, opacity: isBooked ? 0.85 : 1 } : undefined}
           >
-            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
-              {cover ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={cover} alt={boat.title ?? "Tekne"} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <FontAwesomeIcon icon={faAnchor} className="text-gray-400" aria-hidden />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-gray-900">
-                {boat.title || "İsimsiz taslak"}
-              </p>
-              <span
-                className={cn(
-                  "mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                  STATUS_BADGE_STYLES[boat.status]
-                )}
-              >
-                {STATUS_LABELS[boat.status]}
-              </span>
-            </div>
-            <FontAwesomeIcon
-              icon={faChevronRight}
-              className="text-xs text-gray-300 transition group-hover:text-brand-500"
-              aria-hidden
-            />
-          </button>
+            <span className="w-12 shrink-0 text-xs font-mono opacity-70">{startTime}</span>
+            <span className="text-xs">
+              {isBlocked
+                ? `Blokeli${blockModel ? ` — ${MODEL_LABELS[blockModel]}` : ""}`
+                : isBooked
+                  ? `${bookedModel ? `${MODEL_LABELS[bookedModel]} ` : ""}Rezervasyonu`
+                  : "Müsait"}
+            </span>
+            <span className="ml-auto text-xs opacity-50">{endTime}</span>
+          </div>
         );
       })}
     </div>
   );
 }
 
+// ─── Legend ────────────────────────────────────────────────────────────────────
+
+function Legend({ models }: { models: BookingModel[] }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-3 text-caption text-white/70">
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-3 rounded-sm bg-white/10" />
+        Müsait
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: BLOCK_COLOR }} />
+        Blokaj
+      </span>
+      {models.map((m) => (
+        <span key={`res-${m}`} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-3 w-3 rounded-sm opacity-75"
+            style={{ backgroundColor: RESERVATION_COLORS[m] }}
+          />
+          {MODEL_LABELS[m]} Rezervasyonu
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ─── Create block modal ────────────────────────────────────────────────────────
+
+function CreateBlockModal({
+  boatId,
+  availableModels,
+  prefillStartDate,
+  prefillEndDate,
+  onClose,
+  onCreated,
+}: {
+  boatId: string;
+  availableModels: BookingModel[];
+  prefillStartDate?: string;
+  prefillEndDate?: string;
+  onClose: () => void;
+  onCreated: (block: BlockResponseDTO) => void;
+}) {
+  const [model, setModel] = useState<BookingModel>(availableModels[0] ?? BookingModel.DAILY);
+  const isHourly = model === BookingModel.HOURLY;
+  const [reason, setReason] = useState<string>(BlockReason.MANUAL);
+  const [note, setNote] = useState("");
+  const [startDate, setStartDate] = useState(prefillStartDate ?? "");
+  const [endDate, setEndDate] = useState(prefillEndDate ?? "");
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("13:00");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setSaving(true);
+    setError(null);
+    try {
+      const body = isHourly
+        ? { boatId, model, reason: reason as BlockReason, note: note || undefined, date: startDate, startTime, endTime }
+        : { boatId, model, reason: reason as BlockReason, note: note || undefined, startDate, endDate };
+      const block = await api.createBlock(boatId, body);
+      onCreated(block);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Blokaj oluşturulamadı");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="Blokaj Ekle">
+      <div className="space-y-4">
+        {error && <Alert variant="danger">{error}</Alert>}
+
+        {availableModels.length > 1 && (
+          <div>
+            <label className="mb-1 block text-sm text-white/70">Model</label>
+            <Select value={model} onChange={(e) => setModel(e.target.value as BookingModel)}>
+              {availableModels.map((m) => (
+                <option key={m} value={m}>{MODEL_LABELS[m]}</option>
+              ))}
+            </Select>
+          </div>
+        )}
+
+        <div>
+          <label className="mb-1 block text-sm text-white/70">Neden</label>
+          <Select value={reason} onChange={(e) => setReason(e.target.value)}>
+            {Object.entries(REASON_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </Select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm text-white/70">Not (opsiyonel)</label>
+          <input
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
+            placeholder="Açıklama..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={500}
+          />
+        </div>
+
+        {isHourly ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Başlangıç</label>
+              <input type="time" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Bitiş</label>
+              <input type="time" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Başlangıç</label>
+              <input type="date" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Bitiş</label>
+              <input type="date" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="secondary" onClick={onClose}>İptal</Button>
+          <Button onClick={submit} loading={saving}>Kaydet</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+type PricingMap = Record<string, { price: number; currency: string }>;
+
+// ─── Pricing panel ─────────────────────────────────────────────────────────────
+
+function PricingPanel({
+  boat,
+  pricingMap,
+  onPricingChange,
+}: {
+  boat: SerializedBoat;
+  pricingMap: PricingMap;
+  onPricingChange: (key: string, price: number, currency: string) => void;
+}) {
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const models = boat.listingModels;
+
+  async function save(modelKey: string) {
+    const newPrice = parseFloat(editValue.replace(",", "."));
+    if (isNaN(newPrice) || newPrice <= 0) return;
+    const currency = pricingMap[modelKey]?.currency ?? "TRY";
+    // Optimistic update — cells reflect the new price immediately
+    onPricingChange(modelKey, newPrice, currency);
+    setEditing(null);
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await api.updateCalendarPrice(boat.id, { listingModelKey: modelKey, price: newPrice, currency });
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.message : "Fiyat kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (models.length === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <h4 className="mb-3 text-sm font-semibold text-white/70">Temel Fiyatlar</h4>
+      {saveError && <Alert variant="danger" className="mb-2">{saveError}</Alert>}
+      <div className="space-y-2">
+        {models.map((m) => {
+          const bm = KEY_TO_MODEL[m.key];
+          const p = pricingMap[m.key];
+          const isEditing = editing === m.key;
+          return (
+            <div
+              key={m.key}
+              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: bm ? RESERVATION_COLORS[bm] : "#fff" }}
+                />
+                <span className="text-sm font-medium text-white">{m.label ?? MODEL_LABELS[bm ?? BookingModel.DAILY]}</span>
+                {bm && <span className="text-xs text-white/40">{MODEL_UNIT[bm]}</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                {isEditing ? (
+                  <>
+                    <input
+                      autoFocus
+                      className="w-28 rounded border border-white/20 bg-white/10 px-2 py-1 text-right text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") void save(m.key); if (e.key === "Escape") setEditing(null); }}
+                    />
+                    <Button size="sm" onClick={() => void save(m.key)} loading={saving}>✓</Button>
+                    <Button size="sm" variant="secondary" onClick={() => setEditing(null)}>✕</Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm font-semibold text-white">
+                      {p ? formatPrice(p.price, p.currency) : "—"}
+                    </span>
+                    <button
+                      onClick={() => { setEditing(m.key); setEditValue(String(p?.price ?? "")); }}
+                      className="rounded px-2 py-1 text-xs text-white/50 hover:bg-white/10 hover:text-white"
+                    >
+                      Düzenle
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Mock reservation panel ────────────────────────────────────────────────────
+
+function MockReservationPanel({
+  boatId,
+  availableModels,
+  reservations,
+  onCreated,
+  onDeleted,
+}: {
+  boatId: string;
+  availableModels: BookingModel[];
+  reservations: MockReservationDTO[];
+  onCreated: (r: MockReservationDTO) => void;
+  onDeleted: (id: string) => void;
+}) {
+  const [model, setModel] = useState<BookingModel>(availableModels[0] ?? BookingModel.DAILY);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [guestName, setGuestName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function submit() {
+    if (!startDate || !endDate) { setError("Başlangıç ve bitiş tarihi gerekli"); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await api.createMockReservation(boatId, {
+        model,
+        startDate,
+        endDate,
+        guestName: guestName || "Test Misafiri",
+      });
+      onCreated(res);
+      setStartDate("");
+      setEndDate("");
+      setGuestName("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Oluşturulamadı");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove(id: string) {
+    if (!window.confirm("Bu test rezervasyonunu silmek istiyor musun?")) return;
+    setBusyId(id);
+    try {
+      await api.deleteMockReservation(id);
+      onDeleted(id);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div className="mt-6">
+      <h4 className="mb-3 text-sm font-semibold text-white/70">Test Rezervasyonu Ekle</h4>
+      <p className="mb-3 text-xs text-white/40">
+        Müşteri tarafı bağlanana kadar takvimde rezervasyon görünümünü test etmek için kullanın.
+      </p>
+
+      {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+
+      <div className="flex flex-wrap gap-2">
+        <Select value={model} onChange={(e) => setModel(e.target.value as BookingModel)} className="w-auto">
+          {availableModels.map((m) => (
+            <option key={m} value={m}>{MODEL_LABELS[m]} Rezervasyonu</option>
+          ))}
+        </Select>
+        <input
+          type="date"
+          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+          placeholder="Başlangıç"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="date"
+          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+          placeholder="Bitiş"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <input
+          type="text"
+          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
+          placeholder="Misafir adı (opsiyonel)"
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+          maxLength={100}
+        />
+        <Button onClick={submit} loading={saving}>Ekle</Button>
+      </div>
+
+      {reservations.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {reservations.map((r) => (
+            <div
+              key={r.id}
+              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full opacity-75"
+                  style={{ backgroundColor: RESERVATION_COLORS[r.model as BookingModel] ?? BOOKED_COLOR }}
+                />
+                <div>
+                  <span className="text-sm font-medium text-white">
+                    {MODEL_LABELS[r.model as BookingModel] ?? r.model} Rezervasyonu
+                    {" · "}
+                    {r.startDate === r.endDate ? r.startDate : `${r.startDate} – ${r.endDate}`}
+                  </span>
+                  <p className="mt-0.5 text-caption text-white/50">{r.guestName}</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="danger"
+                loading={busyId === r.id}
+                onClick={() => void remove(r.id)}
+              >
+                <FontAwesomeIcon icon={faTrash} className="text-[12px]" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Block list ────────────────────────────────────────────────────────────────
+
+function BlockList({
+  blocks,
+  onDelete,
+}: {
+  blocks: BlockResponseDTO[];
+  onDelete: (id: string) => void;
+}) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function remove(id: string) {
+    if (!window.confirm("Bu blokajı silmek istiyor musun?")) return;
+    setBusyId(id);
+    try {
+      await api.deleteBlock(id);
+      onDelete(id);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (blocks.length === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <h4 className="mb-2 text-sm font-semibold text-white/70">Mevcut Blokajlar</h4>
+      <div className="space-y-2">
+        {blocks.map((b) => (
+          <div
+            key={b.id}
+            className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: BLOCK_COLOR }}
+              />
+              <div>
+                <span className="text-sm font-medium text-white">
+                  {b.startDate === b.endDate
+                    ? b.startDate
+                    : `${b.startDate} – ${b.endDate}`}
+                  {b.startTime ? ` · ${b.startTime}–${b.endTime}` : ""}
+                </span>
+                <p className="mt-0.5 text-caption text-white/50">
+                  {MODEL_LABELS[b.model as BookingModel] ?? b.model} · {REASON_LABELS[b.reason] ?? b.reason}
+                  {b.note ? ` · ${b.note}` : ""}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="danger"
+              loading={busyId === b.id}
+              onClick={() => void remove(b.id)}
+            >
+              <FontAwesomeIcon icon={faTrash} className="text-[12px]" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main calendar view for a single boat ─────────────────────────────────────
+
+function BoatCalendar({ boat }: { boat: SerializedBoat }) {
+  const availableModels: BookingModel[] = boat.listingModels
+    .map((m) => KEY_TO_MODEL[m.key])
+    .filter((m): m is BookingModel => !!m);
+
+  // View state
+  const [viewMode, setViewMode] = useState<ViewMode>("monthly");
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth());
+  const [weekStart, setWeekStart] = useState<string>(() => getMondayOf(new Date()));
+  const [currentDay, setCurrentDay] = useState<string>(() => toYMD(new Date()));
+
+  // Data
+  const [blocks, setBlocks] = useState<BlockResponseDTO[]>([]);
+  const [mockReservations, setMockReservations] = useState<MockReservationDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  // Pricing state — lifted here so cell price updates immediately after PricingPanel saves
+  const [pricingMap, setPricingMap] = useState<PricingMap>(() =>
+    Object.fromEntries(boat.pricing.map((p) => [p.listingModelKey, { price: p.price, currency: p.currency }]))
+  );
+
+  function handlePricingChange(key: string, price: number, currency: string) {
+    setPricingMap((prev) => ({ ...prev, [key]: { price, currency } }));
+  }
+
+  // Range selection
+  const [rangePickStart, setRangePickStart] = useState<string | null>(null);
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
+  const [pendingRange, setPendingRange] = useState<{ start: string; end: string } | null>(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setDataError(null);
+    try {
+      const [blocksData, mockData] = await Promise.all([
+        api.listBlocks(boat.id),
+        api.listMockReservations(boat.id),
+      ]);
+      setBlocks(blocksData);
+      setMockReservations(mockData);
+    } catch (err) {
+      setDataError(err instanceof ApiError ? err.message : "Yüklenemedi");
+    } finally {
+      setLoading(false);
+    }
+  }, [boat.id]);
+
+  useEffect(() => { void loadData(); }, [loadData]);
+
+  // Build universal day status map
+  const dayMap = useMemo(() => buildDayMap(blocks, mockReservations), [blocks, mockReservations]);
+
+  // The listing model key of the first available model — used as the fallback
+  // price for available cells when no specific model can be inferred
+  const primaryModelKey = useMemo(() => {
+    for (const m of availableModels) {
+      const key = MODEL_TO_KEY[m];
+      if (key) return key;
+    }
+    return undefined;
+  }, [availableModels]);
+
+  const today = toYMD(new Date());
+
+  function handleDayClick(day: RichDay) {
+    if (day.date < today) return;
+    if (day.status === "BOOKED") return;
+    if (day.status === "BLOCKED") {
+      setRangePickStart(null);
+      setHoverDate(null);
+      return;
+    }
+
+    if (!rangePickStart) {
+      setRangePickStart(day.date);
+      setHoverDate(day.date);
+    } else if (day.date === rangePickStart) {
+      // Same day second click → single-day block
+      setPendingRange({ start: day.date, end: day.date });
+      setRangePickStart(null);
+      setHoverDate(null);
+    } else {
+      const s = rangePickStart <= day.date ? rangePickStart : day.date;
+      const e = rangePickStart <= day.date ? day.date : rangePickStart;
+      setPendingRange({ start: s, end: e });
+      setRangePickStart(null);
+      setHoverDate(null);
+    }
+  }
+
+  function handleDayHover(date: string) {
+    if (rangePickStart && date >= today) setHoverDate(date);
+  }
+
+  function handleBlockCreated(block: BlockResponseDTO) {
+    setPendingRange(null);
+    setBlocks((prev) => [...prev, block]);
+  }
+
+  function handleBlockDeleted(id: string) {
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
+
+  function handleMockCreated(res: MockReservationDTO) {
+    setMockReservations((prev) => [...prev, res]);
+  }
+
+  function handleMockDeleted(id: string) {
+    setMockReservations((prev) => prev.filter((r) => r.id !== id));
+  }
+
+  // Navigation labels + prev/next handlers
+  let navLabel = "";
+  function prevPeriod() {
+    if (viewMode === "monthly") {
+      if (month === 0) { setYear((y) => y - 1); setMonth(11); } else setMonth((m) => m - 1);
+    } else if (viewMode === "weekly") {
+      setWeekStart((ws) => addDays(ws, -7));
+    } else {
+      setCurrentDay((d) => addDays(d, -1));
+    }
+    setRangePickStart(null); setHoverDate(null);
+  }
+  function nextPeriod() {
+    if (viewMode === "monthly") {
+      if (month === 11) { setYear((y) => y + 1); setMonth(0); } else setMonth((m) => m + 1);
+    } else if (viewMode === "weekly") {
+      setWeekStart((ws) => addDays(ws, 7));
+    } else {
+      setCurrentDay((d) => addDays(d, 1));
+    }
+    setRangePickStart(null); setHoverDate(null);
+  }
+
+  if (viewMode === "monthly") {
+    navLabel = `${MONTH_NAMES[month]} ${year}`;
+  } else if (viewMode === "weekly") {
+    const ws = parseDate(weekStart);
+    const we = addDays(weekStart, 6);
+    const weParsed = parseDate(we);
+    navLabel = ws.getUTCMonth() === weParsed.getUTCMonth()
+      ? `${ws.getUTCDate()}–${weParsed.getUTCDate()} ${MONTH_NAMES[ws.getUTCMonth()]} ${ws.getUTCFullYear()}`
+      : `${ws.getUTCDate()} ${MONTH_NAMES[ws.getUTCMonth()]!.slice(0,3)} – ${weParsed.getUTCDate()} ${MONTH_NAMES[weParsed.getUTCMonth()]!.slice(0,3)} ${weParsed.getUTCFullYear()}`;
+  } else {
+    const d = parseDate(currentDay);
+    navLabel = `${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  }
+
+  return (
+    <div>
+      {/* Top bar: navigation + view switcher */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button onClick={prevPeriod} className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white">
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <h3 className="min-w-[180px] text-center text-base font-semibold text-white">{navLabel}</h3>
+          <button onClick={nextPeriod} className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white">
+            <FontAwesomeIcon icon={faArrowRight} />
+          </button>
+        </div>
+
+        {/* View mode dropdown */}
+        <select
+          className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white focus:outline-none"
+          value={viewMode}
+          onChange={(e) => { setViewMode(e.target.value as ViewMode); setRangePickStart(null); setHoverDate(null); }}
+        >
+          <option value="monthly">Aylık</option>
+          <option value="weekly">Haftalık</option>
+          <option value="daily">Günlük</option>
+        </select>
+      </div>
+
+      {rangePickStart && (
+        <p className="mt-3 text-sm text-white/60">
+          {rangePickStart} seçildi — bitiş gününe tıkla (aynı güne tekrar tıkla → tek günlük blok)
+        </p>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Spinner /></div>
+      ) : dataError ? (
+        <Alert variant="danger" className="mt-4">{dataError}</Alert>
+      ) : viewMode === "monthly" ? (
+        <MonthCalendar
+          year={year}
+          month={month}
+          dayMap={dayMap}
+          rangePickStart={rangePickStart}
+          hoverDate={hoverDate}
+          pricingMap={pricingMap}
+          primaryModelKey={primaryModelKey}
+          onDayClick={handleDayClick}
+          onDayHover={handleDayHover}
+        />
+      ) : viewMode === "weekly" ? (
+        <WeekCalendar
+          weekStart={weekStart}
+          blocks={blocks}
+          mockReservations={mockReservations}
+          rangePickStart={rangePickStart}
+          hoverDate={hoverDate}
+          onDayClick={handleDayClick}
+          onDayHover={handleDayHover}
+        />
+      ) : (
+        <DailyCalendar date={currentDay} blocks={blocks} mockReservations={mockReservations} />
+      )}
+
+      <Legend models={availableModels} />
+
+      {/* Pricing panel */}
+      <PricingPanel boat={boat} pricingMap={pricingMap} onPricingChange={handlePricingChange} />
+
+      {/* Block list */}
+      <BlockList blocks={blocks} onDelete={handleBlockDeleted} />
+
+      {/* Mock reservation panel */}
+      <MockReservationPanel
+        boatId={boat.id}
+        availableModels={availableModels}
+        reservations={mockReservations}
+        onCreated={handleMockCreated}
+        onDeleted={handleMockDeleted}
+      />
+
+      {/* Create block modal */}
+      {pendingRange && (
+        <CreateBlockModal
+          boatId={boat.id}
+          availableModels={availableModels}
+          prefillStartDate={pendingRange.start}
+          prefillEndDate={pendingRange.end}
+          onClose={() => setPendingRange(null)}
+          onCreated={handleBlockCreated}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Page content ──────────────────────────────────────────────────────────────
+
+function CalendarContent() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const queryEnabled = !authLoading && isAuthenticated;
+  const { data: boats, loading: boatsLoading } = useMyBoats(queryEnabled);
+
+  const [selectedBoatId, setSelectedBoatId] = useState<string>("");
+  const [boat, setBoat] = useState<SerializedBoat | null>(null);
+  const [boatLoading, setBoatLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedBoatId && boats && boats.length > 0) {
+      setSelectedBoatId(boats[0]!.id);
+    }
+  }, [boats, selectedBoatId]);
+
+  useEffect(() => {
+    if (!selectedBoatId) return;
+    setBoatLoading(true);
+    api.getBoat(selectedBoatId)
+      .then((b) => setBoat(b))
+      .catch(() => setBoat(null))
+      .finally(() => setBoatLoading(false));
+  }, [selectedBoatId]);
+
+  if (authLoading || boatsLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <EmptyState
+        icon={faAnchor}
+        title="Giriş gerekli"
+        description="Takvimi görmek için giriş yapmalısınız."
+      />
+    );
+  }
+
+  if (!boats || boats.length === 0) {
+    return (
+      <EmptyState
+        icon={faAnchor}
+        title="Tekne bulunamadı"
+        description="Takvimi kullanmak için önce bir tekne ekleyin."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {boats.length > 1 && (
+        <Select
+          value={selectedBoatId}
+          onChange={(e) => setSelectedBoatId(e.target.value)}
+        >
+          {boats.map((b) => (
+            <option key={b.id} value={b.id}>{b.title ?? b.id}</option>
+          ))}
+        </Select>
+      )}
+
+      {boatLoading ? (
+        <div className="flex justify-center py-12"><Spinner /></div>
+      ) : boat ? (
+        <BoatCalendar boat={boat} />
+      ) : null}
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
 export default function CalendarPage() {
   return (
     <AppShell active="calendar">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-          <FontAwesomeIcon icon={faCalendarDays} aria-hidden />
-        </div>
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Takvim</h1>
-          <p className="mt-0.5 text-sm text-gray-600">
-            Müsaitlik takvimini yönetmek için bir tekne seçin
-          </p>
+      <div className="mx-auto max-w-3xl">
+        <div className="rounded-2xl bg-ink-800 px-6 py-8">
+          <h1 className="mb-6 text-2xl font-bold text-white">Tekne Takvimi</h1>
+          <CalendarContent />
         </div>
       </div>
-      <CalendarContent />
     </AppShell>
   );
 }

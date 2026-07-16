@@ -346,6 +346,61 @@ export const api = {
       body: { url },
     }),
 
+  // ---- Booking calendar ----
+  getAvailability: (
+    boatId: string,
+    model: string,
+    rangeStart: string,
+    rangeEnd: string
+  ) =>
+    request<import("@getyourboat/shared").AvailabilityMap>(
+      `/boats/${boatId}/calendar/availability?model=${encodeURIComponent(model)}&rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`,
+      { auth: false }
+    ),
+
+  listBlocks: (boatId: string) =>
+    request<import("@getyourboat/shared").BlockResponseDTO[]>(
+      `/boats/${boatId}/calendar/blocks`
+    ),
+
+  createBlock: (boatId: string, body: import("@getyourboat/shared").CreateBlockRequestDTO) =>
+    request<import("@getyourboat/shared").BlockResponseDTO>(
+      `/boats/${boatId}/calendar/blocks`,
+      { method: "POST", body }
+    ),
+
+  updateBlock: (id: string, body: import("@getyourboat/shared").UpdateBlockRequestDTO) =>
+    request<import("@getyourboat/shared").BlockResponseDTO>(
+      `/calendar/blocks/${id}`,
+      { method: "PATCH", body }
+    ),
+
+  deleteBlock: (id: string) =>
+    request<void>(`/calendar/blocks/${id}`, { method: "DELETE" }),
+
+  updateCalendarPrice: (
+    boatId: string,
+    body: { listingModelKey: string; price: number; currency: string }
+  ) =>
+    request<void>(`/boats/${boatId}/calendar/pricing`, { method: "PATCH", body }),
+
+  listMockReservations: (boatId: string) =>
+    request<import("@getyourboat/shared").MockReservationDTO[]>(
+      `/boats/${boatId}/calendar/mock-reservations`
+    ),
+
+  createMockReservation: (
+    boatId: string,
+    body: { model: import("@getyourboat/shared").BookingModel; startDate: string; endDate: string; guestName?: string; note?: string }
+  ) =>
+    request<import("@getyourboat/shared").MockReservationDTO>(
+      `/boats/${boatId}/calendar/mock-reservations`,
+      { method: "POST", body }
+    ),
+
+  deleteMockReservation: (id: string) =>
+    request<void>(`/calendar/mock-reservations/${id}`, { method: "DELETE" }),
+
   // ---- Boat brands ----
   listBoatBrands: (boatTypeKey: string) => {
     const category = boatTypeToBrandCategory(boatTypeKey);

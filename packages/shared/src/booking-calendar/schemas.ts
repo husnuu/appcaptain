@@ -1,8 +1,18 @@
 import { z } from "zod";
-import { BlockReason } from "./enums";
+import { BlockReason, BookingModel } from "./enums";
 
-const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçersiz tarih (YYYY-MM-DD)");
-const timeStr = z.string().regex(/^\d{2}:\d{2}$/, "Geçersiz saat (HH:mm)");
+const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
+  (s) => !isNaN(Date.parse(s)),
+  "Geçersiz tarih (YYYY-MM-DD)",
+);
+
+const timeStr = z.string().regex(/^\d{2}:\d{2}$/).refine(
+  (s) => {
+    const [h, m] = s.split(":").map(Number);
+    return h! >= 0 && h! <= 23 && m! >= 0 && m! <= 59;
+  },
+  "Geçersiz saat (HH:mm)",
+);
 
 export const createBlockSchema = z
   .object({
@@ -41,6 +51,35 @@ export const createBlockSchema = z
   });
 
 export type CreateBlockSchema = z.infer<typeof createBlockSchema>;
+
+export const updateBlockSchema = z
+  .object({
+    reason: z.nativeEnum(BlockReason).optional(),
+    note: z.string().max(500).nullable().optional(),
+    startDate: dateStr.optional(),
+    endDate: dateStr.optional(),
+    date: dateStr.optional(),
+    startTime: timeStr.optional(),
+    endTime: timeStr.optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "En az bir alan güncellenmelidir",
+  });
+
+export type UpdateBlockSchema = z.infer<typeof updateBlockSchema>;
+
+export const getAvailabilitySchema = z.object({
+  model: z.enum([
+    BookingModel.HOURLY,
+    BookingModel.DAILY,
+    BookingModel.STAY_INCLUDED,
+    BookingModel.WEEKLY,
+  ]),
+  rangeStart: dateStr,
+  rangeEnd: dateStr,
+});
+
+export type GetAvailabilitySchema = z.infer<typeof getAvailabilitySchema>;
 
 export const priceOverrideSchema = z.object({
   boatId: z.string().min(1),

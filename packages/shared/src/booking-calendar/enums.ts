@@ -11,6 +11,14 @@ export const CalendarModel = {
 } as const;
 export type CalendarModel = (typeof CalendarModel)[keyof typeof CalendarModel];
 
+export const BookingModel = {
+  HOURLY: "HOURLY",
+  DAILY: "DAILY",
+  STAY_INCLUDED: "STAY_INCLUDED",
+  WEEKLY: "WEEKLY",
+} as const;
+export type BookingModel = (typeof BookingModel)[keyof typeof BookingModel];
+
 export const SlotStatus = {
   AVAILABLE: "AVAILABLE",
   BLOCKED: "BLOCKED",

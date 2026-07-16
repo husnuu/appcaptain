@@ -81,7 +81,7 @@ export interface CalendarBlockRow {
   endDate: Date;
   startTime: string | null;
   endTime: string | null;
-  createdBy: string;
+  createdBy: string | null;
   createdAt: Date;
 }
 

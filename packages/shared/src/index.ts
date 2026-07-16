@@ -36,6 +36,8 @@ export * from "./validation/brand-model";
 export * from "./validation/discount";
 export * from "./validation/booking";
 
+export * from "./booking-calendar/index.js";
+
 /* Cross-cutting API envelope types. */
 export interface Paginated<T> {
   items: T[];

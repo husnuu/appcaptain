@@ -1,4 +1,5 @@
 import { CalendarModel } from "./enums";
+import type { BookingModel } from "./enums";
 
 export interface CalendarModelColor {
   bg: string;
@@ -35,3 +36,10 @@ export function calendarModelColor(model: string): CalendarModelColor {
 export function calendarModelLabel(model: string): string {
   return CALENDAR_MODEL_LABELS[model] ?? model;
 }
+
+export const BOOKING_MODEL_COLORS: Record<BookingModel, string> = {
+  HOURLY: "#F59E0B",
+  DAILY: "#3B82F6",
+  STAY_INCLUDED: "#8B5CF6",
+  WEEKLY: "#10B981",
+};

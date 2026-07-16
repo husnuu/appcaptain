@@ -10,6 +10,7 @@ import { PrismaBookingRepository } from "./prisma/booking.repository.prisma.js";
 import { PrismaCalendarRepository } from "./prisma/calendar.repository.prisma.js";
 import { PrismaGuestConversationRepository } from "./prisma/guest-conversation.repository.prisma.js";
 import { PrismaBookingPaymentRepository } from "./prisma/booking-payment.repository.prisma.js";
+import { PrismaBookingCalendarRepository } from "./prisma/booking-calendar.repository.prisma.js";
 
 export * from "./auth.repository.js";
 export * from "./boat.repository.js";
@@ -23,6 +24,7 @@ export * from "./booking.repository.js";
 export * from "./calendar.repository.js";
 export * from "./guest-conversation.repository.js";
 export * from "./booking-payment.repository.js";
+export * from "./booking-calendar.repository.js";
 
 /**
  * Default Prisma-backed repository singletons. Swap these (or inject the classes)
@@ -41,3 +43,4 @@ export const calendarRepository = new PrismaCalendarRepository();
 export const guestConversationRepository =
   new PrismaGuestConversationRepository();
 export const bookingPaymentRepository = new PrismaBookingPaymentRepository();
+export const bookingCalendarRepository = new PrismaBookingCalendarRepository();

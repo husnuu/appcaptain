@@ -204,6 +204,7 @@ enum AdminRole {
   SUPPORT
 }
 
+
 enum BookingModel {
   HOURLY
   DAILY
@@ -557,6 +558,10 @@ model Boat {
   calendarMockReservations CalendarMockReservation[]
 
   guestConversations GuestConversation[]
+
+  // Booking calendar
+  calendarBlocks            CalendarBlock[]
+  calendarMockReservations  CalendarMockReservation[]
 
   @@index([ownerId])
   @@index([status])
