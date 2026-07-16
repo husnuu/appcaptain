@@ -198,7 +198,7 @@ export function Wizard({ boatId }: { boatId: string }) {
           <Button
             variant="outline"
             className="border-2 border-brand-200 font-semibold text-brand-700 hover:bg-brand-50"
-            onClick={() => router.push(`/boats/${boat.id}/calendar`)}
+            onClick={() => router.push(`/calendar`)}
           >
             <FontAwesomeIcon icon={faCalendarDays} className="text-[14px]" aria-hidden />
             Takvim

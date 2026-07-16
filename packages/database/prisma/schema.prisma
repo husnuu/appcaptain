@@ -559,10 +559,6 @@ model Boat {
 
   guestConversations GuestConversation[]
 
-  // Booking calendar
-  calendarBlocks            CalendarBlock[]
-  calendarMockReservations  CalendarMockReservation[]
-
   @@index([ownerId])
   @@index([status])
   @@index([boatTypeKey])
@@ -806,29 +802,23 @@ model BookingPayment {
   @@map("booking_payments")
 }
 
-enum BlockReason {
-  MAINTENANCE
-  OWNER_USE
-  MANUAL
-  OTHER
-}
-
 /// Captain-defined unavailability on a boat's calendar. A day-range block
 /// (startTime/endTime null) closes whole days; an hourly block closes a time
 /// window on a single day. Blocks apply to the boat regardless of listing model.
 model CalendarBlock {
-  id        String      @id @default(uuid())
+  id        String        @id @default(uuid())
   boatId    String
-  boat      Boat        @relation(fields: [boatId], references: [id], onDelete: Cascade)
-  reason    BlockReason @default(MANUAL)
+  boat      Boat          @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  model     BookingModel?
+  reason    BlockReason   @default(MANUAL)
   note      String?
   startDate DateTime
   endDate   DateTime
-  startTime String? // 'HH:mm' — hourly blocks only
-  endTime   String? // 'HH:mm' — hourly blocks only
-  createdBy String // userId
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  startTime String?       // 'HH:mm' — hourly blocks only
+  endTime   String?       // 'HH:mm' — hourly blocks only
+  createdBy String?       @db.Uuid
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@index([boatId, startDate, endDate])
   @@map("calendar_blocks")
@@ -1115,25 +1105,6 @@ model Review {
 }
 
 /* ======================== Booking calendar ========================== */
-
-model CalendarBlock {
-  id          String        @id @default(cuid())
-  boatId      String
-  boat        Boat          @relation(fields: [boatId], references: [id], onDelete: Cascade)
-  model       BookingModel?
-  reason      BlockReason
-  note        String?
-  startDate   DateTime
-  endDate     DateTime
-  startTime   String?
-  endTime     String?
-  createdBy   String?       @db.Uuid
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@index([boatId, startDate, endDate])
-  @@map("calendar_blocks")
-}
 
 model CalendarMockReservation {
   id        String       @id @default(cuid())
