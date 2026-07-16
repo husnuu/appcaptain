@@ -4,7 +4,7 @@ import { prisma } from "@getyourboat/database";
 import { createAuditLog } from "../audit.js";
 import { HttpError } from "../../../lib/errors.js";
 import { getSupabaseAdmin, PHOTOS_BUCKET } from "../../../lib/supabase.js";
-import { sendBoatRejectionEmail } from "../../../lib/email.js";
+import { sendBoatRejectionEmail, sendBoatApprovalEmail } from "../../../lib/email.js";
 
 const statusSchema = z.object({
   status: z.enum(["DRAFT", "PENDING_REVIEW", "ACTIVE", "REJECTED", "SUSPENDED"]),
@@ -188,7 +188,22 @@ export async function adminBoatsRoutes(app: FastifyInstance) {
       averageRating: reviewStats._avg.rating ? Number(reviewStats._avg.rating.toFixed(1)) : null,
     };
 
-    return { boat: { ...boat, stats } };
+    const allDocsApproved = boat.documents.length > 0 && boat.documents.every((d) => d.status === "APPROVED");
+    const anyDocPending = boat.documents.some((d) => d.status === "PENDING");
+
+    const checklist = [
+      { key: "title",             label: "Başlık girilmiş",              pass: !!boat.title,                                     warn: false },
+      { key: "description",       label: "Açıklama girilmiş",            pass: !!boat.description,                               warn: false },
+      { key: "photos",            label: "En az 1 fotoğraf yüklendi",    pass: boat.photos.length >= 1,                          warn: false },
+      { key: "photoQuality",      label: "En az 3 fotoğraf (kalite)",    pass: boat.photos.length >= 3,                          warn: boat.photos.length >= 1 && boat.photos.length < 3 },
+      { key: "coverPhoto",        label: "Kapak fotoğrafı seçilmiş",     pass: boat.photos.some((p) => p.isCover),               warn: false },
+      { key: "listingModels",     label: "Listeleme modeli seçilmiş",    pass: boat.listingModels.length > 0,                    warn: false },
+      { key: "pricing",           label: "Fiyatlandırma ayarlanmış",     pass: boat.pricing.length > 0,                          warn: false },
+      { key: "documents",         label: "Belge yüklendi",               pass: boat.documents.length > 0,                        warn: false },
+      { key: "documentsApproved", label: "Tüm belgeler onaylı",          pass: allDocsApproved,                                  warn: anyDocPending && !allDocsApproved },
+    ];
+
+    return { boat: { ...boat, stats, checklist } };
   });
 
   // Edit core boat fields
@@ -242,16 +257,20 @@ export async function adminBoatsRoutes(app: FastifyInstance) {
       select: { id: true, status: true, rejectionReason: true, reviewedAt: true },
     });
 
-    // Rejection email: sent via lib/email.ts (nodemailer). Returns false and skips silently
-    // if SMTP_HOST is not set in env. emailSent is returned to the admin UI for feedback.
-    // No in-app notification is sent — captain sees rejection only via email or by checking
-    // their listing status in the captain app. See CLAUDE.md pre-launch checklist.
+    // Owner notification emails — sent via lib/email.ts (nodemailer, opt-in via SMTP env vars).
+    // Both return false and skip silently if SMTP_HOST is not configured.
+    // See CLAUDE.md pre-launch checklist for wiring instructions.
     let emailSent = false;
     if (status === "REJECTED" && boat.owner.email && rejectionReason) {
       emailSent = await sendBoatRejectionEmail({
         to: boat.owner.email,
         boatTitle: boat.title ?? "İlanınız",
         rejectionReason,
+      });
+    } else if (status === "ACTIVE" && boat.owner.email) {
+      emailSent = await sendBoatApprovalEmail({
+        to: boat.owner.email,
+        boatTitle: boat.title ?? "İlanınız",
       });
     }
 

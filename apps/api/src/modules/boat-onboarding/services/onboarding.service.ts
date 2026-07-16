@@ -1,6 +1,7 @@
 // @ts-nocheck — Zod output types are widened under Vercel's TS 5.9 project check.
 import { randomUUID } from "node:crypto";
-import { boatRepository, onboardingLookupRepository } from "@getyourboat/database";
+import { boatRepository, onboardingLookupRepository, prisma } from "@getyourboat/database";
+import { sendModeratorNewListingEmail } from "../../../lib/email.js";
 import type { LookupModel } from "@getyourboat/database";
 import {
   ApprovalType,
@@ -373,6 +374,19 @@ export async function submitForReview(boatId: string) {
   if (boat.pricing.length === 0) throw badRequest("Pricing is required");
 
   await boatRepository.markSubmitted(boatId);
+
+  // Notify all active moderators — fire-and-forget, must not block or fail the submission
+  prisma.profile.findUnique({ where: { id: boat.ownerId }, select: { email: true, fullName: true } })
+    .then((owner) =>
+      sendModeratorNewListingEmail({
+        boatId,
+        boatTitle: boat.title ?? null,
+        ownerEmail: owner?.email ?? null,
+        ownerName: owner?.fullName ?? null,
+      })
+    )
+    .catch(() => {});
+
   return getBoatState(boatId);
 }
 

@@ -14,6 +14,7 @@
  * To add a new email type, add a function here following the sendBoatRejectionEmail pattern.
  */
 import nodemailer from "nodemailer";
+import { prisma } from "@getyourboat/database";
 import { env } from "../config/env.js";
 
 let transporter: nodemailer.Transporter | null = null;
@@ -54,6 +55,78 @@ export async function sendBoatRejectionEmail(opts: {
           </div>
           <p>İlanınızı bu gerekçe doğrultusunda düzenleyip tekrar incelemeye gönderebilirsiniz.</p>
           <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function sendBoatApprovalEmail(opts: {
+  to: string;
+  boatTitle: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: "İlanınız Onaylandı – GetYourBoat",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">İlanınız Yayında! 🎉</h2>
+          <p>Sayın kaptan,</p>
+          <p><strong>${opts.boatTitle}</strong> adlı ilanınız admin ekibi tarafından incelenmiş ve onaylanmıştır.</p>
+          <div style="background:#f0fff4;border-left:4px solid #38a169;padding:12px 16px;margin:16px 0;border-radius:4px;">
+            İlanınız artık platformda yayında ve misafirler tarafından rezervasyon yapılabilir.
+          </div>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Sends notification to all active admin users when a boat is submitted for review.
+// Queries admin emails from DB so no env var config needed — all active admins are notified.
+export async function sendModeratorNewListingEmail(opts: {
+  boatId: string;
+  boatTitle: string | null;
+  ownerEmail: string | null;
+  ownerName: string | null;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  try {
+    const admins = await prisma.adminUser.findMany({
+      where: { isActive: true },
+      select: { email: true },
+    });
+    if (admins.length === 0) return false;
+
+    const to = admins.map((a) => a.email).join(", ");
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to,
+      subject: "Yeni İlan İnceleme Bekliyor – GetYourBoat",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">Yeni İlan: İnceleme Gerekiyor</h2>
+          <p>Aşağıdaki ilan inceleme için gönderilmiştir.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr><td style="padding:6px 0;color:#666;width:130px;">İlan Başlığı</td><td style="padding:6px 0;font-weight:600;">${opts.boatTitle ?? "(isimsiz)"}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Kaptan</td><td style="padding:6px 0;">${opts.ownerName ?? "—"} (${opts.ownerEmail ?? "—"})</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">İlan ID</td><td style="padding:6px 0;font-family:monospace;font-size:12px;">${opts.boatId}</td></tr>
+          </table>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Admin Paneli</p>
         </div>
       `,
     });

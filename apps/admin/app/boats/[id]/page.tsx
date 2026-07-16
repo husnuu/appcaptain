@@ -78,8 +78,8 @@ export default function BoatDetailPage() {
     setEmailSentNote(null);
     try {
       const res = await api.updateBoatStatus(boat.id, { status: newStatus, rejectionReason });
-      if (newStatus === "REJECTED") {
-        setEmailSentNote(res.emailSent ? "E-posta kaptana gönderildi." : "E-posta gönderilemedi (SMTP yapılandırılmamış).");
+      if (newStatus === "REJECTED" || newStatus === "ACTIVE") {
+        setEmailSentNote(res.emailSent ? "Bildirim e-postası kaptana gönderildi." : "E-posta gönderilemedi (SMTP yapılandırılmamış).");
       }
       await load();
     } catch (err) {
@@ -212,6 +212,38 @@ export default function BoatDetailPage() {
             <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Approval checklist */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Onay Kontrol Listesi</h2>
+        <ul className="space-y-1.5">
+          {boat.checklist.map((item) => (
+            <li key={item.key} className="flex items-center gap-2.5 text-sm">
+              {item.pass ? (
+                <span className="text-green-500 font-bold text-base leading-none">✓</span>
+              ) : item.warn ? (
+                <span className="text-yellow-500 font-bold text-base leading-none">⚠</span>
+              ) : (
+                <span className="text-red-400 font-bold text-base leading-none">✗</span>
+              )}
+              <span className={item.pass ? "text-gray-700" : item.warn ? "text-yellow-700" : "text-red-600"}>
+                {item.label}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {(() => {
+          const failing = boat.checklist.filter((i) => !i.pass && !i.warn);
+          const warnings = boat.checklist.filter((i) => !i.pass && i.warn);
+          if (failing.length === 0 && warnings.length === 0) {
+            return <p className="mt-3 text-xs text-green-600 font-medium">Tüm kontroller geçti — ilan onaylanmaya hazır.</p>;
+          }
+          if (failing.length === 0) {
+            return <p className="mt-3 text-xs text-yellow-600">Uyarılar var ancak ilan onaylanabilir.</p>;
+          }
+          return <p className="mt-3 text-xs text-red-500">{failing.length} kritik kontrol başarısız — onaylamadan önce gözden geçirin.</p>;
+        })()}
       </div>
 
       {/* Status actions */}

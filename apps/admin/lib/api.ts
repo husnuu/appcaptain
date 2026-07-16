@@ -133,6 +133,7 @@ export const api = {
         pricing: { listingModelKey: string; price: number; currency: string }[];
         featureValues: { featureKey: string; value: string | null }[];
         stats: { reservationCount: number; totalRevenue: number; reviewCount: number; averageRating: number | null };
+        checklist: { key: string; label: string; pass: boolean; warn: boolean }[];
       };
     }>(`/admin/boats/${id}`),
   updateBoat: (id: string, body: { title?: string; description?: string; boatTypeKey?: string; rulesText?: string; checkInNotes?: string; checkOutNotes?: string }) =>
