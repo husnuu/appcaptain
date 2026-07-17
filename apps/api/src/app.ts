@@ -18,8 +18,22 @@ export async function buildApp() {
     },
   });
 
+  // Known production/local origins that are always allowed, merged with the
+  // env-driven CAPTAIN_ORIGIN/ADMIN_ORIGIN lists (deduped) so admin/captain
+  // panels work even if a Vercel env var is missing.
+  const defaultOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "https://appcaptain-captain.vercel.app",
+    "https://appcaptain-admin.vercel.app",
+  ];
+  const allowedOrigins = [
+    ...new Set([...defaultOrigins, ...captainOrigins, ...adminOrigins]),
+  ];
+
   await app.register(cors, {
-    origin: [...captainOrigins, ...adminOrigins],
+    origin: allowedOrigins,
     credentials: true,
   });
   await app.register(cookie);
