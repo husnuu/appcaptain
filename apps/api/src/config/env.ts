@@ -14,6 +14,22 @@ export function parseCaptainOrigins(raw: string): string[] {
     .filter(Boolean);
 }
 
+/** Zod refinement: every comma-separated entry must be a valid URL origin. */
+function validateOriginList(fieldName: string) {
+  return (value: string, ctx: z.RefinementCtx) => {
+    for (const origin of parseCaptainOrigins(value)) {
+      try {
+        new URL(origin);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid ${fieldName} entry: ${origin}`,
+        });
+      }
+    }
+  };
+}
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -27,19 +43,11 @@ const envSchema = z.object({
   CAPTAIN_ORIGIN: z
     .string()
     .default("http://localhost:3002")
-    .superRefine((value, ctx) => {
-      for (const origin of parseCaptainOrigins(value)) {
-        try {
-          new URL(origin);
-        } catch {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Invalid CAPTAIN_ORIGIN entry: ${origin}`,
-          });
-        }
-      }
-    }),
-  ADMIN_ORIGIN: z.string().default("http://localhost:3001"),
+    .superRefine(validateOriginList("CAPTAIN_ORIGIN")),
+  ADMIN_ORIGIN: z
+    .string()
+    .default("http://localhost:3001")
+    .superRefine(validateOriginList("ADMIN_ORIGIN")),
   ADMIN_JWT_SECRET: z.string().min(32),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
