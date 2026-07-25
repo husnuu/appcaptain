@@ -204,6 +204,20 @@ enum AdminRole {
   SUPPORT
 }
 
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum KycDocumentType {
+  PASSPORT
+  NATIONAL_ID
+  DRIVING_LICENSE
+  SELFIE
+  PROOF_OF_ADDRESS
+}
+
 
 enum BookingModel {
   HOURLY
@@ -253,6 +267,7 @@ model Profile {
   address      String?
   language     String?     @default("tr")
   isVerified   Boolean     @default(true)
+  kycStatus    KycStatus?
   role         ProfileRole @default(OWNER)
   badge        String?
   createdAt    DateTime    @default(now())
@@ -266,6 +281,7 @@ model Profile {
   experiences          Experience[]
   brandModelRequests   BrandModelRequest[]
   createdDiscounts     Discount[]          @relation("DiscountCreatedBy")
+  kycDocuments         KycDocument[]
 
   @@map("profiles")
 }
@@ -509,6 +525,10 @@ model Boat {
   boatTypeKey String?
   boatType    BoatTypeOption? @relation(fields: [boatTypeKey], references: [key])
   engineType  EngineType?
+
+  // Step 3 — Location
+  latitude   Float?
+  longitude  Float?
 
   // Step 4 — Description & rules
   title           String?
@@ -990,6 +1010,7 @@ model User {
   reservations          Reservation[]   @relation("CustomerReservations")
   reviews               Review[]
   customerConversations Conversation[]  @relation("ConversationCustomer")
+  supportTickets        SupportTicket[]
 
   @@index([role])
   @@index([isSuspended])
@@ -1106,9 +1127,15 @@ model Review {
   customer      User        @relation(fields: [customerId], references: [id])
   rating        Int
   comment       String?
+  isHidden      Boolean     @default(false)
+  reportCount   Int         @default(0)
+  ownerResponse          String?
+  ownerResponseApproved  Boolean @default(false)
   createdAt     DateTime    @default(now())
 
   @@index([boatId])
+  @@index([isHidden])
+  @@index([reportCount])
 }
 
 /* ======================== Booking calendar ========================== */
@@ -1150,7 +1177,12 @@ model AdminUser {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  auditLogs AuditLog[]
+  auditLogs          AuditLog[]
+  assignedTickets    SupportTicket[]    @relation("AssignedTickets")
+  ticketMessages     TicketMessage[]
+  ticketNotes        TicketNote[]
+  broadcastCampaigns BroadcastCampaign[]
+  kycReviews         KycDocument[]       @relation("KycReviewer")
 
   @@map("admin_users")
 }
@@ -1170,4 +1202,160 @@ model AuditLog {
   @@index([targetType, targetId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+/* ======================== Support Tickets ========================== */
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id           String         @id @default(cuid())
+  subject      String
+  status       TicketStatus   @default(OPEN)
+  priority     TicketPriority @default(NORMAL)
+  guestEmail   String
+  guestName    String
+  guestPhone   String?
+  userId       String?
+  user         User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignedToId String?        @db.Uuid
+  assignedTo   AdminUser?     @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  messages TicketMessage[]
+  notes    TicketNote[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([guestEmail])
+  @@index([createdAt])
+  @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fromAdmin Boolean       @default(false)
+  adminId   String?       @db.Uuid
+  admin     AdminUser?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_messages")
+}
+
+model TicketNote {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  adminId   String        @db.Uuid
+  admin     AdminUser     @relation(fields: [adminId], references: [id])
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_notes")
+}
+
+model ResponseTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  body      String
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("response_templates")
+}
+
+/* ======================== Broadcast Notifications ========================== */
+
+enum NotificationTemplateType {
+  CUSTOM
+  APPROVAL
+  REJECTION
+  REMINDER
+  CAMPAIGN
+}
+
+model NotificationTemplate {
+  id        String                   @id @default(cuid())
+  name      String
+  type      NotificationTemplateType @default(CUSTOM)
+  subject   String
+  body      String
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+
+  @@map("notification_templates")
+}
+
+model BroadcastCampaign {
+  id             String    @id @default(cuid())
+  subject        String
+  body           String
+  channel        String    @default("EMAIL")
+  targetGroup    String    @default("ALL")
+  recipientCount Int       @default(0)
+  sentBy         String    @db.Uuid
+  admin          AdminUser @relation(fields: [sentBy], references: [id])
+  sentAt         DateTime  @default(now())
+
+  deliveries BroadcastDelivery[]
+
+  @@index([sentAt])
+  @@map("broadcast_campaigns")
+}
+
+model BroadcastDelivery {
+  id             String            @id @default(cuid())
+  campaignId     String
+  campaign       BroadcastCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  recipientEmail String
+  recipientName  String?
+  recipientId    String?
+  openedAt       DateTime?
+  createdAt      DateTime          @default(now())
+
+  @@index([campaignId])
+  @@index([openedAt])
+  @@map("broadcast_deliveries")
+}
+
+/* ======================== KYC Verification ========================== */
+
+model KycDocument {
+  id           String          @id @default(cuid())
+  profileId    String          @db.Uuid
+  profile      Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  type         KycDocumentType
+  status       KycStatus       @default(PENDING)
+  publicUrl    String?
+  storagePath  String          @default("")
+  notes        String?
+  reviewedAt   DateTime?
+  reviewedById String?         @db.Uuid
+  reviewedBy   AdminUser?      @relation("KycReviewer", fields: [reviewedById], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([profileId])
+  @@index([status])
+  @@map("kyc_documents")
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../lib/api";
 
@@ -125,7 +126,8 @@ export default function DashboardPage() {
             sub={`%${stats.commissionRate ?? 0} oran`}
             accent="green"
           />
-          <StatCard label="Bekleyen Destek Talepleri" value={0} accent="red" sub="Yakında" />
+          <StatCard label="Bekleyen Destek Talepleri" value={stats.pendingSupportTickets} accent="red" />
+          <StatCard label="Bekleyen KYC Doğrulama" value={stats.pendingKycDocs} accent="yellow" />
         </div>
       </div>
 
@@ -223,13 +225,25 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Region map — placeholder until Boat model has location fields */}
-      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
-        <p className="text-sm font-medium text-gray-500">Bölgeye Göre İlan Dağılımı</p>
-        <p className="mt-1 text-xs text-gray-400">
-          Harita görünümü için tekne ilanlarına konum bilgisi eklenmesi gerekiyor.
-        </p>
-      </div>
+      {/* Region map — link to full map page */}
+      <Link
+        href="/map"
+        className="block rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:border-brand-300 hover:shadow-md transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Bölgeye Göre İlan Dağılımı</p>
+            <p className="mt-1 text-xs text-gray-400">Aktif ilanları şehir ve ülkeye göre görüntüle</p>
+          </div>
+          <span className="text-gray-300 group-hover:text-brand-500 text-xl">→</span>
+        </div>
+        <div className="mt-3 flex gap-4">
+          <div className="text-center">
+            <p className="text-xs text-gray-400">Harita Görünümü</p>
+            <p className="text-sm font-medium text-brand-600 mt-0.5">Tümünü Gör →</p>
+          </div>
+        </div>
+      </Link>
 
       {/* Recent activity */}
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">

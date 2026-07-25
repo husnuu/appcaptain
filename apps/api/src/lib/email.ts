@@ -206,3 +206,105 @@ export async function sendModeratorNewListingEmail(opts: {
     return false;
   }
 }
+
+export async function sendBroadcastEmail(opts: {
+  to: string;
+  name: string | null;
+  subject: string;
+  body: string;
+  trackingUrl?: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  const trackingPixel = opts.trackingUrl
+    ? `<img src="${opts.trackingUrl}" width="1" height="1" alt="" style="display:none;" />`
+    : "";
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: opts.subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          ${opts.name ? `<p>Sayın ${opts.name},</p>` : ""}
+          <div style="line-height:1.6;">${opts.body.replace(/\n/g, "<br>")}</div>
+          <p style="margin-top:32px;color:#aaa;font-size:12px;border-top:1px solid #eee;padding-top:16px;">
+            GetYourBoat · Bu e-postayı almak istemiyorsanız hesabınızın ayarlarından bildirimleri devre dışı bırakabilirsiniz.
+          </p>
+          ${trackingPixel}
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function sendTicketReplyEmail(opts: {
+  to: string;
+  name: string;
+  subject: string;
+  ticketId: string;
+  body: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: `Re: ${opts.subject} [#${opts.ticketId.slice(-8)}]`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">Destek Talebiniz Güncellendi</h2>
+          <p>Sayın ${opts.name},</p>
+          <p>Destek ekibimiz talebinize yanıt verdi:</p>
+          <div style="background:#f8fafc;border-left:4px solid #2563eb;padding:12px 16px;margin:16px 0;border-radius:4px;">
+            ${opts.body.replace(/\n/g, "<br>")}
+          </div>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Destek Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function sendTicketConfirmationEmail(opts: {
+  to: string;
+  name: string;
+  subject: string;
+  ticketId: string;
+}): Promise<boolean> {
+  const t = getTransporter();
+  if (!t) return false;
+
+  try {
+    await t.sendMail({
+      from: env.SMTP_FROM,
+      to: opts.to,
+      subject: `Destek Talebiniz Alındı: ${opts.subject} [#${opts.ticketId.slice(-8)}]`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e3a5f;">Talebiniz Alındı</h2>
+          <p>Sayın ${opts.name},</p>
+          <p>Destek talebiniz başarıyla alındı. En kısa sürede yanıtlayacağız.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr><td style="padding:6px 0;color:#666;width:100px;">Konu</td><td style="padding:6px 0;font-weight:600;">${opts.subject}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Talep No</td><td style="padding:6px 0;font-family:monospace;">#${opts.ticketId.slice(-8)}</td></tr>
+          </table>
+          <p style="margin-top:24px;color:#666;font-size:13px;">GetYourBoat Destek Ekibi</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}

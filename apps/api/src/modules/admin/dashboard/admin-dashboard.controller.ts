@@ -28,6 +28,8 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
       todayBookings,
       revenueResult,
       pendingVerifications,
+      pendingSupportTickets,
+      pendingKycDocs,
       recentActivity,
     ] = await Promise.all([
       prisma.profile.count(),
@@ -47,6 +49,8 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
         _sum: { totalPrice: true },
       }),
       prisma.boatDocument.count({ where: { status: "PENDING" } }),
+      prisma.supportTicket.count({ where: { status: { in: ["OPEN", "IN_PROGRESS"] } } }),
+      prisma.kycDocument.count({ where: { status: "PENDING" } }),
       prisma.auditLog.findMany({
         take: 15,
         orderBy: { createdAt: "desc" },
@@ -114,6 +118,8 @@ export async function adminDashboardRoutes(app: FastifyInstance) {
         cancellationRate,
         commissionRate: commissionRate * 100,
         pendingVerifications,
+        pendingSupportTickets,
+        pendingKycDocs,
       },
       recentActivity,
       weeklyTrend,

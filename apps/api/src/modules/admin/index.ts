@@ -9,6 +9,10 @@ import { adminNotificationsRoutes } from "./notifications/admin-notifications.co
 import { adminSettingsRoutes } from "./settings/admin-settings.controller.js";
 import { adminReviewsRoutes } from "./reviews/admin-reviews.controller.js";
 import { adminAuditLogRoutes } from "./audit-log/admin-audit-log.controller.js";
+import { adminSupportRoutes } from "./support/admin-support.controller.js";
+import { adminAdminsRoutes } from "./admins/admin-admins.controller.js";
+import { adminKycRoutes } from "./kyc/admin-kyc.controller.js";
+import { adminMapRoutes } from "./map/admin-map.controller.js";
 
 export async function adminModule(app: FastifyInstance) {
   await app.register(adminAuthRoutes, { prefix: "/admin" });
@@ -21,4 +25,8 @@ export async function adminModule(app: FastifyInstance) {
   await app.register(adminSettingsRoutes, { prefix: "/admin" });
   await app.register(adminReviewsRoutes, { prefix: "/admin" });
   await app.register(adminAuditLogRoutes, { prefix: "/admin" });
+  await app.register(adminSupportRoutes, { prefix: "/admin" });
+  await app.register(adminAdminsRoutes, { prefix: "/admin" });
+  await app.register(adminKycRoutes, { prefix: "/admin" });
+  await app.register(adminMapRoutes, { prefix: "/admin" });
 }

@@ -63,6 +63,9 @@ const envSchema = z.object({
   // Captain app URL used to build password-reset links in emails (no trailing slash)
   CAPTAIN_APP_URL: z.string().default("http://localhost:3002"),
 
+  // Public API base URL — used to build open-tracking pixel URLs in broadcast emails (no trailing slash)
+  API_URL: z.string().default("http://localhost:4000"),
+
   // Email (optional — skip sending gracefully if not configured)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
