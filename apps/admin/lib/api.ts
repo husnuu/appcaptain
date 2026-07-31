@@ -356,6 +356,8 @@ export const api = {
         cancellationRate: number;
         commissionRate: number;
         pendingVerifications: number;
+        pendingSupportTickets: number;
+        pendingKycDocs: number;
       };
       recentActivity: { id: string; action: string; targetType: string | null; targetId: string | null; createdAt: string; admin: { fullName: string; email: string } }[];
       weeklyTrend: { date: string; count: number; revenue: number; commission: number }[];
