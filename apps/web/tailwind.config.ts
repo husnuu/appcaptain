@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 import preset from "@getyourboat/config/tailwind";
 
 const config: Config = {
-  presets: [preset],
+  presets: [preset as unknown as Config],
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: 'Türkiye kıyılarında yelken, dalış, tekne turu ve daha fazlası. Yerel rehberlerle unutulmaz deniz deneyimleri.',
 }
 
+// Data comes from the live API — don't try to prerender at build time.
+export const dynamic = 'force-dynamic'
+
 export default async function DeneyimlerPage() {
   const { items } = await fetchExperiences({ limit: 100 })
   return (

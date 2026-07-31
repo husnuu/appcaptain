@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: 'Türkiye\'nin en güzel koylarında yelkenli, motor yat, katamaran ve daha fazlasını kiralayın.',
 }
 
+// Data comes from the live API — don't try to prerender at build time.
+export const dynamic = 'force-dynamic'
+
 const CITIES = ['Bodrum', 'Göcek', 'Marmaris', 'Çeşme', 'Antalya'] as const
 
 export default async function TekneKiralamaPage() {
