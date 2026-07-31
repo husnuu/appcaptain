@@ -13,6 +13,7 @@ build/
 .env
 .env.*
 !.env.example
+!apps/web/.env.local.example
 
 # prisma
 packages/database/generated/

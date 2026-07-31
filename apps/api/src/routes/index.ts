@@ -12,9 +12,11 @@ import { bookingCalendarModule } from "../modules/booking-calendar/index.js";
 import { guestMessagingModule } from "../modules/guest-messaging/index.js";
 import { paymentsModule } from "../modules/payments/index.js";
 import { adminModule } from "../modules/admin/index.js";
+import { publicModule } from "../modules/public/index.js";
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthRoutes);
+  await app.register(publicModule, { prefix: "/api/v1" });
   await app.register(captainAuthModule, { prefix: "/api/v1" });
   await app.register(profileModule, { prefix: "/api/v1" });
   await app.register(boatOnboardingModule, { prefix: "/api/v1" });

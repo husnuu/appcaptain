@@ -32,9 +32,17 @@ export async function buildApp() {
     ...new Set([...defaultOrigins, ...captainOrigins, ...adminOrigins]),
   ];
 
+  // Public marketplace routes (apps/web) must be reachable from any origin,
+  // with no credentials/cookies involved. Everything else (captain/admin
+  // panels) stays locked to the known origin whitelist above.
   await app.register(cors, {
-    origin: allowedOrigins,
-    credentials: true,
+    delegator: (req, callback) => {
+      const isPublicRoute = req.url.startsWith("/api/v1/public");
+      callback(null, {
+        origin: isPublicRoute ? true : allowedOrigins,
+        credentials: !isPublicRoute,
+      });
+    },
   });
   await app.register(cookie);
   await app.register(authPlugin); // legacy JWT (phase 0)
