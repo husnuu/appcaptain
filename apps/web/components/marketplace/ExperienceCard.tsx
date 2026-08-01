@@ -110,8 +110,8 @@ export default function ExperienceCard({
           <Heart
             size={18}
             strokeWidth={2}
-            fill={liked ? '#e11d48' : 'none'}
-            color={liked ? '#e11d48' : '#1a1a1a'}
+            fill={liked ? '#0097A7' : 'none'}
+            color={liked ? '#0097A7' : '#1a1a1a'}
             aria-hidden
           />
         </button>

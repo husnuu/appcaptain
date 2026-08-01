@@ -25,6 +25,10 @@ export async function publicRoutes(app: FastifyInstance) {
     });
   });
 
+  app.get("/locations", async () => {
+    return service.listPublicLocations();
+  });
+
   app.get("/boats/:id", async (req) => {
     const { id } = req.params as { id: string };
     const boat = await service.getPublicBoat(id);

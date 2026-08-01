@@ -10,8 +10,18 @@
 /* Design tokens & global styles — SeaHub */
 
 :root {
-  --rausch: #ff385c;
-  --deep-rausch: #e00b41;
+  /* Marka renkleri — kaptan paneli ile aynı (teal + navy) */
+  --brand: #0097A7;
+  --brand-deep: #00838F;
+  --brand-light: #E0F7FA;
+  --brand-rgb: 0, 151, 167;
+
+  --primary: #0F4C75;
+  --primary-deep: #0C3F63;
+  --primary-light: #E7EEF4;
+
+  --rausch: #0097A7;
+  --deep-rausch: #00838F;
   --plus-magenta: #92174d;
   --luxe-purple: #460479;
   --info-blue: #428bff;
@@ -24,23 +34,23 @@
   --mute-gray: #929292;
   --stone-gray: #c1c1c1;
   --error-red: #c13515;
-  --ocean-dark: #0a2a4a;
-  --ocean-mid: #1a4a7a;
+  --ocean-dark: #0F4C75;
+  --ocean-mid: #1B6CA8;
 
   /* Marka turkuazı — ana sayfa vurguları, sekmeler, linkler, butonlar */
-  --cashback-brand: #00aeef;
-  --cashback-brand-deep: #0090c8;
-  --cashback-brand-rgb: 0, 174, 239;
+  --cashback-brand: #0097A7;
+  --cashback-brand-deep: #00838F;
+  --cashback-brand-rgb: 0, 151, 167;
   --cashback-mint: #5fd4f5;
   /* Mavi bant — Viravira tarzı yumuşak turkuaz */
-  --cashback-turquoise: #00aeef;
-  --cashback-turquoise-soft: rgba(0, 174, 239, 0.1);
-  --cashback-turquoise-mid: rgba(0, 174, 239, 0.18);
+  --cashback-turquoise: #0097A7;
+  --cashback-turquoise-soft: rgba(0, 151, 167, 0.1);
+  --cashback-turquoise-mid: rgba(0, 151, 167, 0.18);
   --cashback-band-gradient: linear-gradient(
     180deg,
-    rgba(0, 174, 239, 0.14) 0%,
-    rgba(0, 174, 239, 0.08) 45%,
-    rgba(0, 174, 239, 0.12) 100%
+    rgba(0, 151, 167, 0.14) 0%,
+    rgba(0, 151, 167, 0.08) 45%,
+    rgba(0, 151, 167, 0.12) 100%
   );
   /* Forum / yorumlar / bülten — mavi bant ile aynı yumuşak turkuaz panel */
   --cashback-panel-gradient: var(--cashback-band-gradient);
@@ -59,9 +69,9 @@
   --shadow-search: rgba(0,0,0,0.12) 0 6px 24px;
   --shadow-card: rgba(0,0,0,0.06) 0 2px 16px;
 
-  /* next/font injects --font-inter (body) and --font-display (headings) */
-  --font: var(--font-inter, 'Inter'), -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
-  --font-headline: var(--font-display, 'Manrope'), var(--font-inter, 'Inter'), -apple-system, system-ui, sans-serif;
+  /* next/font injects --font-sans (Inter, used for body and headings alike) */
+  --font: var(--font-sans, 'Inter'), -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+  --font-headline: var(--font-sans, 'Inter'), -apple-system, system-ui, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -6654,8 +6664,8 @@ button.mp-loc-see-all--btn {
 }
 .bc-heart-svg { stroke: #fff; color: #fff; fill: none; }
 .bc-heart--active .bc-heart-svg {
-  stroke: #c41e3a;
-  color: #c41e3a;
+  stroke: #0097A7;
+  color: #0097A7;
   fill: currentColor;
 }
 
@@ -7175,8 +7185,8 @@ button.mp-loc-see-all--btn {
   border-color: rgba(15, 23, 42, 0.14);
 }
 .listing-detail.mp-page .bc-heart--active .bc-heart-svg {
-  stroke: #c41e3a;
-  fill: rgba(196, 30, 58, 0.12);
+  stroke: #0097A7;
+  fill: rgba(0, 151, 167, 0.12);
 }
 .listing-detail.mp-page .bc-arr {
   color: var(--ink-black);

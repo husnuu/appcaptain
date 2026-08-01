@@ -111,6 +111,29 @@ export async function getPublicBoat(id: string) {
   return boat;
 }
 
+export interface PublicLocation {
+  city: string;
+  boatCount: number;
+}
+
+/** Cities with at least one ACTIVE boat, most-listed first — drives the marketplace's location tabs/nav. */
+export async function listPublicLocations(): Promise<PublicLocation[]> {
+  const rows = await prisma.boatFeatureValue.groupBy({
+    by: ["value"],
+    where: {
+      featureKey: "city",
+      value: { not: null },
+      boat: { status: "ACTIVE" },
+    },
+    _count: { value: true },
+    orderBy: { _count: { value: "desc" } },
+  });
+
+  return rows
+    .filter((r) => r.value)
+    .map((r) => ({ city: r.value as string, boatCount: r._count.value }));
+}
+
 export interface PublicExperienceListQuery {
   category?: string;
   limit?: number;

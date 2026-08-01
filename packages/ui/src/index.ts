@@ -65,6 +65,7 @@ export {
 export {
   BoatDetailView,
   type BoatDetailViewProps,
+  type BoatBookingFormValues,
 } from "./components/boat-detail-view";
 export {
   BoatPreviewBanner,

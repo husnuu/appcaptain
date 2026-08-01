@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import MarketplaceClient from './MarketplaceClient'
-import { fetchBoats } from '@/lib/api'
+import { fetchBoats, fetchLocations } from '@/lib/api'
 import { publicBoatToCard } from '@/lib/mappers'
 
 export const metadata: Metadata = {
@@ -11,15 +11,18 @@ export const metadata: Metadata = {
 // Data comes from the live API — don't try to prerender at build time.
 export const dynamic = 'force-dynamic'
 
-const CITIES = ['Bodrum', 'Göcek', 'Marmaris', 'Çeşme', 'Antalya'] as const
-
 export default async function TekneKiralamaPage() {
+  // Cities with at least one ACTIVE boat, driven entirely by the API —
+  // a newly-approved city in a new location shows up automatically.
+  const locationList = await fetchLocations()
+  const cities = locationList.map((l) => l.city)
+
   const entries = await Promise.all(
-    CITIES.map(async (city) => {
+    cities.map(async (city) => {
       const { items } = await fetchBoats({ city, limit: 8 })
       return [city, items.map(publicBoatToCard)] as const
     })
   )
   const boats = Object.fromEntries(entries)
-  return <MarketplaceClient boats={boats} locations={[...CITIES]} />
+  return <MarketplaceClient boats={boats} locations={cities} />
 }

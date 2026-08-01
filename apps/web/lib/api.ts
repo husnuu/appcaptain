@@ -85,6 +85,17 @@ export async function fetchExperience(id: string): Promise<ExperienceDTO | null>
   return res.json();
 }
 
+export interface PublicLocation {
+  city: string;
+  boatCount: number;
+}
+
+export async function fetchLocations(): Promise<PublicLocation[]> {
+  const res = await fetch(`${BASE}/public/locations`, { next: { revalidate: 300 } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 // --- Booking ---
 
 export interface BlockedRange {
@@ -99,9 +110,7 @@ export async function fetchAvailability(boatId: string): Promise<BlockedRange[]>
   return data.blockedRanges ?? [];
 }
 
-export async function submitBooking(
-  input: CreateBookingInput
-): Promise<{ ok: boolean; bookingId?: string; error?: string }> {
+export async function submitBooking(input: CreateBookingInput): Promise<{ bookingId: string }> {
   const res = await fetch(`${BASE}/bookings`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -109,8 +118,8 @@ export async function submitBooking(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    return { ok: false, error: (err as { message?: string }).message ?? "Rezervasyon oluşturulamadı" };
+    throw new Error((err as { message?: string }).message ?? "Rezervasyon oluşturulamadı");
   }
   const data = await res.json();
-  return { ok: true, bookingId: (data.booking as { id: string }).id };
+  return { bookingId: (data.booking as { id: string }).id };
 }

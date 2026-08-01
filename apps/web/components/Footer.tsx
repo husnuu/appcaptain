@@ -100,10 +100,10 @@ export default function Footer() {
             {/* Logo */}
             <div className="footer-logo">
               <svg viewBox="0 0 32 32" fill="none" width="28" height="28" aria-hidden="true">
-                <path d="M16 4C16 4 8 10 8 18C8 22.4 11.6 26 16 26C20.4 26 24 22.4 24 18C24 10 16 4 16 4Z" fill="#ff385c"/>
+                <path d="M16 4C16 4 8 10 8 18C8 22.4 11.6 26 16 26C20.4 26 24 22.4 24 18C24 10 16 4 16 4Z" fill="#0097A7"/>
                 <path d="M10 20C10 20 13 17 16 17C19 17 22 20 22 20" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
                 <circle cx="16" cy="18" r="2" fill="white"/>
-                <path d="M8 26L24 26" stroke="#ff385c" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M8 26L24 26" stroke="#0097A7" strokeWidth="2" strokeLinecap="round"/>
               </svg>
               <span className="footer-logo-text">SeaHub</span>
             </div>

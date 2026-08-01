@@ -319,6 +319,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@fortawesome/fontawesome-svg-core':
+        specifier: ^6.7.2
+        version: 6.7.2
       '@getyourboat/shared':
         specifier: workspace:*
         version: link:../../packages/shared

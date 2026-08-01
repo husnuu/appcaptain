@@ -90,14 +90,17 @@ function NavCalMonth({
   )
 }
 
-const LOCATION_SUGGESTIONS = [
+interface LocationSuggestion {
+  label: string
+  sub: string
+}
+
+const DEFAULT_SUGGESTIONS: LocationSuggestion[] = [
   { label: 'Göcek',    sub: 'Muğla, Türkiye' },
   { label: 'Bodrum',   sub: 'Muğla, Türkiye' },
   { label: 'Marmaris', sub: 'Muğla, Türkiye' },
   { label: 'Çeşme',   sub: 'İzmir, Türkiye' },
   { label: 'Antalya',  sub: 'Antalya, Türkiye' },
-  { label: 'Fethiye',  sub: 'Muğla, Türkiye' },
-  { label: 'İstanbul', sub: 'İstanbul, Türkiye' },
 ]
 
 const DISCOVER_ITEMS = [
@@ -137,7 +140,12 @@ const USER_MENU_BOTTOM = [
   { href: '/cashback',       label: 'Cashback Programı' },
 ]
 
-export default function Nav({ logoUrl = null }: { logoUrl?: string | null }) {
+interface NavProps {
+  logoUrl?: string | null
+  locationSuggestions?: LocationSuggestion[]
+}
+
+export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGGESTIONS }: NavProps) {
   const router = useRouter()
   const [scrolled,      setScrolled]      = useState(false)
   const [discoverOpen,  setDiscoverOpen]  = useState(false)
@@ -208,7 +216,7 @@ export default function Nav({ logoUrl = null }: { logoUrl?: string | null }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const filteredSuggestions = LOCATION_SUGGESTIONS.filter(s =>
+  const filteredSuggestions = locationSuggestions.filter(s =>
     !location || s.label.toLowerCase().includes(location.toLowerCase())
   )
 

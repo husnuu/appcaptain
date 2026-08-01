@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import ListingPageClient from '@/components/listing/ListingPageClient'
+import ListingDetail from '@/components/listing/ListingDetail'
 import { fetchBoat } from '@/lib/api'
 
 type Props = { params: Promise<{ id: string }> }
@@ -22,5 +22,5 @@ export default async function ListingIdPage({ params }: Props) {
   const { id } = await params
   const boat = await fetchBoat(id)
   if (!boat) notFound()
-  return <ListingPageClient boat={boat} />
+  return <ListingDetail boat={boat} />
 }
