@@ -55,34 +55,45 @@ function toQueryString(params?: Record<string, string | number | undefined>): st
   return `?${qs}`;
 }
 
+/**
+ * GET a public endpoint without ever throwing — a stale/unreachable API
+ * deploy shouldn't crash a whole page. Logs server-side so failures are
+ * still visible, but callers always get a safe fallback value.
+ */
+async function safeGet<T>(path: string, revalidate: number, fallback: T): Promise<T> {
+  try {
+    const res = await fetch(`${BASE}${path}`, { next: { revalidate } });
+    if (!res.ok) {
+      console.error(`GET ${path} failed: ${res.status} ${res.statusText}`);
+      return fallback;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error(`GET ${path} threw:`, err);
+    return fallback;
+  }
+}
+
 export async function fetchBoats(
   params?: PublicBoatListParams
 ): Promise<Paginated<PublicBoatSummary>> {
   const qs = toQueryString(params as Record<string, string | number | undefined> | undefined);
-  const res = await fetch(`${BASE}/public/boats${qs}`, { next: { revalidate: 60 } });
-  if (!res.ok) throw new Error("Failed to fetch boats");
-  return res.json();
+  return safeGet(`/public/boats${qs}`, 60, { items: [], total: 0 });
 }
 
 export async function fetchBoat(id: string): Promise<SerializedBoatDTO | null> {
-  const res = await fetch(`${BASE}/public/boats/${id}`, { next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  return res.json();
+  return safeGet(`/public/boats/${id}`, 60, null);
 }
 
 export async function fetchExperiences(
   params?: PublicExperienceListParams
 ): Promise<Paginated<ExperienceListItemDTO>> {
   const qs = toQueryString(params as Record<string, string | number | undefined> | undefined);
-  const res = await fetch(`${BASE}/public/experiences${qs}`, { next: { revalidate: 60 } });
-  if (!res.ok) throw new Error("Failed to fetch experiences");
-  return res.json();
+  return safeGet(`/public/experiences${qs}`, 60, { items: [], total: 0 });
 }
 
 export async function fetchExperience(id: string): Promise<ExperienceDTO | null> {
-  const res = await fetch(`${BASE}/public/experiences/${id}`, { next: { revalidate: 60 } });
-  if (!res.ok) return null;
-  return res.json();
+  return safeGet(`/public/experiences/${id}`, 60, null);
 }
 
 export interface PublicLocation {
@@ -91,9 +102,7 @@ export interface PublicLocation {
 }
 
 export async function fetchLocations(): Promise<PublicLocation[]> {
-  const res = await fetch(`${BASE}/public/locations`, { next: { revalidate: 300 } });
-  if (!res.ok) return [];
-  return res.json();
+  return safeGet("/public/locations", 300, []);
 }
 
 // --- Booking ---
@@ -104,9 +113,11 @@ export interface BlockedRange {
 }
 
 export async function fetchAvailability(boatId: string): Promise<BlockedRange[]> {
-  const res = await fetch(`${BASE}/bookings/boat/${boatId}/availability`, { next: { revalidate: 0 } });
-  if (!res.ok) return [];
-  const data = await res.json();
+  const data = await safeGet<{ blockedRanges?: BlockedRange[] }>(
+    `/bookings/boat/${boatId}/availability`,
+    0,
+    {}
+  );
   return data.blockedRanges ?? [];
 }
 

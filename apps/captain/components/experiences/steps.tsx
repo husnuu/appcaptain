@@ -12,7 +12,7 @@ import {
   ValidationFieldError,
 } from "@getyourboat/shared";
 import { Button, cn, LocationPicker } from "@getyourboat/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
 import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
 import { ChipInput } from "./ChipInput";
@@ -358,6 +358,11 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.LOGISTICS);
 
+  const [knownLocations, setKnownLocations] = useState<string[]>([]);
+  useEffect(() => {
+    api.getLocationSuggestions().then(setKnownLocations).catch(() => {});
+  }, []);
+
   function toggleAccessibility(option: string) {
     setAccessibilityOptions((prev) =>
       prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
@@ -378,6 +383,7 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
         </p>
         <LocationPicker
           mapboxToken={mapboxToken}
+          knownLocations={knownLocations}
           value={{
             latitude: meetingPointLat ? Number(meetingPointLat) : null,
             longitude: meetingPointLng ? Number(meetingPointLng) : null,

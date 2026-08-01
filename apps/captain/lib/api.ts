@@ -157,6 +157,10 @@ export const api = {
     body: { features: { key: string; value?: string | null }[] }
   ) => request<SerializedBoat>(`/boats/${id}/location`, { method: "PUT", body }),
 
+  /** Marina/city names other captains have already typed — powers the location search's suggestion list. */
+  getLocationSuggestions: () =>
+    request<string[]>("/public/location-suggestions", { auth: false }),
+
   updateDescriptionRules: (
     id: string,
     body: {

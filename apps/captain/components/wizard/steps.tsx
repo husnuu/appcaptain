@@ -1171,6 +1171,11 @@ export function LocationStep({
   const [values, setValues] = useState<Record<string, string>>(initialFeatures);
   const { busy, fieldErrors, errorSummary, run } = useStepSaver(onSaved);
 
+  const [knownLocations, setKnownLocations] = useState<string[]>([]);
+  useEffect(() => {
+    api.getLocationSuggestions().then(setKnownLocations).catch(() => {});
+  }, []);
+
   const buildFeatures = useCallback(
     () =>
       LOCATION_FIELD_KEYS.map((key) => ({
@@ -1228,6 +1233,7 @@ export function LocationStep({
         className="mb-6"
         mapboxToken={mapboxToken}
         value={pickerValue}
+        knownLocations={knownLocations}
         onChange={(next) => {
           setValues((prev) => ({
             ...prev,

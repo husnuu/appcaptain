@@ -31,6 +31,8 @@ export type LocationPickerProps = {
   value: LocationPickerValue;
   onChange: (value: LocationPickerValue) => void;
   className?: string;
+  /** Marina/city names already used by other listings — shown as quick-pick suggestions above the live map search. */
+  knownLocations?: string[];
 };
 
 const DEFAULT_CENTER = { latitude: 38.32, longitude: 26.3 };
@@ -86,13 +88,37 @@ function ManualCoordinateFallback({
   );
 }
 
-export function LocationPicker({ mapboxToken, value, onChange, className }: LocationPickerProps) {
+export function LocationPicker({
+  mapboxToken,
+  value,
+  onChange,
+  className,
+  knownLocations = [],
+}: LocationPickerProps) {
   const mapRef = useRef<MapRef>(null);
   const [query, setQuery] = useState(value.address ?? "");
   const [open, setOpen] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [reverseBusy, setReverseBusy] = useState(false);
   const { results, loading, error } = useGeocodingSearch(mapboxToken, query);
+
+  const matchingKnownLocations = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q ? knownLocations.filter((loc) => loc.toLowerCase().includes(q)) : knownLocations;
+    return filtered.slice(0, 8);
+  }, [knownLocations, query]);
+
+  const applyKnownLocation = useCallback(
+    (name: string) => {
+      // Only a name, no coordinates — captains still place the pin on the
+      // map. Set on both fields since different callers read either one
+      // (boat location uses `marina`, experience meeting point uses `address`).
+      onChange({ ...value, marina: name, address: name });
+      setQuery(name);
+      setOpen(false);
+    },
+    [onChange, value]
+  );
 
   const hasPin =
     value.latitude != null &&
@@ -196,27 +222,46 @@ export function LocationPicker({ mapboxToken, value, onChange, className }: Loca
             onFocus={() => setOpen(true)}
           />
         </Field>
-        {open && query.trim().length >= 2 ? (
-          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-            {loading ? (
+        {open && (query.trim().length >= 2 || matchingKnownLocations.length > 0) ? (
+          <div className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+            {matchingKnownLocations.length > 0 ? (
+              <div className="border-b border-gray-100 pb-1">
+                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase tracking-wide text-gray-400">
+                  Daha önce kullanılan
+                </p>
+                {matchingKnownLocations.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-gray-800 hover:bg-gray-50"
+                    onClick={() => applyKnownLocation(name)}
+                  >
+                    <FontAwesomeIcon icon={faAnchor} className="text-[12px] text-gray-400" aria-hidden />
+                    {name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {query.trim().length < 2 ? null : loading ? (
               <div className="flex items-center gap-2 px-3 py-2 text-body-sm text-gray-500">
                 <Spinner className="h-4 w-4" /> Aranıyor…
               </div>
             ) : null}
-            {!loading && results.length === 0 ? (
+            {query.trim().length >= 2 && !loading && results.length === 0 ? (
               <p className="px-3 py-2 text-body-sm text-gray-500">
                 Sonuç bulunamadı — haritadan manuel işaretleyebilirsiniz.
               </p>
             ) : null}
-            {results.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="block w-full px-3 py-2 text-left text-body-sm text-gray-800 hover:bg-gray-50"
-                onClick={() => applyGeocode(item)}
-              >
-                {item.placeName}
-              </button>
+            {query.trim().length >= 2 &&
+              results.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="block w-full px-3 py-2 text-left text-body-sm text-gray-800 hover:bg-gray-50"
+                  onClick={() => applyGeocode(item)}
+                >
+                  {item.placeName}
+                </button>
             ))}
             {error ? <p className="px-3 py-2 text-caption text-danger-600">{error}</p> : null}
           </div>

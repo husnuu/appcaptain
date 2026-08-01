@@ -134,6 +134,23 @@ export async function listPublicLocations(): Promise<PublicLocation[]> {
     .map((r) => ({ city: r.value as string, boatCount: r._count.value }));
 }
 
+/**
+ * Distinct marina/city names captains have already typed, across all boats
+ * regardless of status. Powers the onboarding location search's suggestion
+ * list so captains reuse an existing spelling instead of typing a new
+ * free-text variant (which would fragment the public locations grouping).
+ */
+export async function listLocationSuggestions(): Promise<string[]> {
+  const rows = await prisma.boatFeatureValue.findMany({
+    where: { featureKey: { in: ["city", "marina"] }, value: { not: null } },
+    select: { value: true },
+    distinct: ["value"],
+  });
+
+  const values = rows.map((r) => r.value).filter((v): v is string => !!v && v.trim() !== "");
+  return [...new Set(values)].sort((a, b) => a.localeCompare(b, "tr"));
+}
+
 export interface PublicExperienceListQuery {
   category?: string;
   limit?: number;
