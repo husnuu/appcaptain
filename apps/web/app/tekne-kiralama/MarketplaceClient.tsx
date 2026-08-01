@@ -25,6 +25,8 @@ const SORT_OPTIONS = [
 interface Props {
   boats: Record<string, Boat[]>
   locations: string[]
+  /** Set when the page was reached via a Nav city search — highlights the search context. */
+  activeCity?: string
 }
 
 function matchesBoatType(boat: Boat, type: string): boolean {
@@ -125,7 +127,7 @@ function buildPriceBuckets(boats: Boat[], extentMin: number, extentMax: number, 
   return counts
 }
 
-export default function MarketplaceClient({ boats, locations }: Props) {
+export default function MarketplaceClient({ boats, locations, activeCity }: Props) {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('recommended')
   const [typeFilters, setTypeFilters] = useState<string[]>([])
@@ -258,6 +260,17 @@ export default function MarketplaceClient({ boats, locations }: Props) {
           </p>
         </div>
       </header>
+
+      {activeCity ? (
+        <div className="mp-search-banner">
+          <span>
+            <strong>{activeCity}</strong> için arama sonuçları
+          </span>
+          <Link href="/tekne-kiralama" className="mp-search-banner-reset">
+            Tüm lokasyonları gör
+          </Link>
+        </div>
+      ) : null}
 
       <div className="mp-shell">
         <aside className="mp-sidebar" aria-label="Filtreler">

@@ -228,7 +228,7 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
   const handleSearchSubmit = () => {
     const q = location.trim()
     const path = searchMode === 'rental' ? '/tekne-kiralama' : '/deneyimler'
-    const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+    const qs = q ? `?city=${encodeURIComponent(q)}` : ''
     setSearchOpen(false)
     setActiveField(null)
     router.push(`${path}${qs}`)

@@ -102,7 +102,7 @@ export interface PublicLocation {
 }
 
 export async function fetchLocations(): Promise<PublicLocation[]> {
-  return safeGet("/public/locations", 300, []);
+  return safeGet("/public/locations", 60, []);
 }
 
 // --- Booking ---

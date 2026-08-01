@@ -5615,6 +5615,16 @@ input { font-family: var(--font); }
   margin: 0 auto;
   padding: 28px 24px 26px;
 }
+.mp-search-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  max-width: 1400px; margin: 0 auto; padding: 12px 24px;
+  background: var(--brand-light); border-bottom: 1px solid rgba(10, 42, 74, 0.08);
+  font-size: 14px; color: var(--ink-black);
+}
+.mp-search-banner-reset {
+  font-weight: 600; color: var(--cashback-brand); white-space: nowrap;
+}
+.mp-search-banner-reset:hover { text-decoration: underline; }
 .mp-page-eyebrow {
   font-family: var(--font-headline);
   font-size: 12px;

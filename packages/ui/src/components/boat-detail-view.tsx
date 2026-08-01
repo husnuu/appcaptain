@@ -126,8 +126,13 @@ function Gallery({
         ))}
       </div>
 
-      {/* Desktop: Airbnb mosaic — 1 big left + 2x2 right */}
-      <div className="hidden h-[420px] grid-cols-2 gap-2 overflow-hidden rounded-3xl md:grid lg:h-[480px]">
+      {/* Desktop: Airbnb mosaic — 1 big left + up to 2x2 right, sized to how many photos exist */}
+      <div
+        className={cn(
+          "hidden h-[420px] gap-2 overflow-hidden rounded-3xl md:grid lg:h-[480px]",
+          right.length === 0 ? "grid-cols-1" : "grid-cols-2"
+        )}
+      >
         <button
           type="button"
           onClick={() => onSelect(0)}
@@ -136,23 +141,26 @@ function Gallery({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={cover.url} alt={cover.alt} className="h-full w-full object-cover" />
         </button>
-        <div className="grid grid-cols-2 grid-rows-2 gap-2">
-          {right.map((img, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onSelect(i + 1)}
-              className={cn("relative h-full w-full overflow-hidden", clickable)}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.alt} className="h-full w-full object-cover" />
-            </button>
-          ))}
-          {/* Fill empty mosaic slots so the grid keeps its shape */}
-          {Array.from({ length: Math.max(0, 4 - right.length) }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-full w-full bg-gray-100" />
-          ))}
-        </div>
+        {right.length > 0 ? (
+          <div
+            className={cn(
+              "grid gap-2",
+              right.length === 1 ? "grid-cols-1 grid-rows-1" : "grid-cols-2 grid-rows-2"
+            )}
+          >
+            {right.map((img, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => onSelect(i + 1)}
+                className={cn("relative h-full w-full overflow-hidden", clickable)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.url} alt={img.alt} className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {images.length > 1 && (
