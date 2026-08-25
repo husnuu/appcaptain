@@ -68,3 +68,18 @@ export async function captainBookingRoutes(app: FastifyInstance) {
     return { booking };
   });
 }
+
+/**
+ * Customer endpoints — same requireAuth hook as the captain routes (any
+ * valid Supabase-issued token, regardless of which app it came from). Scoped
+ * to the logged-in customer's own bookings by matching their account email
+ * against Booking.guestEmail — there's no customerId column, bookings stay
+ * guest-shaped even when placed while logged in.
+ */
+export async function customerBookingRoutes(app: FastifyInstance) {
+  app.addHook("onRequest", app.requireAuth);
+
+  app.get("/bookings/mine", async (req) => {
+    return service.listByCustomerEmail(req.authUser!.email);
+  });
+}

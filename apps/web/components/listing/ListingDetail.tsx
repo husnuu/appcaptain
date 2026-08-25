@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BoatDetailView, type BoatBookingFormValues } from '@getyourboat/ui'
 import { toBoatDetailViewModel, type SerializedBoatDTO } from '@getyourboat/shared'
 import { submitBooking } from '@/lib/api'
 import { toRentalType } from '@/lib/pricing'
+import { supabase } from '@/lib/supabase'
 
 interface Props {
   boat: SerializedBoatDTO
@@ -15,6 +16,17 @@ export default function ListingDetail({ boat }: Props) {
 
   const capacityRaw = Number(boat.features.find((f) => f.key === 'capacity')?.value ?? 8)
   const maxGuests = Number.isFinite(capacityRaw) && capacityRaw > 0 ? capacityRaw : 8
+
+  const [guestEmail, setGuestEmail] = useState<string | undefined>(undefined)
+  const [guestName, setGuestName] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setGuestEmail(data.user?.email ?? undefined)
+      const name = data.user?.user_metadata?.full_name
+      setGuestName(typeof name === 'string' ? name : undefined)
+    })
+  }, [])
 
   async function handleSubmitBooking(values: BoatBookingFormValues) {
     // BoatDetailView's own form catches this and shows the error inline —
@@ -32,5 +44,13 @@ export default function ListingDetail({ boat }: Props) {
     })
   }
 
-  return <BoatDetailView model={model} maxGuests={maxGuests} onSubmitBooking={handleSubmitBooking} />
+  return (
+    <BoatDetailView
+      model={model}
+      maxGuests={maxGuests}
+      onSubmitBooking={handleSubmitBooking}
+      defaultGuestName={guestName}
+      defaultGuestEmail={guestEmail}
+    />
+  )
 }

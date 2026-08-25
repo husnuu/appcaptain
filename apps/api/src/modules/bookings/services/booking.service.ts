@@ -52,6 +52,12 @@ export function listCaptainBookings(captainId: string, query: BookingListQuery) 
   return bookingRepository.listByCaptain(captainId, query);
 }
 
+export async function listByCustomerEmail(email: string | null) {
+  if (!email) return { items: [] };
+  const items = await bookingRepository.listByGuestEmail(email);
+  return { items };
+}
+
 async function loadOwnedBooking(id: string, captainId: string) {
   const booking = await bookingRepository.getById(id);
   if (!booking) throw notFound("Rezervasyon bulunamadı");

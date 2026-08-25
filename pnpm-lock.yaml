@@ -328,6 +328,9 @@ importers:
       '@getyourboat/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@supabase/supabase-js':
+        specifier: ^2.47.10
+        version: 2.108.2
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4

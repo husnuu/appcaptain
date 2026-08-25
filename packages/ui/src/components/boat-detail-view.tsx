@@ -67,6 +67,9 @@ export interface BoatDetailViewProps {
    * renders a static CTA (used by the captain preview).
    */
   onSubmitBooking?: (values: BoatBookingFormValues) => Promise<void>;
+  /** Prefills the contact form's name/email — pass the logged-in customer's values. */
+  defaultGuestName?: string;
+  defaultGuestEmail?: string;
   className?: string;
 }
 
@@ -428,21 +431,43 @@ function PricingHeader({
 const fieldClass =
   "w-full rounded-xl border border-gray-200 px-3 py-2.5 text-body-sm text-gray-800 focus:border-brand-500 focus:outline-none";
 
-/** Interactive date + guest + contact form (public web). */
+/** Interactive date + guest + contact + payment form (public web). */
 function BookingForm({
   maxGuests,
   onSubmitBooking,
+  defaultGuestName,
+  defaultGuestEmail,
+  pricing,
 }: {
   maxGuests: number;
   onSubmitBooking: (values: BoatBookingFormValues) => Promise<void>;
+  defaultGuestName?: string;
+  defaultGuestEmail?: string;
+  pricing: BoatDetailViewModel["pricing"];
 }) {
-  const [step, setStep] = React.useState<"dates" | "form" | "success">("dates");
+  const [step, setStep] = React.useState<"dates" | "form" | "payment" | "success">("dates");
   const [startDate, setStartDate] = React.useState("");
   const [endDate, setEndDate] = React.useState("");
   const [guestCount, setGuestCount] = React.useState(1);
-  const [form, setForm] = React.useState({ name: "", email: "", phone: "", message: "" });
+  const [form, setForm] = React.useState({
+    name: defaultGuestName ?? "",
+    email: defaultGuestEmail ?? "",
+    phone: "",
+    message: "",
+  });
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
+  const primaryPrice = pricing[0] ?? null;
+
+  // defaultGuestName/Email often arrive after mount (async session lookup on
+  // the caller's side) — fill them in once known, but never clobber what the
+  // guest already typed themselves.
+  React.useEffect(() => {
+    if (defaultGuestName) setForm((f) => (f.name ? f : { ...f, name: defaultGuestName }));
+  }, [defaultGuestName]);
+  React.useEffect(() => {
+    if (defaultGuestEmail) setForm((f) => (f.email ? f : { ...f, email: defaultGuestEmail }));
+  }, [defaultGuestEmail]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -581,6 +606,36 @@ function BookingForm({
         </div>
       ) : null}
 
+      {step === "payment" ? (
+        <div className="space-y-3 border-t border-gray-100 pt-4">
+          <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-gray-400">
+            <FontAwesomeIcon icon={faCircleCheck} className="text-[12px] text-brand-600" aria-hidden />
+            Özet
+          </p>
+          <div className="space-y-1.5 rounded-xl bg-gray-50 p-3 text-body-sm text-gray-700">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Tarih</span>
+              <span className="font-medium text-ink">{startDate} → {endDate}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Misafir</span>
+              <span className="font-medium text-ink">{guestCount}</span>
+            </div>
+            {primaryPrice ? (
+              <div className="flex justify-between">
+                <span className="text-gray-500">{primaryPrice.label}</span>
+                <span className="font-medium text-ink">
+                  {formatPrice(primaryPrice.price, primaryPrice.currency)}
+                </span>
+              </div>
+            ) : null}
+          </div>
+          <p className="text-caption text-gray-400">
+            Kesin tutar kaptan talebinizi onayladıktan sonra bildirilir. Ödeme onaydan sonra alınır.
+          </p>
+        </div>
+      ) : null}
+
       {error ? (
         <div className="flex items-start gap-2 rounded-xl border border-danger-200 bg-danger-50 p-3">
           <FontAwesomeIcon icon={faXmark} className="mt-0.5 shrink-0 text-danger-500" aria-hidden />
@@ -604,6 +659,34 @@ function BookingForm({
           Rezervasyon Talebi Gönder
           <FontAwesomeIcon icon={faChevronRight} className="text-[14px]" aria-hidden />
         </button>
+      ) : step === "form" ? (
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (!form.name.trim() || !form.email.trim()) {
+                setError("Ad ve e-posta zorunludur.");
+                return;
+              }
+              setError("");
+              setStep("payment");
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 py-3.5 text-body-sm font-bold text-white shadow-md transition-all hover:bg-brand-700 hover:shadow-lg"
+          >
+            Ödemeye Geç
+            <FontAwesomeIcon icon={faChevronRight} className="text-[14px]" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStep("dates");
+              setError("");
+            }}
+            className="w-full py-2 text-caption text-gray-500 transition-colors hover:text-gray-700"
+          >
+            ← Geri dön
+          </button>
+        </div>
       ) : (
         <div className="space-y-2">
           <button
@@ -618,12 +701,12 @@ function BookingForm({
               className="text-[14px]"
               aria-hidden
             />
-            {submitting ? "Gönderiliyor…" : "Talebi Onayla & Gönder"}
+            {submitting ? "Ödeniyor…" : "Öde"}
           </button>
           <button
             type="button"
             onClick={() => {
-              setStep("dates");
+              setStep("form");
               setError("");
             }}
             className="w-full py-2 text-caption text-gray-500 transition-colors hover:text-gray-700"
@@ -643,6 +726,8 @@ function BookingCard({
   showPlaceholders,
   maxGuests,
   onSubmitBooking,
+  defaultGuestName,
+  defaultGuestEmail,
 }: {
   model: BoatDetailViewModel;
   bookingDisabled: boolean;
@@ -650,6 +735,8 @@ function BookingCard({
   showPlaceholders: boolean;
   maxGuests: number;
   onSubmitBooking?: (values: BoatBookingFormValues) => Promise<void>;
+  defaultGuestName?: string;
+  defaultGuestEmail?: string;
 }) {
   const interactive = !bookingDisabled && !!onSubmitBooking;
 
@@ -658,7 +745,13 @@ function BookingCard({
       <PricingHeader model={model} showPlaceholders={showPlaceholders} />
 
       {interactive ? (
-        <BookingForm maxGuests={maxGuests} onSubmitBooking={onSubmitBooking!} />
+        <BookingForm
+          maxGuests={maxGuests}
+          onSubmitBooking={onSubmitBooking!}
+          defaultGuestName={defaultGuestName}
+          defaultGuestEmail={defaultGuestEmail}
+          pricing={model.pricing}
+        />
       ) : (
         <button
           type="button"
@@ -695,6 +788,8 @@ export function BoatDetailView({
   showPlaceholders = false,
   maxGuests = 50,
   onSubmitBooking,
+  defaultGuestName,
+  defaultGuestEmail,
   className,
 }: BoatDetailViewProps) {
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
@@ -915,6 +1010,8 @@ export function BoatDetailView({
               showPlaceholders={showPlaceholders}
               maxGuests={maxGuests}
               onSubmitBooking={onSubmitBooking}
+              defaultGuestName={defaultGuestName}
+              defaultGuestEmail={defaultGuestEmail}
             />
           </div>
         </aside>

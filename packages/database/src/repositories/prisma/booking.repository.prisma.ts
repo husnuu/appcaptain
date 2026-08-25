@@ -141,4 +141,13 @@ export class PrismaBookingRepository implements BookingRepository {
       status: r.status as BookingStatus,
     }));
   }
+
+  async listByGuestEmail(email: string) {
+    const rows = await prisma.booking.findMany({
+      where: { guestEmail: { equals: email, mode: "insensitive" } },
+      include: includeBoat,
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toBookingDTO);
+  }
 }

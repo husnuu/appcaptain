@@ -4,6 +4,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
+import AuthModal from '@/components/auth/AuthModal'
+
+const CAPTAIN_APP_URL = process.env.NEXT_PUBLIC_CAPTAIN_URL ?? 'https://appcaptain-captain.vercel.app'
 
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
                    'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
@@ -150,6 +155,8 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
   const [scrolled,      setScrolled]      = useState(false)
   const [discoverOpen,  setDiscoverOpen]  = useState(false)
   const [userMenuOpen,  setUserMenuOpen]  = useState(false)
+  const [user,          setUser]          = useState<User | null>(null)
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup' | null>(null)
   const [searchOpen,    setSearchOpen]    = useState(false)
   const [searchMode,    setSearchMode]    = useState<'rental' | 'experience'>('rental')
   const [activeField,   setActiveField]   = useState<'location' | 'date' | 'guests' | null>(null)
@@ -191,6 +198,15 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
   const discoverRef  = useRef<HTMLDivElement>(null)
   const userMenuRef  = useRef<HTMLDivElement>(null)
   const searchRef    = useRef<HTMLDivElement>(null)
+
+  // Track the logged-in customer session
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   // Switch to compact pill after scrolling past hero
   useEffect(() => {
@@ -530,16 +546,50 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
                 <line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
               {/* Avatar */}
-              <div className="nav-avatar" aria-hidden="true">S</div>
+              <div className="nav-avatar" aria-hidden="true">
+                {user?.email ? user.email.charAt(0).toUpperCase() : 'S'}
+              </div>
             </button>
 
             {userMenuOpen && (
               <div className="nav-user-dropdown" role="menu" aria-label="Kullanıcı menüsü">
                 {/* Top: auth links */}
                 <div className="nav-ud-section">
-                  <Link href="/giris"  className="nav-ud-item nav-ud-item--bold" role="menuitem" onClick={() => setUserMenuOpen(false)}>Giriş yap</Link>
-                  <Link href="/kayit" className="nav-ud-item" role="menuitem" onClick={() => setUserMenuOpen(false)}>Kayıt ol</Link>
-                  <Link href="/panel" className="nav-ud-item nav-ud-item--bold" role="menuitem" onClick={() => setUserMenuOpen(false)}>Kaptan Paneli</Link>
+                  {user ? (
+                    <>
+                      <div className="nav-ud-item nav-ud-item--email" role="none">{user.email}</div>
+                      <Link href="/hesabim" className="nav-ud-item" role="menuitem" onClick={() => setUserMenuOpen(false)}>Hesabım</Link>
+                      <Link href="/rezervasyonlarim" className="nav-ud-item" role="menuitem" onClick={() => setUserMenuOpen(false)}>Rezervasyonlarım</Link>
+                      <button
+                        type="button"
+                        className="nav-ud-item nav-ud-item--button"
+                        role="menuitem"
+                        onClick={() => { setUserMenuOpen(false); void supabase.auth.signOut() }}
+                      >
+                        Çıkış yap
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="nav-ud-item nav-ud-item--button nav-ud-item--bold"
+                        role="menuitem"
+                        onClick={() => { setUserMenuOpen(false); setAuthModalMode('signin') }}
+                      >
+                        Giriş yap
+                      </button>
+                      <button
+                        type="button"
+                        className="nav-ud-item nav-ud-item--button"
+                        role="menuitem"
+                        onClick={() => { setUserMenuOpen(false); setAuthModalMode('signup') }}
+                      >
+                        Kayıt ol
+                      </button>
+                    </>
+                  )}
+                  <a href={CAPTAIN_APP_URL} className="nav-ud-item nav-ud-item--bold" role="menuitem" onClick={() => setUserMenuOpen(false)}>Kaptan Paneli</a>
                 </div>
                 <div className="nav-ud-divider" aria-hidden="true" />
                 {/* Bottom: nav links */}
@@ -562,6 +612,10 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
 
       </div>
     </nav>
+
+    {authModalMode ? (
+      <AuthModal initialMode={authModalMode} onClose={() => setAuthModalMode(null)} />
+    ) : null}
     </>
   )
 }

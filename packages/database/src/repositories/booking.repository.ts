@@ -27,6 +27,8 @@ export interface BookingRepository {
   getBoatCaptainId(boatId: string): Promise<string | null>;
   /** Future busy ranges for availability calendars. */
   listAvailability(boatId: string): Promise<BookingBlockedRange[]>;
+  /** Logged-in customer's own bookings — matched by account email (no customerId column exists). */
+  listByGuestEmail(email: string): Promise<BookingDTO[]>;
 }
 
 export interface BookingRow {

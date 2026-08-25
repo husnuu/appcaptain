@@ -1,9 +1,11 @@
 import type {
+  BookingDTO,
   CreateBookingInput,
   ExperienceDTO,
   ExperienceListItemDTO,
   SerializedBoatDTO,
 } from "@getyourboat/shared";
+import { supabase } from "@/lib/supabase";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://appcaptain-api.vercel.app/api/v1";
 
@@ -133,4 +135,31 @@ export async function submitBooking(input: CreateBookingInput): Promise<{ bookin
   }
   const data = await res.json();
   return { bookingId: (data.booking as { id: string }).id };
+}
+
+/**
+ * Logged-in customer's own bookings. Never throws — an expired session or an
+ * unreachable API should just show an empty list, not crash the page.
+ */
+export async function fetchMyBookings(): Promise<BookingDTO[]> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return [];
+
+  try {
+    const res = await fetch(`${BASE}/bookings/mine`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.error(`GET /bookings/mine failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    const data = await res.json();
+    return (data.items as BookingDTO[]) ?? [];
+  } catch (err) {
+    console.error("GET /bookings/mine threw:", err);
+    return [];
+  }
 }
