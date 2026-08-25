@@ -19,13 +19,13 @@ import type {
 export function getBoatTypes(): BoatType[] {
   return [
     { id: 'gulet',     emoji: '🏮', name: 'Gulet',          description: 'Geniş yaşam alanlarıyla geleneksel mavi yolculuk deneyimi',    count: 58,  href: '/listing', image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=500&q=80' },
-    { id: 'sail',      emoji: '⛵', name: 'Yelkenli',        description: 'Rüzgar odaklı, daha doğal ve sportif seyir deneyimi',           count: 348, href: '/listing', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=500&q=80' },
+    { id: 'sail',      emoji: '⛵', name: 'Yelkenli',        description: 'Rüzgar odaklı, daha doğal ve sportif seyir deneyimi',           count: 348, href: '/listing', image: 'https://images.unsplash.com/photo-1546214755-c5d22447b43b?auto=format&fit=crop&w=500&q=80' },
     { id: 'catamaran', emoji: '🚤', name: 'Katamaran',       description: 'Geniş güverte ve dengeli konfor arayanlar için ideal',          count: 92,  href: '/listing', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80' },
     { id: 'motor',     emoji: '🛥️', name: 'Motor Yat',       description: 'Hız ve konforu bir araya getiren deniz yolculuğu',              count: 214, href: '/listing', image: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=500&q=80' },
     { id: 'speed',     emoji: '💨', name: 'Sürat Teknesi',   description: 'Adrenalin ve özgürlük için tasarlanmış hızlı tekne',            count: 167, href: '/listing', image: 'https://images.unsplash.com/photo-1520942702018-0862200e6873?auto=format&fit=crop&w=500&q=80' },
-    { id: 'luxury',    emoji: '👑', name: 'Lüks Yat',        description: 'Beş yıldızlı hizmet ve eşsiz konforu denizde yaşayın',         count: 43,  href: '/listing', image: 'https://images.unsplash.com/photo-1548514168-f14ddaa5fc70?auto=format&fit=crop&w=500&q=80' },
-    { id: 'party',     emoji: '🥳', name: 'Parti Teknesi',   description: 'Arkadaşlarla unutulmaz deniz partisi için mükemmel seçim',      count: 76,  href: '/listing', image: 'https://images.unsplash.com/photo-1527824404775-dce343a93dc2?auto=format&fit=crop&w=500&q=80' },
-    { id: 'fishing',   emoji: '🎣', name: 'Balıkçı Tekne',   description: 'Sessiz koylarda balık tutmanın keyfini çıkarın',               count: 131, href: '/listing', image: 'https://images.unsplash.com/photo-1473496169904-658ba7574b0d?auto=format&fit=crop&w=500&q=80' },
+    { id: 'luxury',    emoji: '👑', name: 'Lüks Yat',        description: 'Beş yıldızlı hizmet ve eşsiz konforu denizde yaşayın',         count: 43,  href: '/listing', image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=500&q=80' },
+    { id: 'party',     emoji: '🥳', name: 'Parti Teknesi',   description: 'Arkadaşlarla unutulmaz deniz partisi için mükemmel seçim',      count: 76,  href: '/listing', image: 'https://images.unsplash.com/photo-1678122878190-b8a567929f6d?auto=format&fit=crop&w=500&q=80' },
+    { id: 'fishing',   emoji: '🎣', name: 'Balıkçı Tekne',   description: 'Sessiz koylarda balık tutmanın keyfini çıkarın',               count: 131, href: '/listing', image: 'https://images.unsplash.com/photo-1527685609591-44b0aef2400b?auto=format&fit=crop&w=500&q=80' },
     { id: 'dive',      emoji: '🤿', name: 'Dalış Teknesi',   description: 'Sualtı dünyasını keşfetmek için donanımlı tekne',              count: 49,  href: '/listing', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=500&q=80' },
   ]
 }
@@ -33,7 +33,7 @@ export function getBoatTypes(): BoatType[] {
 // ── Experiences (Deneyim browse) ─────────────────────────────
 export function getExperiences(): Experience[] {
   return [
-    { id: 'sunset',   emoji: '🌅', name: 'Gün Batımı Turu',    description: 'Yelkenler altında eşsiz bir gün batımı anısı edinin',         count: 52, href: '/deneyimler', image: 'https://images.unsplash.com/photo-1540946491917-7897cdda40e4?auto=format&fit=crop&w=500&q=80' },
+    { id: 'sunset',   emoji: '🌅', name: 'Gün Batımı Turu',    description: 'Yelkenler altında eşsiz bir gün batımı anısı edinin',         count: 52, href: '/deneyimler', image: 'https://images.unsplash.com/photo-1622219969983-45589eae5637?auto=format&fit=crop&w=500&q=80' },
     { id: 'dive',     emoji: '🤿', name: 'Dalış Kursu',         description: 'Sualtı dünyasını profesyonel rehberlerle keşfedin',           count: 37, href: '/deneyimler', image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=500&q=80' },
     { id: 'islands',  emoji: '🏝️', name: 'Adalar Turu',        description: 'Saklı koyları ve el değmemiş adaları birlikte gezin',         count: 44, href: '/deneyimler', image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80' },
     { id: 'yoga',     emoji: '🧘', name: 'Yoga Workshop',       description: 'Dalgaların ritmiyle deniz üzerinde beden ve zihin dengesi',   count: 24, href: '/deneyimler', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=500&q=80' },
@@ -48,17 +48,17 @@ export function getExperiences(): Experience[] {
 export function getRentalLocations(): Location[] {
   return [
     { id: 'bodrum',   name: 'Bodrum',   count: 128, countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=600&q=80' },
-    { id: 'marmaris', name: 'Marmaris', count: 94,  countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1548514168-f14ddaa5fc70?auto=format&fit=crop&w=600&q=80' },
+    { id: 'marmaris', name: 'Marmaris', count: 94,  countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=600&q=80' },
     { id: 'gocek',    name: 'Göcek',    count: 67,  countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=600&q=80' },
-    { id: 'cesme',    name: 'Çeşme',    count: 54,  countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1527824404775-dce343a93dc2?auto=format&fit=crop&w=600&q=80' },
+    { id: 'cesme',    name: 'Çeşme',    count: 54,  countUnit: 'tekne',   href: '/listing', image: 'https://images.unsplash.com/photo-1678122878190-b8a567929f6d?auto=format&fit=crop&w=600&q=80' },
   ]
 }
 
 export function getExperienceLocations(): Location[] {
   return [
-    { id: 'bodrum-b', name: 'Bodrum Koyları', count: 42, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1540946491917-7897cdda40e4?auto=format&fit=crop&w=600&q=80' },
+    { id: 'bodrum-b', name: 'Bodrum Koyları', count: 42, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1622219969983-45589eae5637?auto=format&fit=crop&w=600&q=80' },
     { id: 'izmir',    name: 'İzmir Marina',   count: 31, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80' },
-    { id: 'kas',      name: 'Kaş Cennet Koyu',count: 28, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1473496169904-658ba7574b0d?auto=format&fit=crop&w=600&q=80' },
+    { id: 'kas',      name: 'Kaş Cennet Koyu',count: 28, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1527685609591-44b0aef2400b?auto=format&fit=crop&w=600&q=80' },
     { id: 'antalya',  name: 'Antalya Sahil',  count: 19, countUnit: 'deneyim', href: '/listing', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80' },
   ]
 }
@@ -214,7 +214,7 @@ export function getBlogPosts(): BlogPost[] {
       tag: 'Rota', categoryId: 'rota', featured: false,
       title: 'Bodrum\'dan Göcek\'e: Ege\'nin 15 Gizli Koyu',
       excerpt: 'Turizm teknelerinin ulaşamadığı, kristal berraklığında sulara ev sahipliği yapan cennet koylarını derledik.',
-      image: 'https://images.unsplash.com/photo-1540946491917-7897cdda40e4?auto=format&fit=crop&w=1400&q=85',
+      image: 'https://images.unsplash.com/photo-1622219969983-45589eae5637?auto=format&fit=crop&w=1400&q=85',
       date: '18 Nisan 2026', readTime: '8 dk okuma',
       href: '/blog/ege-gizli-koylar',
       author: { name: 'Burak Aydın', avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=80&q=80', title: 'Rota Uzmanı' },
@@ -244,7 +244,7 @@ export function getBlogPosts(): BlogPost[] {
       tag: 'Kiralama Rehberi', categoryId: 'rehber', featured: false,
       title: 'Tekne Kiralama Sigortası: Bilmeniz Gereken Her Şey',
       excerpt: 'Kiralama öncesi sigorta poliçesini nasıl okuyacağınızı, nelere dikkat edeceğinizi ve hasarda ne yapmanız gerektiğini anlattık.',
-      image: 'https://images.unsplash.com/photo-1548514168-f14ddaa5fc70?auto=format&fit=crop&w=700&q=80',
+      image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=700&q=80',
       date: '2 Nisan 2026', readTime: '7 dk okuma',
       href: '/blog/tekne-sigortasi',
       author: { name: 'Zeynep Arslan', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80', title: 'Deniz Editörü' },
@@ -274,7 +274,7 @@ export function getBlogPosts(): BlogPost[] {
       tag: 'Rota', categoryId: 'rota', featured: false,
       title: 'Çeşme Yarımadası: 5 Günlük Tekne Turu Rotası',
       excerpt: 'Sakız Adası karşısındaki bu büyüleyici yarımadanın en güzel koyları, köyleri ve deniz altı sırları için detaylı rota.',
-      image: 'https://images.unsplash.com/photo-1527824404775-dce343a93dc2?auto=format&fit=crop&w=700&q=80',
+      image: 'https://images.unsplash.com/photo-1678122878190-b8a567929f6d?auto=format&fit=crop&w=700&q=80',
       date: '15 Mart 2026', readTime: '8 dk okuma',
       href: '/blog/cesme-rotasi',
       author: { name: 'Burak Aydın', avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=80&q=80', title: 'Rota Uzmanı' },

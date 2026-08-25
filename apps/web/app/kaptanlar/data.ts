@@ -168,7 +168,7 @@ export const CAPTAINS: Captain[] = [
         name: 'Fountaine Pajot Lucia 40',
         type: 'Katamaran',
         image:
-          'https://images.unsplash.com/photo-1530939027401-cca9e7ef4f58?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1723037706467-18ba6d269666?auto=format&fit=crop&w=800&q=80',
         location: 'Göcek',
         lengthM: 12,
         guests: 8,
@@ -420,7 +420,7 @@ export const CAPTAINS: Captain[] = [
         name: 'Axopar 37 Sun-Top',
         type: 'Sürat teknesi',
         image:
-          'https://images.unsplash.com/photo-1530939027401-cca9e7ef4f58?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1723037706467-18ba6d269666?auto=format&fit=crop&w=800&q=80',
         location: 'Çeşme',
         lengthM: 11,
         guests: 8,

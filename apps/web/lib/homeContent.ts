@@ -55,11 +55,11 @@ const DEFAULT_TRUST_HEADER = {
 const IMG_MAP_RENTAL_1 =
   "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=600&q=80";
 const IMG_MAP_RENTAL_2 =
-  "https://images.unsplash.com/photo-1548514168-f14ddaa5fc70?auto=format&fit=crop&w=600&q=80";
+  "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=600&q=80";
 const IMG_MAP_EXP_1 =
   "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=80";
 const IMG_MAP_EXP_2 =
-  "https://images.unsplash.com/photo-1540946491917-7897cdda40e4?auto=format&fit=crop&w=600&q=80";
+  "https://images.unsplash.com/photo-1622219969983-45589eae5637?auto=format&fit=crop&w=600&q=80";
 
 export const DEFAULT_DISCOVER_BANNER: DiscoverBannerContent = {
   enabled: true,

@@ -43,7 +43,7 @@ const DETAIL_DATA: Record<string, {
     providerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80',
     extraImages: [
       'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80',
-      'https://images.unsplash.com/photo-1530939027401-cca9e7ef4f58?w=800&q=80',
+      'https://images.unsplash.com/photo-1723037706467-18ba6d269666?w=800&q=80',
       'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80',
       'https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&q=80',
     ],
@@ -104,7 +104,7 @@ function getDetailData(slug: string) {
     providerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80',
     extraImages: [
       'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80',
-      'https://images.unsplash.com/photo-1530939027401-cca9e7ef4f58?w=800&q=80',
+      'https://images.unsplash.com/photo-1723037706467-18ba6d269666?w=800&q=80',
       'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80',
       'https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&q=80',
     ],
