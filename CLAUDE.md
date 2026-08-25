@@ -51,6 +51,7 @@
 ### Required production env vars (will crash on startup if missing)
 - `ADMIN_JWT_SECRET` — min 32 chars, required (no default). Vercel: Settings → Environment Variables
 - `ADMIN_ORIGIN` — URL of deployed admin Next.js app (default: localhost:3001, fine for local dev)
+- `WEB_ORIGIN` — URL of deployed customer web app (default: localhost:3000). Missing this in production CORS-blocks booking requests from apps/web with a browser "Failed to fetch" (no readable HTTP error) — `POST /bookings`, availability, and `/bookings/mine` all require the caller's origin in the allow-list since they sit outside `/api/v1/public/*`
 - `DATABASE_URL` — Supabase transaction pooler URL
 - For local dev: `apps/admin/.env.local` must set `NEXT_PUBLIC_API_URL=http://localhost:4000` so admin app talks to local API instead of Vercel
 

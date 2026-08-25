@@ -6,7 +6,7 @@ import { captainAuthPlugin } from "./plugins/captain-auth.js";
 import { adminAuthPlugin } from "./plugins/admin-auth.js";
 import { registerRoutes } from "./routes/index.js";
 import { HttpError } from "./lib/errors.js";
-import { captainOrigins, adminOrigins } from "./config/env.js";
+import { captainOrigins, adminOrigins, webOrigins } from "./config/env.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -19,17 +19,18 @@ export async function buildApp() {
   });
 
   // Known production/local origins that are always allowed, merged with the
-  // env-driven CAPTAIN_ORIGIN/ADMIN_ORIGIN lists (deduped) so admin/captain
-  // panels work even if a Vercel env var is missing.
+  // env-driven CAPTAIN_ORIGIN/ADMIN_ORIGIN/WEB_ORIGIN lists (deduped) so the
+  // captain/admin/web apps work even if a Vercel env var is missing.
   const defaultOrigins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
     "https://appcaptain-captain.vercel.app",
     "https://appcaptain-admin.vercel.app",
+    "https://appcaptain-web.vercel.app",
   ];
   const allowedOrigins = [
-    ...new Set([...defaultOrigins, ...captainOrigins, ...adminOrigins]),
+    ...new Set([...defaultOrigins, ...captainOrigins, ...adminOrigins, ...webOrigins]),
   ];
 
   // Public marketplace routes (apps/web) must be reachable from any origin,

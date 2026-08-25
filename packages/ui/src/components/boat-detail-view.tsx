@@ -431,21 +431,25 @@ function PricingHeader({
 const fieldClass =
   "w-full rounded-xl border border-gray-200 px-3 py-2.5 text-body-sm text-gray-800 focus:border-brand-500 focus:outline-none";
 
-/** Interactive date + guest + contact + payment form (public web). */
+/** Interactive 2-step (trip details → payment) booking form, shown inside a popup. */
 function BookingForm({
+  boatTitle,
+  boatPhotoUrl,
   maxGuests,
   onSubmitBooking,
   defaultGuestName,
   defaultGuestEmail,
   pricing,
 }: {
+  boatTitle: string;
+  boatPhotoUrl: string | null;
   maxGuests: number;
   onSubmitBooking: (values: BoatBookingFormValues) => Promise<void>;
   defaultGuestName?: string;
   defaultGuestEmail?: string;
   pricing: BoatDetailViewModel["pricing"];
 }) {
-  const [step, setStep] = React.useState<"dates" | "form" | "payment" | "success">("dates");
+  const [step, setStep] = React.useState<"details" | "payment" | "success">("details");
   const [startDate, setStartDate] = React.useState("");
   const [endDate, setEndDate] = React.useState("");
   const [guestCount, setGuestCount] = React.useState(1);
@@ -494,7 +498,13 @@ function BookingForm({
       });
       setStep("success");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Talep gönderilemedi.");
+      const raw = e instanceof Error ? e.message : "";
+      const isNetworkError = /fetch|network/i.test(raw);
+      setError(
+        !raw || isNetworkError
+          ? "Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
+          : raw
+      );
     } finally {
       setSubmitting(false);
     }
@@ -506,112 +516,134 @@ function BookingForm({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-100">
           <FontAwesomeIcon icon={faCheck} className="text-[26px] text-success-600" aria-hidden />
         </div>
-        <h3 className="text-lg font-bold text-ink">Talep Gönderildi!</h3>
+        <h3 className="text-lg font-bold text-ink">Ödemeniz Başarılı!</h3>
         <p className="mt-1 text-body-sm text-gray-500">
-          Kaptan en kısa sürede sizinle iletişime geçecek.
+          Rezervasyon talebiniz kaptana iletildi. Onaylandığında sizinle iletişime geçilecek.
         </p>
         <p className="mt-1 text-caption text-gray-400">Ortalama yanıt süresi: 2-4 saat</p>
       </div>
     );
   }
 
+  const boatSummary = (
+    <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-200">
+        {boatPhotoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={boatPhotoUrl} alt={boatTitle} className="h-full w-full object-cover" />
+        ) : null}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-body-sm font-semibold text-ink">{boatTitle}</p>
+        {primaryPrice ? (
+          <p className="text-caption text-gray-500">
+            {formatPrice(primaryPrice.price, primaryPrice.currency)} · {primaryPrice.label}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
-      <div>
-        <p className="mb-2 flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-gray-400">
-          <FontAwesomeIcon icon={faCalendarDays} className="text-[12px] text-brand-600" aria-hidden />
-          Tarih Seçin
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="mb-1 block text-caption text-gray-500">Giriş</span>
+      {step === "details" ? boatSummary : null}
+
+      {step === "details" ? (
+        <>
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-gray-400">
+              <FontAwesomeIcon icon={faCalendarDays} className="text-[12px] text-brand-600" aria-hidden />
+              Tarih Seçin
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="mb-1 block text-caption text-gray-500">Giriş</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  min={today}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-caption text-gray-500">Çıkış</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate || today}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-1 flex items-center gap-1.5 text-caption text-gray-500">
+              <FontAwesomeIcon icon={faUsers} className="text-[12px]" aria-hidden />
+              Misafir Sayısı
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Azalt"
+                onClick={() => setGuestCount((g) => Math.max(1, g - 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
+              >
+                <FontAwesomeIcon icon={faMinus} className="text-[12px]" aria-hidden />
+              </button>
+              <span className="w-6 text-center text-body-sm font-bold text-ink">{guestCount}</span>
+              <button
+                type="button"
+                aria-label="Artır"
+                onClick={() => setGuestCount((g) => Math.min(maxGuests, g + 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
+              >
+                <FontAwesomeIcon icon={faPlus} className="text-[12px]" aria-hidden />
+              </button>
+              <span className="text-caption text-gray-400">maks. {maxGuests}</span>
+            </div>
+          </div>
+
+          <div className="space-y-2.5 border-t border-gray-100 pt-4">
             <input
-              type="date"
-              value={startDate}
-              min={today}
-              onChange={(e) => setStartDate(e.target.value)}
+              type="text"
+              placeholder="Ad Soyad *"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               className={fieldClass}
             />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-caption text-gray-500">Çıkış</span>
             <input
-              type="date"
-              value={endDate}
-              min={startDate || today}
-              onChange={(e) => setEndDate(e.target.value)}
+              type="email"
+              placeholder="E-posta *"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               className={fieldClass}
             />
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <p className="mb-1 flex items-center gap-1.5 text-caption text-gray-500">
-          <FontAwesomeIcon icon={faUsers} className="text-[12px]" aria-hidden />
-          Misafir Sayısı
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Azalt"
-            onClick={() => setGuestCount((g) => Math.max(1, g - 1))}
-            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
-          >
-            <FontAwesomeIcon icon={faMinus} className="text-[12px]" aria-hidden />
-          </button>
-          <span className="w-6 text-center text-body-sm font-bold text-ink">{guestCount}</span>
-          <button
-            type="button"
-            aria-label="Artır"
-            onClick={() => setGuestCount((g) => Math.min(maxGuests, g + 1))}
-            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 font-bold text-gray-600 transition-colors hover:border-brand-500"
-          >
-            <FontAwesomeIcon icon={faPlus} className="text-[12px]" aria-hidden />
-          </button>
-          <span className="text-caption text-gray-400">maks. {maxGuests}</span>
-        </div>
-      </div>
-
-      {step === "form" ? (
-        <div className="space-y-2.5 border-t border-gray-100 pt-4">
-          <input
-            type="text"
-            placeholder="Ad Soyad *"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className={fieldClass}
-          />
-          <input
-            type="email"
-            placeholder="E-posta *"
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            className={fieldClass}
-          />
-          <input
-            type="tel"
-            placeholder="Telefon"
-            value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            className={fieldClass}
-          />
-          <textarea
-            placeholder="Notunuz (opsiyonel)"
-            rows={3}
-            value={form.message}
-            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-            className={cn(fieldClass, "resize-none")}
-          />
-        </div>
-      ) : null}
-
-      {step === "payment" ? (
-        <div className="space-y-3 border-t border-gray-100 pt-4">
+            <input
+              type="tel"
+              placeholder="Telefon"
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              className={fieldClass}
+            />
+            <textarea
+              placeholder="Notunuz (opsiyonel)"
+              rows={3}
+              value={form.message}
+              onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+              className={cn(fieldClass, "resize-none")}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="space-y-3">
           <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-gray-400">
             <FontAwesomeIcon icon={faCircleCheck} className="text-[12px] text-brand-600" aria-hidden />
-            Özet
+            Rezervasyon Özeti
           </p>
+          {boatSummary}
           <div className="space-y-1.5 rounded-xl bg-gray-50 p-3 text-body-sm text-gray-700">
             <div className="flex justify-between">
               <span className="text-gray-500">Tarih</span>
@@ -621,8 +653,16 @@ function BookingForm({
               <span className="text-gray-500">Misafir</span>
               <span className="font-medium text-ink">{guestCount}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Ad Soyad</span>
+              <span className="font-medium text-ink">{form.name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">E-posta</span>
+              <span className="font-medium text-ink">{form.email}</span>
+            </div>
             {primaryPrice ? (
-              <div className="flex justify-between">
+              <div className="flex justify-between border-t border-gray-200 pt-1.5">
                 <span className="text-gray-500">{primaryPrice.label}</span>
                 <span className="font-medium text-ink">
                   {formatPrice(primaryPrice.price, primaryPrice.currency)}
@@ -634,7 +674,7 @@ function BookingForm({
             Kesin tutar kaptan talebinizi onayladıktan sonra bildirilir. Ödeme onaydan sonra alınır.
           </p>
         </div>
-      ) : null}
+      )}
 
       {error ? (
         <div className="flex items-start gap-2 rounded-xl border border-danger-200 bg-danger-50 p-3">
@@ -643,50 +683,26 @@ function BookingForm({
         </div>
       ) : null}
 
-      {step === "dates" ? (
+      {step === "details" ? (
         <button
           type="button"
           onClick={() => {
             if (!startDate || !endDate) {
-              setError("Lütfen önce tarih seçin.");
+              setError("Lütfen tarih seçin.");
+              return;
+            }
+            if (!form.name.trim() || !form.email.trim()) {
+              setError("Ad ve e-posta zorunludur.");
               return;
             }
             setError("");
-            setStep("form");
+            setStep("payment");
           }}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 py-3.5 text-body-sm font-bold text-white shadow-md transition-all hover:bg-brand-700 hover:shadow-lg"
         >
-          Rezervasyon Talebi Gönder
+          Devam Et
           <FontAwesomeIcon icon={faChevronRight} className="text-[14px]" aria-hidden />
         </button>
-      ) : step === "form" ? (
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (!form.name.trim() || !form.email.trim()) {
-                setError("Ad ve e-posta zorunludur.");
-                return;
-              }
-              setError("");
-              setStep("payment");
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 py-3.5 text-body-sm font-bold text-white shadow-md transition-all hover:bg-brand-700 hover:shadow-lg"
-          >
-            Ödemeye Geç
-            <FontAwesomeIcon icon={faChevronRight} className="text-[14px]" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setStep("dates");
-              setError("");
-            }}
-            className="w-full py-2 text-caption text-gray-500 transition-colors hover:text-gray-700"
-          >
-            ← Geri dön
-          </button>
-        </div>
       ) : (
         <div className="space-y-2">
           <button
@@ -706,7 +722,7 @@ function BookingForm({
           <button
             type="button"
             onClick={() => {
-              setStep("form");
+              setStep("details");
               setError("");
             }}
             className="w-full py-2 text-caption text-gray-500 transition-colors hover:text-gray-700"
@@ -724,19 +740,15 @@ function BookingCard({
   bookingDisabled,
   bookingLabel,
   showPlaceholders,
-  maxGuests,
   onSubmitBooking,
-  defaultGuestName,
-  defaultGuestEmail,
+  onOpenBooking,
 }: {
   model: BoatDetailViewModel;
   bookingDisabled: boolean;
   bookingLabel: string;
   showPlaceholders: boolean;
-  maxGuests: number;
   onSubmitBooking?: (values: BoatBookingFormValues) => Promise<void>;
-  defaultGuestName?: string;
-  defaultGuestEmail?: string;
+  onOpenBooking: () => void;
 }) {
   const interactive = !bookingDisabled && !!onSubmitBooking;
 
@@ -744,28 +756,19 @@ function BookingCard({
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-xl">
       <PricingHeader model={model} showPlaceholders={showPlaceholders} />
 
-      {interactive ? (
-        <BookingForm
-          maxGuests={maxGuests}
-          onSubmitBooking={onSubmitBooking!}
-          defaultGuestName={defaultGuestName}
-          defaultGuestEmail={defaultGuestEmail}
-          pricing={model.pricing}
-        />
-      ) : (
-        <button
-          type="button"
-          disabled={bookingDisabled}
-          className={cn(
-            "w-full rounded-2xl py-3.5 text-body-sm font-bold transition-all",
-            bookingDisabled
-              ? "cursor-not-allowed bg-gray-200 text-gray-400"
-              : "bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg"
-          )}
-        >
-          {bookingDisabled ? "Önizleme modunda rezervasyon yapılamaz" : bookingLabel}
-        </button>
-      )}
+      <button
+        type="button"
+        disabled={bookingDisabled}
+        onClick={interactive ? onOpenBooking : undefined}
+        className={cn(
+          "w-full rounded-2xl py-3.5 text-body-sm font-bold transition-all",
+          bookingDisabled
+            ? "cursor-not-allowed bg-gray-200 text-gray-400"
+            : "bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg"
+        )}
+      >
+        {bookingDisabled ? "Önizleme modunda rezervasyon yapılamaz" : bookingLabel}
+      </button>
 
       <p className="mt-4 flex items-center justify-center gap-1.5 text-caption text-gray-400">
         <FontAwesomeIcon icon={faLocationDot} className="text-[12px]" aria-hidden />
@@ -794,6 +797,7 @@ export function BoatDetailView({
 }: BoatDetailViewProps) {
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
   const activeImage = lightboxIndex != null ? model.gallery[lightboxIndex] : null;
+  const [bookingModalOpen, setBookingModalOpen] = React.useState(false);
 
   const showLightbox = (next: number) => {
     const total = model.gallery.length;
@@ -1000,22 +1004,39 @@ export function BoatDetailView({
           ) : null}
         </div>
 
-        {/* Sticky booking card */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24">
+        {/* Booking card — sticky on desktop, inline on mobile */}
+        <aside>
+          <div className="lg:sticky lg:top-24">
             <BookingCard
               model={model}
               bookingDisabled={bookingDisabled}
               bookingLabel={bookingLabel}
               showPlaceholders={showPlaceholders}
-              maxGuests={maxGuests}
               onSubmitBooking={onSubmitBooking}
-              defaultGuestName={defaultGuestName}
-              defaultGuestEmail={defaultGuestEmail}
+              onOpenBooking={() => setBookingModalOpen(true)}
             />
           </div>
         </aside>
       </div>
+
+      {/* Booking popup */}
+      <Modal
+        open={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        title="Rezervasyon Talebi"
+      >
+        {onSubmitBooking ? (
+          <BookingForm
+            boatTitle={model.title}
+            boatPhotoUrl={model.gallery[0]?.url ?? null}
+            maxGuests={maxGuests}
+            onSubmitBooking={onSubmitBooking}
+            defaultGuestName={defaultGuestName}
+            defaultGuestEmail={defaultGuestEmail}
+            pricing={model.pricing}
+          />
+        ) : null}
+      </Modal>
 
       {/* Lightbox */}
       <Modal

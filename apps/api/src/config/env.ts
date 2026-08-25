@@ -48,6 +48,10 @@ const envSchema = z.object({
     .string()
     .default("http://localhost:3001")
     .superRefine(validateOriginList("ADMIN_ORIGIN")),
+  WEB_ORIGIN: z
+    .string()
+    .default("http://localhost:3000")
+    .superRefine(validateOriginList("WEB_ORIGIN")),
   ADMIN_JWT_SECRET: z.string().min(32),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
@@ -83,3 +87,6 @@ export const captainOrigins = parseCaptainOrigins(env.CAPTAIN_ORIGIN);
 
 /** Parsed list from ADMIN_ORIGIN (comma-separated). */
 export const adminOrigins = parseCaptainOrigins(env.ADMIN_ORIGIN);
+
+/** Parsed list from WEB_ORIGIN (comma-separated) — the customer-facing web app. */
+export const webOrigins = parseCaptainOrigins(env.WEB_ORIGIN);

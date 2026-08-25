@@ -45,12 +45,14 @@ export default function ListingDetail({ boat }: Props) {
   }
 
   return (
-    <BoatDetailView
-      model={model}
-      maxGuests={maxGuests}
-      onSubmitBooking={handleSubmitBooking}
-      defaultGuestName={guestName}
-      defaultGuestEmail={guestEmail}
-    />
+    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-10">
+      <BoatDetailView
+        model={model}
+        maxGuests={maxGuests}
+        onSubmitBooking={handleSubmitBooking}
+        defaultGuestName={guestName}
+        defaultGuestEmail={guestEmail}
+      />
+    </div>
   )
 }
