@@ -11,8 +11,9 @@ import {
   ExperienceStep,
   ValidationFieldError,
 } from "@getyourboat/shared";
-import { Button, cn, LocationPicker } from "@getyourboat/ui";
+import { Button, cn, FontAwesomeIcon, faXmark, LocationPicker } from "@getyourboat/ui";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
 import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
 import { ChipInput } from "./ChipInput";
@@ -623,10 +624,13 @@ export function CancellationStep({ experience, onSaved, onNext }: ExperienceStep
   );
 }
 
-export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) {
+export function MediaStep({ experience, onSaved }: ExperienceStepProps) {
+  const router = useRouter();
   const [videoUrl, setVideoUrl] = useState(experience.videoUrl ?? "");
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null);
   const { saving, error: saveError, fieldErrors, save } = useStepSave(ExperienceStep.MEDIA);
 
   async function handleUpload(file: File, asCover?: boolean) {
@@ -647,6 +651,44 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
     }
   }
 
+  async function handleRemovePhoto(url: string) {
+    setRemovingUrl(url);
+    setError(null);
+    try {
+      const next = await api.deleteExperiencePhoto(experience.id, url);
+      onSaved(next);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Fotoğraf silinemedi");
+    } finally {
+      setRemovingUrl(null);
+    }
+  }
+
+  function handleSubmitForReview() {
+    void save(
+      experience.id,
+      {
+        coverPhotoUrl: experience.coverPhotoUrl,
+        photoUrls: experience.photoUrls,
+        videoUrl: videoUrl || null,
+      },
+      async (next) => {
+        onSaved(next);
+        setSubmitting(true);
+        setError(null);
+        try {
+          const submitted = await api.submitExperience(experience.id);
+          onSaved(submitted);
+          router.push("/experiences");
+        } catch (err) {
+          setError(err instanceof ApiError ? err.message : "İncelemeye gönderilemedi");
+        } finally {
+          setSubmitting(false);
+        }
+      }
+    );
+  }
+
   return (
     <StepShell
       title="Medya"
@@ -655,9 +697,20 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       fieldErrors={fieldErrors}
     >
       {experience.coverPhotoUrl ? (
-        // Supabase'den gelen uzak URL; next/image için domain yapılandırması gerektirmesin diye <img>.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={experience.coverPhotoUrl} alt="Kapak" className="h-40 w-full rounded-xl object-cover" />
+        <div className="relative">
+          {/* Supabase'den gelen uzak URL; next/image için domain yapılandırması gerektirmesin diye <img>. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={experience.coverPhotoUrl} alt="Kapak" className="h-40 w-full rounded-xl object-cover" />
+          <button
+            type="button"
+            aria-label="Kapak fotoğrafını sil"
+            disabled={removingUrl === experience.coverPhotoUrl}
+            onClick={() => void handleRemovePhoto(experience.coverPhotoUrl)}
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+          >
+            <FontAwesomeIcon icon={faXmark} className="text-[13px]" aria-hidden />
+          </button>
+        </div>
       ) : (
         <Alert variant="info">Kapak fotoğrafı henüz yüklenmedi.</Alert>
       )}
@@ -691,8 +744,19 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       {experience.photoUrls.length > 0 ? (
         <div className="grid grid-cols-3 gap-2">
           {experience.photoUrls.map((url) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={url} src={url} alt="" className="h-24 w-full rounded-lg object-cover" />
+            <div key={url} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="h-24 w-full rounded-lg object-cover" />
+              <button
+                type="button"
+                aria-label="Fotoğrafı sil"
+                disabled={removingUrl === url}
+                onClick={() => void handleRemovePhoto(url)}
+                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faXmark} className="text-[11px]" aria-hidden />
+              </button>
+            </div>
           ))}
         </div>
       ) : null}
@@ -703,20 +767,10 @@ export function MediaStep({ experience, onSaved, onNext }: ExperienceStepProps) 
       </Field>
 
       <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              coverPhotoUrl: experience.coverPhotoUrl,
-              photoUrls: experience.photoUrls,
-              videoUrl: videoUrl || null,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
-        disabled={saving || !experience.coverPhotoUrl}
+        onClick={handleSubmitForReview}
+        disabled={saving || submitting || !experience.coverPhotoUrl}
       >
-        {saving ? "Kaydediliyor…" : "Devam et"}
+        {saving ? "Kaydediliyor…" : submitting ? "Gönderiliyor…" : "İncelemeye Gönder"}
       </Button>
     </StepShell>
   );

@@ -156,6 +156,94 @@ export const api = {
   bulkDeleteBoats: (ids: string[]) =>
     request<{ deleted: number }>("/admin/boats/bulk", { method: "DELETE", body: { ids } }),
 
+  // --- Experiences ---
+  listExperiences: (
+    query: {
+      status?: string;
+      category?: string;
+      search?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ) => {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (query.category) params.set("category", query.category);
+    if (query.search) params.set("search", query.search);
+    if (query.page) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
+    const qs = params.toString();
+    return request<{
+      items: {
+        id: string;
+        title: string;
+        status: string;
+        category: string | null;
+        coverPhotoUrl: string;
+        createdAt: string;
+        updatedAt: string;
+        captain: { id: string; email: string | null; fullName: string | null };
+      }[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/admin/experiences${qs ? `?${qs}` : ""}`);
+  },
+  getExperience: (id: string) =>
+    request<{
+      experience: {
+        id: string;
+        status: string;
+        category: string | null;
+        title: string;
+        referenceCode: string | null;
+        shortDescription: string;
+        fullDescription: string;
+        highlights: string[];
+        keywords: string[];
+        included: string[];
+        notIncluded: string[];
+        notAllowed: string[];
+        toBring: string[];
+        knowBeforeYouGo: string[];
+        emergencyContactPhone: string | null;
+        durationMinutes: number;
+        meetingPoint: string;
+        meetingTime: string;
+        endPoint: string;
+        isSameEndPoint: boolean;
+        languages: string[];
+        minParticipants: number;
+        maxParticipants: number;
+        minAge: number | null;
+        requiredEquipment: string[];
+        accessibilityInfo: string | null;
+        accessibilityOptions: string[];
+        basePrice: number | string;
+        currency: string;
+        pricingType: string;
+        childDiscountPercent: number | null;
+        cancellationPolicy: string;
+        cancellationPolicyText: string | null;
+        coverPhotoUrl: string;
+        photoUrls: string[];
+        videoUrl: string | null;
+        reviewNote: string | null;
+        reviewedAt: string | null;
+        createdAt: string;
+        updatedAt: string;
+        captain: { id: string; email: string | null; fullName: string | null; phone: string | null };
+      };
+    }>(`/admin/experiences/${id}`),
+  updateExperienceStatus: (
+    id: string,
+    body: { status: "APPROVED" | "CHANGES_REQUESTED" | "REJECTED"; note?: string }
+  ) =>
+    request<{ experience: { id: string; status: string; reviewNote: string | null; reviewedAt: string | null } }>(
+      `/admin/experiences/${id}/status`,
+      { method: "PATCH", body }
+    ),
+
   // --- Owner (Profile) Users ---
   listUsers: (query: { search?: string; status?: string; page?: number; limit?: number } = {}) => {
     const params = new URLSearchParams();

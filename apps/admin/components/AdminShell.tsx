@@ -180,6 +180,7 @@ export function AdminTopBar() {
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", exact: true },
   { href: "/boats", label: "İlanlar" },
+  { href: "/experiences", label: "Deneyimler" },
   { href: "/users", label: "Kullanıcılar" },
   { href: "/reservations", label: "Rezervasyonlar" },
   { href: "/finance", label: "Finans" },

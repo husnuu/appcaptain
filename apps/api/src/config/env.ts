@@ -62,7 +62,7 @@ const envSchema = z.object({
   SUPABASE_JWT_SECRET: z.string().optional(),
   SUPABASE_PHOTOS_BUCKET: z.string().default("boat-photos"),
   SUPABASE_DOCUMENTS_BUCKET: z.string().default("boat-documents"),
-  SUPABASE_EXPERIENCE_PHOTOS_BUCKET: z.string().default("experience-photos"),
+  SUPABASE_EXPERIENCE_PHOTOS_BUCKET: z.string().default("experience-photo"),
 
   // Captain app URL used to build password-reset links in emails (no trailing slash)
   CAPTAIN_APP_URL: z.string().default("http://localhost:3002"),

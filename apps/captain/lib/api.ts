@@ -540,6 +540,29 @@ export const api = {
     ),
 };
 
+const EXTENSION_CONTENT_TYPES: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  heic: "image/heic",
+  heif: "image/heif",
+};
+
+/**
+ * Some browser/OS combinations leave `File.type` empty for certain
+ * extensions (most commonly .jpg on Windows when the file association's
+ * content type is missing), which made those uploads fail while formats
+ * like .png — reliably detected — kept working. Fall back to a
+ * extension-based guess only when the browser didn't supply one.
+ */
+function resolveContentType(file: File): string | undefined {
+  if (file.type) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  return ext ? EXTENSION_CONTENT_TYPES[ext] : undefined;
+}
+
 /**
  * Two-step upload: ask the API for a signed URL, then push the binary straight
  * to Supabase Storage using the returned token.
@@ -550,6 +573,8 @@ export async function uploadToStorage(
 ): Promise<void> {
   const { error } = await supabase.storage
     .from(upload.bucket)
-    .uploadToSignedUrl(upload.path, upload.token, file);
+    .uploadToSignedUrl(upload.path, upload.token, file, {
+      contentType: resolveContentType(file),
+    });
   if (error) throw new ApiError(500, `Storage upload failed: ${error.message}`);
 }

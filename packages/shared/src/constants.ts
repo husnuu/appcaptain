@@ -23,7 +23,7 @@ export const REQUIRED_STEPS: OnboardingStep[] = [...STEP_ORDER];
 export const STORAGE_BUCKETS = {
   PHOTOS: "boat-photos",
   DOCUMENTS: "boat-documents",
-  EXPERIENCE_PHOTOS: "experience-photos",
+  EXPERIENCE_PHOTOS: "experience-photo",
 } as const;
 
 export function stepIndex(step: OnboardingStep): number {
