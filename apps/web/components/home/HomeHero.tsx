@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { CalendarDays, MapPin, Search, Users } from 'lucide-react'
-import { CalMonth, fmtDate, type DateState } from '@/components/hero/heroSearchCalendar'
-import { CompassIcon, SailboatIcon, UmbrellaIcon } from '@/components/MobileNavIcons'
+import { fmtDate } from '@/components/hero/heroSearchCalendar'
+import RangeCalendar, { type DateRangeValue } from '@/components/sh/RangeCalendar'
 import { HERO_SUGGESTIONS, PROMOS } from './content'
 
 type Tab = 'all' | 'rental' | 'experience'
@@ -19,10 +19,10 @@ const TABS: { key: Tab; label: string }[] = [
 ]
 
 // Mobil hero sekmeleri — markanın üç ana yolu; seçime göre arama metni ve hedef sayfa değişir.
-const MOBILE_TABS: { key: Tab; label: string; Icon: typeof CompassIcon; placeholder: string }[] = [
-  { key: 'all', label: 'Tümü', Icon: CompassIcon, placeholder: 'Nereye gitmek istersin?' },
-  { key: 'rental', label: 'Tekne Kirala', Icon: SailboatIcon, placeholder: 'Kiralama için liman seç' },
-  { key: 'experience', label: 'Deneyimler', Icon: UmbrellaIcon, placeholder: 'Deneyim için bölge seç' },
+const MOBILE_TABS: { key: Tab; label: string; placeholder: string }[] = [
+  { key: 'all', label: 'Tümü', placeholder: 'Nereye gitmek istersin?' },
+  { key: 'rental', label: 'Tekne Kirala', placeholder: 'Kiralama için liman seç' },
+  { key: 'experience', label: 'Deneyimler', placeholder: 'Deneyim için bölge seç' },
 ]
 
 export default function HomeHero() {
@@ -31,14 +31,7 @@ export default function HomeHero() {
   const [field, setField] = useState<Field>(null)
   const [location, setLocation] = useState('')
   const [guests, setGuests] = useState(0)
-  const now = new Date()
-  const [dates, setDates] = useState<DateState>({
-    startDate: null,
-    endDate: null,
-    hoverDate: null,
-    viewYear: now.getFullYear(),
-    viewMonth: now.getMonth(),
-  })
+  const [range, setRange] = useState<DateRangeValue>({ start: null, end: null })
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -49,24 +42,8 @@ export default function HomeHero() {
     return () => document.removeEventListener('mousedown', onDown)
   }, [])
 
-  const selectDate = (d: Date) => {
-    const { startDate, endDate } = dates
-    if (!startDate || endDate || d < startDate) {
-      setDates(s => ({ ...s, startDate: d, endDate: null }))
-    } else {
-      setDates(s => ({ ...s, endDate: d }))
-      setField('guests')
-    }
-  }
-  const shiftMonth = (delta: number) =>
-    setDates(s => {
-      const m = new Date(s.viewYear, s.viewMonth + delta, 1)
-      return { ...s, viewYear: m.getFullYear(), viewMonth: m.getMonth() }
-    })
-  const next = new Date(dates.viewYear, dates.viewMonth + 1, 1)
-
-  const dateLabel = dates.startDate
-    ? `${fmtDate(dates.startDate)} — ${dates.endDate ? fmtDate(dates.endDate) : '?'}`
+  const dateLabel = range.start
+    ? `${fmtDate(range.start)} — ${range.end ? fmtDate(range.end) : '?'}`
     : 'Tarihleri seçin'
 
   const submit = () => {
@@ -94,7 +71,7 @@ export default function HomeHero() {
           </h1>
           <p className="sh-mhero-lede">Yelkenliden lüks yata, dalış turundan gün batımına kadar tüm deniz maceraları tek adreste.</p>
           <div className="sh-mhero-tabs" role="tablist" aria-label="Arama türü">
-            {MOBILE_TABS.map(({ key, label, Icon }) => (
+            {MOBILE_TABS.map(({ key, label }) => (
               <button
                 key={key}
                 type="button"
@@ -103,7 +80,6 @@ export default function HomeHero() {
                 className={tab === key ? 'is-active' : undefined}
                 onClick={() => setTab(key)}
               >
-                <Icon size={26} />
                 <span>{label}</span>
               </button>
             ))}
@@ -209,25 +185,13 @@ export default function HomeHero() {
               </span>
               {field === 'date' && (
                 <div className="sh-pop sh-pop--cal" onClick={e => e.stopPropagation()}>
-                  <CalMonth
-                    year={dates.viewYear}
-                    month={dates.viewMonth}
-                    isFirst
-                    dateState={dates}
-                    onSelect={selectDate}
-                    onHover={d => setDates(s => ({ ...s, hoverDate: d }))}
-                    onPrev={() => shiftMonth(-1)}
-                    onNext={() => shiftMonth(1)}
-                  />
-                  <CalMonth
-                    year={next.getFullYear()}
-                    month={next.getMonth()}
-                    isFirst={false}
-                    dateState={dates}
-                    onSelect={selectDate}
-                    onHover={d => setDates(s => ({ ...s, hoverDate: d }))}
-                    onPrev={() => shiftMonth(-1)}
-                    onNext={() => shiftMonth(1)}
+                  <RangeCalendar
+                    value={range}
+                    onChange={v => {
+                      setRange(v)
+                      // Bitiş tarihi seçilince kişi alanına geç (önceki davranış).
+                      if (v.start && v.end) setField('guests')
+                    }}
                   />
                 </div>
               )}

@@ -22,6 +22,8 @@ export interface BoatDetailGalleryImage {
 }
 
 export interface BoatDetailHighlight {
+  /** Kaynak özellik anahtarı (teknik özelliklerde ikon seçimi için). */
+  key?: string;
   label: string;
   value: string;
 }
@@ -192,6 +194,7 @@ function readSpecs(boat: SerializedBoatDTO): BoatDetailHighlight[] {
       return f.value != null && f.value.trim() !== "";
     })
     .map((f) => ({
+      key: f.key,
       label: getFieldLabel({ key: f.key, label: f.label }),
       value: f.value as string,
     }));

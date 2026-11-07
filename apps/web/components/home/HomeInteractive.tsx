@@ -437,7 +437,9 @@ export function Newsletter() {
     <div className="sh-nl-wrap">
       <div className="sh-container">
         <div className="sh-nl">
-          <Image src="/home/newsletter.webp" alt="" fill sizes="1280px" />
+          <Image className="sh-nl-dimg" src="/home/newsletter.webp" alt="" fill sizes="1280px" />
+          {/* Mobil bant fotoğrafı: Bernd Dittrich, Unsplash (Sagres, Portekiz) — Unsplash Lisansı */}
+          <Image className="sh-nl-mimg" src="/home/newsletter-mobile.webp" alt="" fill sizes="(max-width: 860px) 100vw, 1px" />
           <div className="sh-nl-card">
             <span className="sh-nl-badge">HABER BÜLTENİ</span>
             <h2 className="sh-nl-title">

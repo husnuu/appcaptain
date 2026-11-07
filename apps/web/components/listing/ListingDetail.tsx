@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Anchor,
   Bath,
@@ -27,6 +28,7 @@ import {
   UserRoundCheck,
   Users,
   Wallet,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import { toBoatDetailViewModel, type SerializedBoatDTO } from '@getyourboat/shared'
@@ -36,7 +38,8 @@ import { TRUST_FEATURES } from '@/components/home/content'
 import { boatTypeLabel, cleanText, prettyValue } from '@/lib/boatFormat'
 import ListingGallery from './ListingGallery'
 import BookingPanel from './BookingPanel'
-import { groupAmenities } from './amenityCatalog'
+import { groupAmenities, type AmenityGroup } from './amenityCatalog'
+import { DEFAULT_SPEC_ICON, SPEC_GROUPS, SPEC_ICONS, type FeatureIcon } from './featureIcons'
 import { buildRules } from './listingRules'
 
 interface Props {
@@ -61,6 +64,7 @@ const DOC_LABELS: Record<string, string> = {
 const TRUST_ICONS = { shield: ShieldCheck, ship: Ship, headset: Headset, user: UserRoundCheck }
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
 const AMENITY_PREVIEW = 10
+const SPEC_PREVIEW = 8
 
 interface InfoItem {
   icon: LucideIcon
@@ -70,8 +74,9 @@ interface InfoItem {
 
 export default function ListingDetail({ boat, similar }: Props) {
   const model = useMemo(() => toBoatDetailViewModel(boat), [boat])
-  const [specsOpen, setSpecsOpen] = useState(false)
-  const [amenOpen, setAmenOpen] = useState(false)
+  // "Tümünü göster" listeleri sayfayı uzatmak yerine popup'ta açılır.
+  const [sheet, setSheet] = useState<'amenities' | 'specs' | null>(null)
+  const closeSheet = useCallback(() => setSheet(null), [])
   const [descOpen, setDescOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -106,7 +111,7 @@ export default function ListingDetail({ boat, similar }: Props) {
   const amenityGroups = useMemo(() => groupAmenities(boat.amenities), [boat.amenities])
   const amenityTotal = amenityGroups.reduce((n, g) => n + g.items.length, 0)
   const visibleGroups = (() => {
-    if (amenOpen || amenityTotal <= AMENITY_PREVIEW) return amenityGroups
+    if (amenityTotal <= AMENITY_PREVIEW) return amenityGroups
     let left = AMENITY_PREVIEW
     return amenityGroups
       .map(g => {
@@ -171,7 +176,13 @@ export default function ListingDetail({ boat, similar }: Props) {
     docs.length > 0 && { icon: FileCheck2, title: 'Belgeler', lines: [`${joinTr(docs)} Ahoy’a yüklendi.`] },
   ].filter(Boolean) as InfoItem[]
 
-  const specs = specsOpen ? model.specs : model.specs.slice(0, 8)
+  const specItems: SpecItem[] = model.specs.map(sp => ({
+    label: sp.label,
+    value: sp.value,
+    key: sp.key,
+    icon: (sp.key && SPEC_ICONS[sp.key]) || DEFAULT_SPEC_ICON,
+  }))
+  const specPreview = specItems.slice(0, SPEC_PREVIEW)
   const desc = model.description ?? ''
   const longDesc = desc.length > 420
 
@@ -297,8 +308,8 @@ export default function ListingDetail({ boat, similar }: Props) {
                   </div>
                 ))}
                 {amenityTotal > AMENITY_PREVIEW && (
-                  <button type="button" className="sh-ls-btn" onClick={() => setAmenOpen(o => !o)}>
-                    {amenOpen ? 'Daha az göster' : `${amenityTotal} olanağın tümünü göster`}
+                  <button type="button" className="sh-ls-btn" onClick={() => setSheet('amenities')}>
+                    {amenityTotal} olanağın tümünü göster
                   </button>
                 )}
               </section>
@@ -308,16 +319,19 @@ export default function ListingDetail({ boat, similar }: Props) {
               <section className="sh-ls">
                 <h2 className="sh-ls-h2">Teknik özellikler</h2>
                 <dl className="sh-ls-specs">
-                  {specs.map(s => (
-                    <div key={s.label}>
-                      <dt>{s.label}</dt>
-                      <dd>{prettyValue(s.value)}</dd>
+                  {specPreview.map(({ label, value, icon: Icon }) => (
+                    <div key={label}>
+                      <dt>
+                        <Icon size={22} strokeWidth={1.5} />
+                        {label}
+                      </dt>
+                      <dd>{prettyValue(value)}</dd>
                     </div>
                   ))}
                 </dl>
-                {model.specs.length > 8 && (
-                  <button type="button" className="sh-ls-btn" onClick={() => setSpecsOpen(o => !o)}>
-                    {specsOpen ? 'Daha az göster' : `${model.specs.length} özelliğin tümünü göster`}
+                {specItems.length > SPEC_PREVIEW && (
+                  <button type="button" className="sh-ls-btn" onClick={() => setSheet('specs')}>
+                    {specItems.length} özelliğin tümünü göster
                   </button>
                 )}
               </section>
@@ -425,7 +439,105 @@ export default function ListingDetail({ boat, similar }: Props) {
           </section>
         )}
       </div>
+
+      {sheet === 'amenities' && (
+        <FeatureSheet title="Teknede neler var?" onClose={closeSheet}>
+          <AmenitySheetContent groups={amenityGroups} />
+        </FeatureSheet>
+      )}
+      {sheet === 'specs' && (
+        <FeatureSheet title="Teknik özellikler" onClose={closeSheet}>
+          <SpecSheetContent items={specItems} />
+        </FeatureSheet>
+      )}
     </div>
+  )
+}
+
+interface SpecItem {
+  key?: string
+  label: string
+  value: string
+  icon: FeatureIcon
+}
+
+function FeatureSheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  return createPortal(
+    <div className="sh-modal-overlay" onClick={onClose}>
+      <div className="sh-modal sh-sheet" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
+        <div className="sh-modal-head">
+          <button type="button" className="sh-icon-btn" onClick={onClose} aria-label="Kapat">
+            <X size={18} />
+          </button>
+          <h2>{title}</h2>
+          <span />
+        </div>
+        <div className="sh-modal-body">{children}</div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+function AmenitySheetContent({ groups }: { groups: AmenityGroup[] }) {
+  return (
+    <>
+      {groups.map(g => (
+        <section key={g.key} className="sh-sheet-group">
+          <h3>{g.title}</h3>
+          <ul className="sh-sheet-list">
+            {g.items.map(({ key, label, icon: Icon, isExtra, price }) => (
+              <li key={key}>
+                <Icon size={26} strokeWidth={1.5} />
+                <span>
+                  {label}
+                  {isExtra && <small>Ücretli{price ? ` · ${price.replace('+', '')}` : ''}</small>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </>
+  )
+}
+
+function SpecSheetContent({ items }: { items: SpecItem[] }) {
+  const known = new Set(SPEC_GROUPS.flatMap(g => g.keys))
+  const groups = SPEC_GROUPS.map(g => ({
+    title: g.title,
+    items: g.keys.flatMap(k => items.filter(i => i.key === k)),
+  })).filter(g => g.items.length > 0)
+  const other = items.filter(i => !i.key || !known.has(i.key))
+  if (other.length > 0) groups.push({ title: 'Diğer', items: other })
+
+  return (
+    <>
+      {groups.map(g => (
+        <section key={g.title} className="sh-sheet-group">
+          <h3>{g.title}</h3>
+          <ul className="sh-sheet-list">
+            {g.items.map(({ label, value, icon: Icon }) => (
+              <li key={label}>
+                <Icon size={26} strokeWidth={1.5} />
+                <span>{label}</span>
+                <b className="sh-sheet-val">{prettyValue(value)}</b>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </>
   )
 }
 
