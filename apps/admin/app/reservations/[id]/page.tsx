@@ -133,7 +133,7 @@ export default function ReservationDetailPage() {
           ← Geri
         </button>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Rezervasyon Detayı</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Rezervasyon Detayı</h1>
           <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLORS[booking.status] ?? "bg-gray-100 text-gray-600"}`}>
             {STATUS_LABELS[booking.status] ?? booking.status}
           </span>
@@ -152,7 +152,7 @@ export default function ReservationDetailPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Guest Info */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Misafir Bilgileri</h2>
           <InfoRow label="Ad Soyad" value={booking.guestName} />
           <InfoRow label="E-posta" value={booking.guestEmail} />
@@ -162,7 +162,7 @@ export default function ReservationDetailPage() {
         </div>
 
         {/* Boat & Owner Info */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Tekne ve Sahip</h2>
           <InfoRow
             label="Tekne"
@@ -186,7 +186,7 @@ export default function ReservationDetailPage() {
         </div>
 
         {/* Dates & Rental */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Tarih ve Rezervasyon</h2>
           <InfoRow label="Kiralama Türü" value={RENTAL_TYPE_LABELS[booking.rentalType] ?? booking.rentalType} />
           <InfoRow label="Başlangıç" value={
@@ -217,7 +217,7 @@ export default function ReservationDetailPage() {
         </div>
 
         {/* Payment */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Ödeme Bilgileri</h2>
           {booking.bookingPayment ? (
             <>
@@ -244,7 +244,7 @@ export default function ReservationDetailPage() {
       </div>
 
       {/* Admin Actions */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Admin İşlemleri</h2>
         <div className="flex flex-wrap gap-3">
           {canCancel && (
@@ -279,18 +279,18 @@ export default function ReservationDetailPage() {
       {/* Cancel Modal */}
       {cancelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">Rezervasyonu İptal Et</h2>
             <p className="mb-3 text-sm text-gray-500">Bu işlem geri alınamaz. Misafir ve kaptan bilgilendirilmeyecek (SMTP gerekir).</p>
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={3}
               placeholder="İptal notu (opsiyonel)"
               value={cancelNote}
               onChange={(e) => setCancelNote(e.target.value)}
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => { setCancelOpen(false); setCancelNote(""); }} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => { setCancelOpen(false); setCancelNote(""); }} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button type="button" disabled={busy} onClick={handleCancel} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
                 İptal Et
               </button>
@@ -302,7 +302,7 @@ export default function ReservationDetailPage() {
       {/* Refund Modal */}
       {refundOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">İade Tetikle</h2>
             <p className="mb-3 text-sm text-gray-500">
               Ödeme durumu &ldquo;İade Edildi&rdquo; olarak işaretlenir ve rezervasyon iptal edilir.
@@ -314,14 +314,14 @@ export default function ReservationDetailPage() {
               </div>
             )}
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={2}
               placeholder="İade notu (opsiyonel)"
               value={refundNote}
               onChange={(e) => setRefundNote(e.target.value)}
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => { setRefundOpen(false); setRefundNote(""); }} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => { setRefundOpen(false); setRefundNote(""); }} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button type="button" disabled={busy} onClick={handleRefund} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50">
                 İadeyi Onayla
               </button>

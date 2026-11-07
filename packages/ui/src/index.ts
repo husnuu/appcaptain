@@ -26,6 +26,8 @@ export {
 export { Spinner, Alert, type AlertProps } from "./components/feedback";
 export { FormErrorBanner, type FormErrorBannerProps } from "./components/form-error-banner";
 export { Modal, type ModalProps } from "./components/modal";
+export { AhoyLogo, type AhoyLogoProps } from "./components/ahoy-logo";
+export { AuthLayout, type AuthLayoutProps } from "./components/auth-layout";
 export {
   Sidebar,
   SidebarBrand,

@@ -142,10 +142,10 @@ function DiscountsContent() {
   }
 
   const statCards = [
-    { label: "Aktif İndirimler", value: stats.active, icon: faTag, color: "#16a34a", bg: "#f0fdf4" },
-    { label: "Tekne İndirimleri", value: stats.boat, icon: faShip, color: "#2563eb", bg: "#eff6ff" },
-    { label: "Deneyim İnd.", value: stats.experience, icon: faStar, color: "#9333ea", bg: "#faf5ff" },
-    { label: "Toplam Kullanım", value: stats.uses, icon: faPercent, color: "#0097A7", bg: "#E0F7FA" },
+    { label: "Aktif İndirimler", value: stats.active, icon: faTag, color: "#26866F", bg: "#E9F6F3" },
+    { label: "Tekne İndirimleri", value: stats.boat, icon: faShip, color: "#183D85", bg: "#EEF2F9" },
+    { label: "Deneyim İnd.", value: stats.experience, icon: faStar, color: "#5F4BAA", bg: "#F3F0FB" },
+    { label: "Toplam Kullanım", value: stats.uses, icon: faPercent, color: "#183D85", bg: "#EEF2F9" },
   ];
 
   return (
@@ -153,14 +153,14 @@ function DiscountsContent() {
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-bold tracking-[-0.02em] text-[#111827]">İndirim Yönetimi</h1>
-          <p className="mt-1 text-[14px] text-[#6B7280]">
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">İndirim Yönetimi</h1>
+          <p className="mt-1 text-[14px] text-[#77726C]">
             Tekne ve deneyimlere tarih/saat bazlı indirim tanımla.
           </p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 self-start rounded-xl bg-[#0097A7] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00838F]"
+          className="flex items-center gap-2 self-start rounded-xl bg-[#183D85] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#143470]"
         >
           <FontAwesomeIcon icon={faPlus} className="text-[14px]" />
           Yeni İndirim
@@ -172,7 +172,7 @@ function DiscountsContent() {
         {statCards.map((stat) => (
           <div
             key={stat.label}
-            className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5"
+            className="flex items-center gap-4 rounded-card border border-gray-200/70 bg-white p-5 shadow-card"
           >
             <div
               className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -201,7 +201,7 @@ function DiscountsContent() {
             placeholder="İndirim ara..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-4 text-sm focus:border-[#0097A7] focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-4 text-sm focus:border-[#183D85] focus:outline-none"
           />
         </div>
         {TARGET_FILTERS.map((t) => (
@@ -210,8 +210,8 @@ function DiscountsContent() {
             onClick={() => setFilterTarget(t)}
             className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
               filterTarget === t
-                ? "bg-[#0097A7] text-white"
-                : "border border-gray-200 bg-white text-gray-600 hover:border-[#0097A7]"
+                ? "bg-[#183D85] text-white"
+                : "border border-gray-200 bg-white text-gray-600 hover:border-[#183D85]"
             }`}
           >
             {t === "ALL" ? "Tümü" : DISCOUNT_TARGET_LABELS[t]}
@@ -221,7 +221,7 @@ function DiscountsContent() {
 
       {/* Table */}
       {loading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-gray-100 bg-white py-20 text-gray-400">
+        <div className="flex items-center justify-center rounded-card border border-gray-200/70 bg-white py-20 text-gray-400 shadow-card">
           <FontAwesomeIcon icon={faSpinner} spin className="mr-2" /> Yükleniyor…
         </div>
       ) : filtered.length === 0 ? (
@@ -272,8 +272,8 @@ function EmptyState({
   if (disabled) return null;
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E0F7FA]">
-        <FontAwesomeIcon icon={faTag} className="text-2xl text-[#0097A7]" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF2F9]">
+        <FontAwesomeIcon icon={faTag} className="text-2xl text-[#183D85]" />
       </div>
       <h3 className="mt-4 text-lg font-semibold text-gray-900">
         {hasAny ? "Sonuç bulunamadı" : "Henüz indirim yok"}
@@ -286,7 +286,7 @@ function EmptyState({
       {!hasAny && (
         <button
           onClick={onCreate}
-          className="mt-6 flex items-center gap-2 rounded-xl bg-[#0097A7] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00838F]"
+          className="mt-6 flex items-center gap-2 rounded-xl bg-[#183D85] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#143470]"
         >
           <FontAwesomeIcon icon={faPlus} className="text-[14px]" />
           Yeni İndirim
@@ -311,7 +311,7 @@ function DiscountTable({
 }) {
   const th = "text-left text-xs font-semibold uppercase tracking-wider text-gray-500 px-4 py-4";
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white">
+    <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100">
@@ -356,7 +356,7 @@ function DiscountTable({
                   <span className="text-xs font-medium text-gray-700">
                     {DISCOUNT_TARGET_LABELS[d.target]}
                   </span>
-                  {d.boat && <p className="mt-0.5 text-xs text-[#0097A7]">{d.boat.name}</p>}
+                  {d.boat && <p className="mt-0.5 text-xs text-[#183D85]">{d.boat.name}</p>}
                   {d.experience && (
                     <p className="mt-0.5 text-xs text-purple-600">{d.experience.name}</p>
                   )}
@@ -405,7 +405,7 @@ function DiscountTable({
                     disabled={busyId === d.id}
                     aria-label={d.isActive ? "Pasifleştir" : "Aktifleştir"}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      d.isActive ? "bg-[#0097A7]" : "bg-gray-300"
+                      d.isActive ? "bg-[#183D85]" : "bg-gray-300"
                     } disabled:opacity-50`}
                   >
                     <span
@@ -565,7 +565,7 @@ function DiscountModal({
     setForm((f) => ({ ...f, [key]: val }));
 
   const inputCls =
-    "w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0097A7] focus:outline-none";
+    "w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#183D85] focus:outline-none";
 
   function validate(): string | null {
     if (form.name.trim().length < 2) return "İndirim adı en az 2 karakter olmalı";
@@ -688,7 +688,7 @@ function DiscountModal({
                   onClick={() => set("target", opt.value)}
                   className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                     form.target === opt.value
-                      ? "border-[#0097A7] bg-[#E0F7FA]"
+                      ? "border-[#183D85] bg-[#EEF2F9]"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -739,7 +739,7 @@ function DiscountModal({
                     onClick={() => set("type", t.value)}
                     className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
                       form.type === t.value
-                        ? "bg-white text-[#0097A7] shadow"
+                        ? "bg-white text-[#183D85] shadow"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
@@ -763,7 +763,7 @@ function DiscountModal({
               </div>
             </div>
             {form.type === DiscountType.PERCENTAGE && Number(form.value) > 0 && (
-              <p className="mt-1.5 text-xs font-medium text-[#0097A7]">
+              <p className="mt-1.5 text-xs font-medium text-[#183D85]">
                 Fiyat üzerinden %{form.value} indirim uygulanacak
               </p>
             )}
@@ -837,7 +837,7 @@ function DiscountModal({
                   onClick={() => set("dayFilter", d)}
                   className={`rounded-xl border-2 px-4 py-2 text-sm font-medium transition-colors ${
                     form.dayFilter === d
-                      ? "border-[#0097A7] bg-[#E0F7FA] text-[#006064]"
+                      ? "border-[#183D85] bg-[#EEF2F9] text-[#102A5C]"
                       : "border-gray-200 text-gray-600 hover:border-gray-300"
                   }`}
                 >
@@ -867,7 +867,7 @@ function DiscountModal({
               type="button"
               onClick={() => set("isActive", !form.isActive)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                form.isActive ? "bg-[#0097A7]" : "bg-gray-300"
+                form.isActive ? "bg-[#183D85]" : "bg-gray-300"
               }`}
             >
               <span
@@ -893,7 +893,7 @@ function DiscountModal({
               type="button"
               onClick={handleSubmit}
               disabled={busy}
-              className="rounded-xl bg-[#0097A7] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00838F] disabled:opacity-50"
+              className="rounded-xl bg-[#183D85] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#143470] disabled:opacity-50"
             >
               {busy ? "Kaydediliyor…" : editing ? "Değişiklikleri Kaydet" : "İndirimi Oluştur"}
             </button>
@@ -951,7 +951,7 @@ function OptionSelector({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0097A7] focus:outline-none"
+      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#183D85] focus:outline-none"
     >
       <option value="">Seç…</option>
       {options.map((o) => (

@@ -15,7 +15,7 @@ const SECTIONS = [
   {
     title: "Platform",
     keys: [
-      { key: "platform_name", label: "Platform Adı", type: "text" as const, placeholder: "GetYourBoat" },
+      { key: "platform_name", label: "Platform Adı", type: "text" as const, placeholder: "Ahoy Boats" },
       { key: "platform_support_email", label: "Destek E-postası", type: "email" as const, placeholder: "destek@getyourboat.com" },
     ],
   },
@@ -123,7 +123,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
+      <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Sistem Ayarları</h1>
 
       {/* Bakım Modu */}
       <div className={`rounded-xl border p-5 ${maintenanceOn ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"}`}>
@@ -166,7 +166,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setMaintenanceConfirm(false)}
-                className="rounded-lg border border-gray-200 px-4 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+                className="rounded-full border border-gray-200 px-4 py-1.5 text-sm text-gray-600 hover:bg-gray-50 bg-white"
               >
                 Vazgeç
               </button>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
 
       {/* Settings sections */}
       {SECTIONS.map((section) => (
-        <div key={section.title} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+        <div key={section.title} className="rounded-card border border-gray-200/70 bg-white p-5 space-y-4 shadow-card">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">{section.title}</h2>
           {section.keys.map(({ key, label, type, placeholder }) => (
             <div key={key}>
@@ -185,7 +185,7 @@ export default function SettingsPage() {
               {type === "textarea" ? (
                 <textarea
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                   value={draft[key] ?? ""}
                   placeholder={placeholder}
                   onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
@@ -193,7 +193,7 @@ export default function SettingsPage() {
               ) : (
                 <input
                   type={type}
-                  className="w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full max-w-sm rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                   value={draft[key] ?? ""}
                   placeholder={placeholder}
                   onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
@@ -216,7 +216,7 @@ export default function SettingsPage() {
         type="button"
         onClick={handleSave}
         disabled={saving}
-        className="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+        className="rounded-full bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
       >
         {saving ? "Kaydediliyor…" : "Kaydet"}
       </button>

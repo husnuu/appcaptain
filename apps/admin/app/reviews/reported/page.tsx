@@ -87,12 +87,12 @@ export default function ReportedReviewsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Şikayet Edilen Yorumlar</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Şikayet Edilen Yorumlar</h1>
         <span className="text-sm text-gray-400">{total} yorum</span>
       </div>
 
       {total === 0 && !loading && (
-        <div className="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center">
+        <div className="rounded-card border border-gray-200/70 bg-white px-6 py-12 text-center shadow-card">
           <p className="text-gray-400">Şikayet edilen yorum bulunmuyor.</p>
         </div>
       )}
@@ -187,8 +187,8 @@ export default function ReportedReviewsPage() {
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">←</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">→</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">←</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">→</button>
           </div>
         </div>
       )}
@@ -196,14 +196,14 @@ export default function ReportedReviewsPage() {
       {/* Warn modal */}
       {warnTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">Kullanıcıyı Uyar</h2>
             <p className="mb-3 text-sm text-gray-500">{warnTarget.customer.name} — {warnTarget.customer.email}</p>
             {warnSent ? (
               <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Uyarı e-postası gönderildi.</p>
             ) : (
               <textarea
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 rows={4}
                 placeholder="Uyarı mesajı…"
                 value={warnMsg}
@@ -211,7 +211,7 @@ export default function ReportedReviewsPage() {
               />
             )}
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setWarnTarget(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">
+              <button type="button" onClick={() => setWarnTarget(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">
                 {warnSent ? "Kapat" : "Vazgeç"}
               </button>
               {!warnSent && (

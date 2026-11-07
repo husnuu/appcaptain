@@ -83,14 +83,14 @@ export default function ApiKeysPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">API Entegrasyonları</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">API Entegrasyonları</h1>
         <p className="text-sm text-gray-500 mt-1">
           Gizli anahtarlar veritabanında şifresiz saklanır. Yalnızca yetkilendirme ekibinin erişimine açın.
         </p>
       </div>
 
       {API_KEY_GROUPS.map((group) => (
-        <div key={group.title} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div key={group.title} className="rounded-card border border-gray-200/70 bg-white overflow-hidden shadow-card">
           <div className="border-b border-gray-100 bg-gray-50 px-5 py-3">
             <h2 className="font-semibold text-gray-900">{group.title}</h2>
             <p className="text-xs text-gray-400 mt-0.5">{group.description}</p>
@@ -119,7 +119,7 @@ export default function ApiKeysPage() {
                         <div className="flex items-center gap-2 mt-1">
                           <input
                             type={sensitive && !isRevealed ? "password" : "text"}
-                            className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                             value={editing[key]}
                             placeholder={placeholder}
                             onChange={(e) => setEditing((ed) => ({ ...ed, [key]: e.target.value }))}
@@ -129,14 +129,14 @@ export default function ApiKeysPage() {
                             type="button"
                             disabled={saving[key]}
                             onClick={() => void saveKey(key)}
-                            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                            className="rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
                           >
                             {saving[key] ? "…" : "Kaydet"}
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditing((e) => { const n = { ...e }; delete n[key]; return n; })}
-                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                            className="rounded-full border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 bg-white"
                           >
                             Vazgeç
                           </button>
@@ -171,7 +171,7 @@ export default function ApiKeysPage() {
                       <button
                         type="button"
                         onClick={() => setEditing((e) => ({ ...e, [key]: "" }))}
-                        className="shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                        className="shrink-0 rounded-full border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 bg-white"
                       >
                         {s?.isSet ? "Değiştir" : "Ayarla"}
                       </button>

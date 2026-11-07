@@ -66,15 +66,15 @@ export default function NotificationHistoryPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gönderim Geçmişi</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Gönderim Geçmişi</h1>
         <span className="text-sm text-gray-400">{total} kampanya</span>
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
-          <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">Konu</th>
               <th className="px-4 py-3 text-left">Kanal</th>
@@ -133,8 +133,8 @@ export default function NotificationHistoryPage() {
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">←</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">→</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">←</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">→</button>
           </div>
         </div>
       )}

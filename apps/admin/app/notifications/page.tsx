@@ -84,7 +84,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Bildirim Gönder</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Bildirim Gönder</h1>
         <Link href="/notifications/templates" className="text-sm text-brand-600 hover:underline">Şablonları Yönet →</Link>
       </div>
 
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
                       key={tpl.id}
                       type="button"
                       onClick={() => applyTemplate(tpl)}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 hover:border-brand-300"
+                      className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 hover:border-brand-300"
                     >
                       {tpl.name}
                     </button>
@@ -173,7 +173,7 @@ export default function NotificationsPage() {
       )}
 
       {/* Compose */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 space-y-4 shadow-card">
         <p className="text-sm font-semibold text-gray-700">Mesaj İçeriği</p>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Konu *</label>
@@ -182,7 +182,7 @@ export default function NotificationsPage() {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="E-posta konusu"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
         </div>
         <div>
@@ -192,7 +192,7 @@ export default function NotificationsPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Mesaj metni… (satır sonları korunur)"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           <p className="mt-1 text-xs text-gray-400">{message.length} karakter</p>
         </div>
@@ -217,7 +217,7 @@ export default function NotificationsPage() {
             type="button"
             disabled={sending || !subject.trim() || !message.trim()}
             onClick={handleSend}
-            className="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+            className="rounded-full bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
           >
             {sending ? "Gönderiliyor…" : "Gönder"}
           </button>

@@ -9,14 +9,19 @@ import {
   faAnchor,
   faArrowLeft,
   faArrowRight,
+  faBolt,
   faCalendarDays,
   faCheck,
   faClock,
+  faCloudArrowUp,
+  faEllipsis,
   faEye,
+  faFileLines,
   faLock,
   faMoon,
   faSun,
   faTriangleExclamation,
+  faUserCheck,
   LocationPicker,
   type IconDefinition,
 } from "@getyourboat/ui";
@@ -52,7 +57,6 @@ import {
   type FeatureSubTabId,
   type FieldValueMap,
 } from "@getyourboat/shared";
-import { Tabs } from "@getyourboat/ui";
 import { useMemo, useRef, useState, useEffect, useCallback, type ReactNode } from "react";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
 import {
@@ -63,7 +67,7 @@ import {
 import { useStepDraftAutosave } from "../../lib/hooks/useAutosaveDraft";
 import { prefetchBrandCatalog } from "../../lib/brand-catalog";
 import type { OnboardingConfig, ResolvedOnboardingConfig, SerializedBoat } from "../../lib/types";
-import { Alert, Field, Input, Modal, Select, Spinner, Textarea } from "../ui";
+import { Alert, Field, Input, Modal, Spinner, Textarea } from "../ui";
 import {
   DynamicOnboardingFields,
   FeatureFieldsGrid,
@@ -83,6 +87,17 @@ import {
   toCabinInputs,
 } from "./CabinConfigurationSection";
 import { StepValidationAlert } from "./step-validation-alert";
+import {
+  ChoiceTiles,
+  SectionTitle,
+  SubStepTabs,
+  TileCheck,
+  UploadDropzone,
+  WizardBackButton,
+  WizardFooterBar,
+  WizardHeading,
+  tileClass,
+} from "./focus";
 import type { CabinConfigurationInput } from "@getyourboat/shared";
 
 /** Picks a context icon for a listing model from its label/key. */
@@ -118,38 +133,25 @@ function StepShell({
   footer: ReactNode;
 }) {
   return (
-    <div className="space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-[28px] font-bold tracking-[-0.02em] text-ink">{title}</h1>
-        {description ? <p className="text-body-sm text-gray-500">{description}</p> : null}
-      </div>
+    <div>
+      <WizardHeading title={title} description={description} />
       <div className="space-y-8">{children}</div>
-      <div className="flex items-center justify-between pt-2">
-        {footer}
-      </div>
+      <WizardFooterBar>{footer}</WizardFooterBar>
     </div>
   );
 }
 
 function BackButton({ onClick, show }: { onClick: () => void; show: boolean }) {
   if (!show) return <span />;
-  return (
-    <button
-      onClick={onClick}
-      className="-ml-2 flex items-center gap-2 rounded-xl px-3 py-2 text-body-sm font-medium text-gray-500 transition hover:bg-gray-100/70 hover:text-ink"
-    >
-      <FontAwesomeIcon icon={faArrowLeft} className="text-[14px]" aria-hidden />
-      Geri
-    </button>
-  );
+  return <WizardBackButton onClick={onClick} />;
 }
 
-/** Label + trailing arrow used by every "Kaydet & Devam" action. */
+/** Label + trailing arrow used by every "Kaydet ve ilerle" action. */
 function SaveLabel({ busy }: { busy: boolean }) {
   if (busy) return <>Kaydediliyor…</>;
   return (
     <>
-      Kaydet &amp; Devam
+      Kaydet ve ilerle
       <FontAwesomeIcon icon={faArrowRight} className="text-[14px]" aria-hidden />
     </>
   );
@@ -196,7 +198,7 @@ export function ListingModelStep({
       footer={
         <>
           <BackButton onClick={goBack} show={false} />
-          <Button
+          <Button size="lg"
             disabled={busy || selected.length === 0}
             onClick={() =>
               run(() => api.updateListingModel(boat.id, { listingModelKeys: selected, approvalType }))
@@ -220,10 +222,8 @@ export function ListingModelStep({
             <label
               key={m.key}
               className={cn(
-                "relative flex cursor-pointer items-start gap-3 rounded-2xl border p-4 text-sm transition",
-                isSelected
-                  ? "border-brand-500 bg-brand-500/[0.06] shadow-sm"
-                  : "border-gray-200 bg-gray-50/60 hover:border-gray-300 hover:bg-gray-50"
+                tileClass(isSelected),
+                "flex cursor-pointer items-start gap-4 p-5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:focus-visible]:ring-offset-2"
               )}
             >
               <input
@@ -234,8 +234,8 @@ export function ListingModelStep({
               />
               <span
                 className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition",
-                  isSelected ? "bg-brand-500/10 text-brand-600" : "bg-white text-gray-400"
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition",
+                  isSelected ? "bg-white text-brand-500 shadow-sm" : "bg-gray-100 text-gray-500"
                 )}
               >
                 <FontAwesomeIcon
@@ -245,43 +245,47 @@ export function ListingModelStep({
                 />
               </span>
               <span className="min-w-0 pr-6">
-                <span
-                  className={cn(
-                    "block font-medium",
-                    isSelected ? "text-ink" : "text-gray-700"
-                  )}
-                >
-                  {m.label}
-                </span>
+                <span className="block text-[16px] font-bold leading-snug text-ink">{m.label}</span>
                 {LISTING_MODEL_BRIEFS[m.key as keyof typeof LISTING_MODEL_BRIEFS] ? (
-                  <span className="mt-1 block text-[12px] leading-relaxed text-gray-500">
+                  <span className="mt-1 block text-[13px] leading-relaxed text-gray-500">
                     {LISTING_MODEL_BRIEFS[m.key as keyof typeof LISTING_MODEL_BRIEFS]}
                   </span>
                 ) : null}
               </span>
-              {isSelected ? (
-                <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white">
-                  <FontAwesomeIcon icon={faCheck} className="text-[11px]" aria-hidden />
-                </span>
-              ) : null}
+              <TileCheck on={isSelected} />
             </label>
           );
         })}
       </div>
-      <div data-field="approvalType">
-        <Field label="Onay tipi" hint="Anında onay mı, manuel onay mı isteniyor?" error={fieldErrors.approvalType}>
-          <Select
-            value={approvalType}
-            error={!!fieldErrors.approvalType}
-            onChange={(e) => {
-              setApprovalType(e.target.value as "INSTANT" | "MANUAL");
-              scheduleSave(true);
-            }}
-          >
-          <option value="INSTANT">Anında onay (INSTANT)</option>
-          <option value="MANUAL">Manuel onay (MANUAL)</option>
-        </Select>
-      </Field>
+      <div data-field="approvalType" className="border-t border-gray-200 pt-8">
+        <SectionTitle hint="Rezervasyon taleplerinin nasıl onaylanacağını seç.">Onay tipi</SectionTitle>
+        <ChoiceTiles<"INSTANT" | "MANUAL">
+          columns={2}
+          ariaLabel="Onay tipi"
+          error={!!fieldErrors.approvalType}
+          value={approvalType}
+          onChange={(v) => {
+            setApprovalType(v);
+            scheduleSave(true);
+          }}
+          options={[
+            {
+              value: "INSTANT",
+              label: "Anında onay",
+              description: "Misafirin rezervasyonu beklemeden kesinleşir.",
+              icon: faBolt,
+            },
+            {
+              value: "MANUAL",
+              label: "Manuel onay",
+              description: "Her rezervasyon talebini sen onaylarsın.",
+              icon: faUserCheck,
+            },
+          ]}
+        />
+        {fieldErrors.approvalType ? (
+          <p className="mt-2 text-caption text-danger-600">{fieldErrors.approvalType}</p>
+        ) : null}
       </div>
     </StepShell>
   );
@@ -544,7 +548,7 @@ export function BoatTypeFeaturesStep({
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             disabled={
               busy ||
               !boatTypeKey ||
@@ -583,8 +587,8 @@ export function BoatTypeFeaturesStep({
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
 
-      <div className="mb-6">
-        <Tabs
+      <div>
+        <SubStepTabs
           items={FEATURE_SUB_TABS.map((t) => ({
             id: t.id,
             label: t.label,
@@ -623,33 +627,31 @@ export function BoatTypeFeaturesStep({
       </div>
 
       {activeTab === "identity" ? (
-        <section className="space-y-4">
-          <p className="text-[13px] leading-relaxed text-gray-500">
-            Teknenin tipini, markasını ve modelini seç. Bu bilgiler ilanının kimliğini
-            oluşturur.
-          </p>
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-            <div data-field="boatTypeKey">
-              <Field label="Tekne tipi" required error={fieldErrors.boatTypeKey}>
-                <Select
-                  leftIcon={faAnchor}
-                  value={boatTypeKey}
-                  error={!!fieldErrors.boatTypeKey}
-                  onChange={(e) => {
-                    setBoatTypeKey(e.target.value);
-                    clearFieldError("boatTypeKey");
-                  }}
-                >
-                  <option value="">Seçiniz…</option>
-                  {config.boatTypes.map((t) => (
-                    <option key={t.key} value={t.key}>
-                      {t.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
+        <section className="space-y-8">
+          <div data-field="boatTypeKey">
+            <SectionTitle hint="Teknenin tipini, markasını ve modelini seç. Bu bilgiler ilanının kimliğini oluşturur.">
+              Teknenizi en iyi hangisi tanımlıyor?
+              <span className="ml-0.5 text-danger-500" aria-hidden>
+                *
+              </span>
+            </SectionTitle>
+            <ChoiceTiles
+              ariaLabel="Tekne tipi"
+              error={!!fieldErrors.boatTypeKey}
+              value={boatTypeKey}
+              onChange={(v) => {
+                setBoatTypeKey(v);
+                clearFieldError("boatTypeKey");
+              }}
+              options={config.boatTypes.map((t) => ({ value: t.key, label: t.label }))}
+            />
+            {fieldErrors.boatTypeKey ? (
+              <p className="mt-2 text-caption text-danger-600">{fieldErrors.boatTypeKey}</p>
+            ) : null}
+          </div>
 
+          <div className="space-y-5 border-t border-gray-200 pt-8">
+            <SectionTitle>Marka ve model</SectionTitle>
             <BrandModelFields
               boatTypeKey={boatTypeKey}
               values={values}
@@ -665,34 +667,34 @@ export function BoatTypeFeaturesStep({
       ) : null}
 
       {activeTab === "specs" ? (
-        <p className="mb-1 text-[13px] leading-relaxed text-gray-500">{SPECS_NUMERIC_HINT}</p>
+        <p className="text-[14px] leading-relaxed text-gray-500">{SPECS_NUMERIC_HINT}</p>
       ) : null}
 
       {activeTab === "engine" ? (
         <div data-field="engineType">
-          <Field label="Motor Tipi" error={fieldErrors.engineType}>
-            <Select
-              value={engineType}
-              error={!!fieldErrors.engineType}
-              onChange={(e) => {
-                setEngineType(e.target.value as EngineType | "");
-                clearFieldError("engineType");
-              }}
-            >
-            <option value="">Seçiniz…</option>
-            {Object.values(EngineType).map((type) => (
-              <option key={type} value={type}>
-                {ENGINE_TYPE_LABELS[type]}
-              </option>
-            ))}
-          </Select>
-        </Field>
+          <SectionTitle>Motor tipi</SectionTitle>
+          <ChoiceTiles<EngineType>
+            ariaLabel="Motor tipi"
+            error={!!fieldErrors.engineType}
+            value={engineType}
+            onChange={(v) => {
+              setEngineType(v);
+              clearFieldError("engineType");
+            }}
+            options={Object.values(EngineType).map((type) => ({
+              value: type,
+              label: ENGINE_TYPE_LABELS[type],
+            }))}
+          />
+          {fieldErrors.engineType ? (
+            <p className="mt-2 text-caption text-danger-600">{fieldErrors.engineType}</p>
+          ) : null}
         </div>
       ) : null}
 
       {activeTab === "cabins" ? (
         <>
-          <p className="mb-4 text-[13px] leading-relaxed text-gray-500">{CABINS_REQUIRED_HINT}</p>
+          <p className="text-[14px] leading-relaxed text-gray-500">{CABINS_REQUIRED_HINT}</p>
           <CrewFieldsSection
             values={values}
             noCrewMembers={noCrewMembers}
@@ -778,6 +780,23 @@ export function AmenitiesStep({
   }, [categories]);
 
   const [activeCategory, setActiveCategory] = useState(categories[0]?.key ?? "");
+
+  // Sayfa kaydırıldıkça üstteki kategori çipi görünür bölümü takip eder.
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined" || categories.length < 2) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((e) => e.isIntersecting);
+        if (visible) setActiveCategory(visible.target.id.replace("amenity-cat-", ""));
+      },
+      { rootMargin: "-35% 0px -55% 0px" }
+    );
+    for (const c of categories) {
+      const el = document.getElementById(`amenity-cat-${c.key}`);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [categories]);
   const [state, setState] = useState<Record<string, AmenityState>>(initial);
   const [showSummary, setShowSummary] = useState(false);
   const { busy, fieldErrors, errorSummary, run } = useStepSaver(onSaved);
@@ -876,7 +895,7 @@ export function AmenitiesStep({
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             disabled={busy || boat.listingModels.length === 0}
             onClick={() => setShowSummary(true)}
           >
@@ -897,29 +916,60 @@ export function AmenitiesStep({
         <Alert variant="info">Bu kiralama modeli için donanım listesi yok.</Alert>
       ) : null}
 
-      {categories.length > 0 ? (
-        <Tabs
-          items={categories.map((c) => ({
-            id: c.key,
-            label: amenityCategoryLabel(c.key, c.label),
-            badge:
-              categoryErrorCounts[c.key] && categoryErrorCounts[c.key]! > 0 ? (
-                <span
-                  className="inline-flex h-2 w-2 rounded-full bg-danger-500"
-                  aria-label={`${categoryErrorCounts[c.key]} hatalı donanım`}
-                />
-              ) : undefined,
-          }))}
-          activeId={activeCategory || categories[0]?.key || "default"}
-          onChange={setActiveCategory}
-          className="mb-6"
-        />
+      {categories.length > 1 ? (
+        <nav
+          aria-label="Donanım kategorileri"
+          className="sticky top-[68px] z-20 -mx-5 flex gap-2 overflow-x-auto border-b border-gray-100 bg-white/95 px-5 py-3 backdrop-blur [scrollbar-width:none] sm:top-[76px] sm:-mx-1 sm:px-1 [&::-webkit-scrollbar]:hidden"
+        >
+          {categories.map((c) => {
+            const count = c.amenities.filter(
+              (a) => state[a.key]?.included || state[a.key]?.isExtra
+            ).length;
+            const hasError = !!categoryErrorCounts[c.key];
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(c.key);
+                  document
+                    .getElementById(`amenity-cat-${c.key}`)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13.5px] font-semibold transition",
+                  activeCategory === c.key
+                    ? "border-ink bg-ink text-white"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-ink"
+                )}
+              >
+                {amenityCategoryLabel(c.key, c.label)}
+                {count > 0 ? (
+                  <span
+                    className={cn(
+                      "grid h-5 min-w-5 place-items-center rounded-full px-1 text-[11px] font-bold",
+                      activeCategory === c.key ? "bg-white/20 text-white" : "bg-brand-50 text-brand-600"
+                    )}
+                  >
+                    {count}
+                  </span>
+                ) : null}
+                {hasError ? (
+                  <span
+                    className="inline-flex h-2 w-2 rounded-full bg-danger-500"
+                    aria-label={`${categoryErrorCounts[c.key]} hatalı donanım`}
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </nav>
       ) : null}
 
-      {categories
-        .filter((cat) => cat.key === (activeCategory || categories[0]?.key))
-        .map((cat) => (
-          <section key={cat.key} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {categories.map((cat) => (
+        <section key={cat.key} id={`amenity-cat-${cat.key}`} className="scroll-mt-40 sm:scroll-mt-44">
+          <SectionTitle>{amenityCategoryLabel(cat.key, cat.label)}</SectionTitle>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {cat.amenities.map((a) => {
               const st = state[a.key] ?? {
                 included: false,
@@ -938,98 +988,77 @@ export function AmenitiesStep({
                 <div
                   key={a.key}
                   data-field={a.key}
-                  role="button"
+                  role="checkbox"
+                  aria-checked={isChecked}
                   tabIndex={0}
                   onClick={toggleCard}
                   onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       toggleCard();
                     }
                   }}
                   className={cn(
-                    "relative flex cursor-pointer select-none items-start gap-3 rounded-xl border-2 p-4 transition-all",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2",
-                    hasError
-                      ? "border-danger-400 bg-white"
-                      : isChecked
-                        ? "border-brand-500 bg-brand-50"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                    tileClass(isChecked, hasError),
+                    "flex min-h-[76px] cursor-pointer select-none flex-col justify-center py-3.5 pl-4 pr-9"
                   )}
                 >
-                  <span
-                    className={cn(
-                      "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
-                      isChecked ? "border-brand-500 bg-brand-500" : "border-gray-300 bg-white"
-                    )}
-                    aria-hidden
-                  >
-                    {isChecked ? (
-                      <FontAwesomeIcon icon={faCheck} className="text-[10px] text-white" />
+                  <p className="text-[14.5px] font-semibold leading-snug">
+                    {getFieldLabel(a)}
+                    {requiredAmenityKeys.includes(a.key) ? (
+                      <span className="ml-0.5 text-danger-500" aria-hidden>
+                        *
+                      </span>
                     ) : null}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "text-sm font-medium leading-tight",
-                        isChecked ? "text-brand-700" : "text-gray-700"
-                      )}
+                  </p>
+                  <TileCheck on={isChecked} />
+
+                  {isChecked && allowExtra ? (
+                    <div
+                      className="mt-2 flex flex-wrap items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {getFieldLabel(a)}
-                      {requiredAmenityKeys.includes(a.key) ? (
-                        <span className="ml-0.5 text-danger-500" aria-hidden>
-                          *
-                        </span>
-                      ) : null}
-                    </p>
-
-                    {isChecked && allowExtra ? (
-                      <div
-                        className="mt-2 flex flex-wrap items-center gap-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <label className="flex cursor-pointer items-center gap-1.5">
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={st.isExtra}
+                          onChange={(e) => set(a.key, { isExtra: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-brand-500"
+                        />
+                        <span className="text-xs font-medium text-gray-600">Ekstra ücretli</span>
+                      </label>
+                      {st.isExtra ? (
+                        <div className="flex items-center gap-1" data-field={`${a.key}-price`}>
+                          <span className="text-xs text-gray-500">₺</span>
                           <input
-                            type="checkbox"
-                            checked={st.isExtra}
-                            onChange={(e) => set(a.key, { isExtra: e.target.checked })}
-                            className="h-3.5 w-3.5 accent-brand-500"
+                            type="number"
+                            min={1}
+                            placeholder="0"
+                            value={st.extraPrice}
+                            onChange={(e) => set(a.key, { extraPrice: e.target.value })}
+                            aria-label={`${getFieldLabel(a)} ekstra ücreti`}
+                            className={cn(
+                              "w-20 rounded-lg border bg-white px-2 py-1 text-xs text-ink focus:outline-none",
+                              hasError
+                                ? "border-danger-400 focus:border-danger-500"
+                                : "border-gray-300 focus:border-brand-500"
+                            )}
                           />
-                          <span className="text-xs text-gray-500">Ekstra ücretli</span>
-                        </label>
-                        {st.isExtra ? (
-                          <div
-                            className="flex items-center gap-1"
-                            data-field={`${a.key}-price`}
-                          >
-                            <span className="text-xs text-gray-400">₺</span>
-                            <input
-                              type="number"
-                              min={1}
-                              placeholder="0"
-                              value={st.extraPrice}
-                              onChange={(e) => set(a.key, { extraPrice: e.target.value })}
-                              className={cn(
-                                "w-20 rounded-lg border px-2 py-1 text-xs text-gray-700 focus:outline-none",
-                                hasError
-                                  ? "border-danger-400 focus:border-danger-500"
-                                  : "border-gray-200 focus:border-brand-500"
-                              )}
-                            />
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
-                    {hasError ? (
-                      <p className="mt-1 text-caption text-danger-600">{fieldErrors[a.key]}</p>
-                    ) : null}
-                  </div>
+                  {hasError ? (
+                    <p className="mt-1 text-caption text-danger-600">{fieldErrors[a.key]}</p>
+                  ) : null}
                 </div>
               );
             })}
-          </section>
-        ))}
+          </div>
+        </section>
+      ))}
 
       <Modal
         open={showSummary}
@@ -1045,7 +1074,7 @@ export function AmenitiesStep({
               <FontAwesomeIcon icon={faArrowLeft} className="text-[13px]" aria-hidden />
               Geri Dön, Düzenle
             </button>
-            <Button
+            <Button size="lg"
               disabled={busy}
               onClick={() => {
                 setShowSummary(false);
@@ -1215,7 +1244,7 @@ export function LocationStep({
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             disabled={busy || boat.listingModels.length === 0}
             onClick={() => run(save)}
           >
@@ -1230,7 +1259,6 @@ export function LocationStep({
       ) : null}
 
       <LocationPicker
-        className="mb-6"
         mapboxToken={mapboxToken}
         value={pickerValue}
         knownLocations={knownLocations}
@@ -1249,7 +1277,8 @@ export function LocationStep({
       />
 
       {formFields.length > 0 ? (
-        <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+        <div className="space-y-5 border-t border-gray-200 pt-8">
+          <SectionTitle>Adres bilgileri</SectionTitle>
           {formFields.map((f) => (
             <div key={f.key} data-field={f.key}>
               <Field label={getFieldLabel(f)} error={fieldErrors[f.key]}>
@@ -1299,14 +1328,12 @@ function RuleYesNoToggle({
   const no = value === false || value === "false";
   const pill = (active: boolean, tone: "yes" | "no") =>
     cn(
-      "inline-flex h-9 min-w-[68px] items-center justify-center gap-1.5 rounded-full border-2 px-4 text-[13px] font-medium transition-all",
+      "inline-flex h-10 min-w-[76px] items-center justify-center gap-1.5 rounded-full border px-4 text-[14px] font-semibold transition-all",
       active
         ? tone === "yes"
           ? "border-brand-500 bg-brand-500 text-white"
-          : "border-danger-500 bg-danger-500 text-white"
-        : tone === "yes"
-          ? "border-gray-200 bg-white text-gray-600 hover:border-brand-500 hover:text-brand-600"
-          : "border-gray-200 bg-white text-gray-600 hover:border-danger-400 hover:text-danger-500"
+          : "border-ink bg-ink text-white"
+        : "border-gray-300 bg-white text-gray-600 hover:border-ink hover:text-ink"
     );
   return (
     <div className="flex shrink-0 gap-2">
@@ -1418,7 +1445,7 @@ export function DescriptionRulesStep({
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button disabled={busy || !canSave} onClick={() => run(save)}>
+          <Button size="lg" disabled={busy || !canSave} onClick={() => run(save)}>
             <SaveLabel busy={busy} />
           </Button>
         </>
@@ -1431,7 +1458,7 @@ export function DescriptionRulesStep({
 
       {hasTitle || hasDescription ? (
         <section className="space-y-5">
-          <h3 className="text-[15px] font-semibold text-ink">İlan Başlığı ve Açıklaması</h3>
+          <SectionTitle>İlan Başlığı ve Açıklaması</SectionTitle>
           {hasTitle ? (
             <div data-field="listing_title">
               <Field
@@ -1470,27 +1497,23 @@ export function DescriptionRulesStep({
       <section
         className={cn(
           "space-y-4",
-          (hasTitle || hasDescription) && "mt-8 border-t border-gray-200 pt-8"
+          (hasTitle || hasDescription) && "border-t border-gray-200 pt-8"
         )}
       >
-        <div>
-          <h3 className="text-[15px] font-semibold text-ink">
-            Tekne Kuralları{" "}
-            <span className="font-normal text-gray-400">(opsiyonel)</span>
-          </h3>
-          <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
-            Misafirler için geçerli kuralları belirt. Her kural için Evet ya da Hayır
-            seçebilirsin; hiçbirini seçmeden de devam edebilirsin.
-          </p>
-        </div>
-        <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
+        <SectionTitle
+          optional
+          hint="Misafirler için geçerli kuralları belirt. Her kural için Evet ya da Hayır seçebilirsin; hiçbirini seçmeden de devam edebilirsin."
+        >
+          Tekne Kuralları
+        </SectionTitle>
+        <div className="divide-y divide-gray-200 border-y border-gray-200">
           {BOAT_RULE_TOGGLES.map((r) => (
             <div
               key={r.key}
               data-field={r.key}
-              className="flex items-center justify-between gap-4 px-4 py-3"
+              className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
             >
-              <span className="text-[14px] text-gray-700">{r.label}</span>
+              <span className="text-[15px] font-medium text-ink">{r.label}</span>
               <RuleYesNoToggle
                 value={values[r.key]}
                 onChange={(val) => setRule(r.key, val)}
@@ -1506,17 +1529,104 @@ export function DescriptionRulesStep({
 
 /* --------------------------- Step 6: Photos ----------------------- */
 
+function PhotoTile({
+  photo,
+  busy,
+  onMakeCover,
+  onRemove,
+}: {
+  photo: SerializedBoat["photos"][number];
+  busy: boolean;
+  onMakeCover?: () => void;
+  onRemove: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  return (
+    <figure
+      className={cn(
+        "relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-100",
+        photo.isCover && "col-span-2"
+      )}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photo.publicUrl ?? ""}
+        alt={photo.altText ?? ""}
+        className={cn("w-full object-cover", photo.isCover ? "aspect-[16/9]" : "aspect-[4/3]")}
+      />
+      {photo.isCover ? (
+        <span className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-1 text-[12.5px] font-semibold text-brand-600 shadow-sm">
+          Kapak fotoğrafı
+        </span>
+      ) : null}
+      <div ref={ref} className="absolute right-3 top-3">
+        <button
+          type="button"
+          aria-label="Fotoğraf seçenekleri"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          disabled={busy}
+          onClick={() => setOpen((o) => !o)}
+          className="grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition hover:bg-white disabled:opacity-60"
+        >
+          <FontAwesomeIcon icon={faEllipsis} className="text-[15px]" aria-hidden />
+        </button>
+        {open ? (
+          <div
+            role="menu"
+            className="absolute right-0 top-11 z-10 w-44 rounded-xl border border-gray-200 bg-white p-1 shadow-modal"
+          >
+            {onMakeCover ? (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
+                  onMakeCover();
+                }}
+                className="w-full rounded-lg px-3 py-2 text-left text-[14px] font-medium text-ink hover:bg-gray-50"
+              >
+                Kapak yap
+              </button>
+            ) : null}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onRemove();
+              }}
+              className="w-full rounded-lg px-3 py-2 text-left text-[14px] font-medium text-danger-600 hover:bg-danger-50"
+            >
+              Sil
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </figure>
+  );
+}
+
 export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const { busy: saveBusy, errorSummary, run } = useStepSaver(onSaved);
   const busy = uploadBusy || saveBusy;
   const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const planRef = useRef<HTMLInputElement>(null);
   const photoFields = getConfigFieldsForStep(config, OnboardingStep.PHOTOS);
   const boatPlanUrl = boat.features.find((f) => f.key === "boat_plan")?.value ?? null;
 
-  async function onFiles(files: FileList | null) {
+  async function onFiles(files: File[] | null) {
     if (!files || files.length === 0) return;
     setUploadBusy(true);
     setError(null);
@@ -1531,7 +1641,6 @@ export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps)
       setError(err instanceof ApiError ? err.message : "Yükleme başarısız");
     } finally {
       setUploadBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -1567,7 +1676,6 @@ export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps)
       setError(err instanceof ApiError ? err.message : "Tekne planı yüklenemedi");
     } finally {
       setUploadBusy(false);
-      if (planRef.current) planRef.current.value = "";
     }
   }
 
@@ -1584,6 +1692,12 @@ export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps)
     }
   }
 
+  // Kapak her zaman ilk ve geniş gösterilir (yalnızca görünüm sırası).
+  const orderedPhotos = [
+    ...boat.photos.filter((p) => p.isCover),
+    ...boat.photos.filter((p) => !p.isCover),
+  ];
+
   function continueStep() {
     if (boat.photos.length === 0) {
       return Promise.reject(new ApiError(400, "En az bir fotoğraf yükleyin"));
@@ -1598,7 +1712,7 @@ export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps)
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             disabled={busy || boat.photos.length === 0}
             onClick={() => run(continueStep)}
           >
@@ -1609,96 +1723,75 @@ export function PhotosStep({ boat, config, reload, goBack, onSaved }: StepProps)
     >
       {error ? <Alert>{error}</Alert> : null}
       {errorSummary ? <Alert>{errorSummary}</Alert> : null}
-      <div className="flex items-center gap-3">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => onFiles(e.target.files)}
-          className="text-sm"
-          disabled={busy}
-        />
-        {busy ? <Spinner /> : null}
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {boat.photos.map((p) => (
-          <div
-            key={p.id}
-            className="group relative overflow-hidden rounded-lg border border-slate-200"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={p.publicUrl ?? ""}
-              alt={p.altText ?? ""}
-              className="h-28 w-full object-cover"
+
+      {orderedPhotos.length > 0 ? (
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {orderedPhotos.map((p) => (
+            <PhotoTile
+              key={p.id}
+              photo={p}
+              busy={busy}
+              onMakeCover={p.isCover ? undefined : () => void makeCover(p.id)}
+              onRemove={() => void remove(p.id)}
             />
-            {p.isCover ? (
-              <span className="absolute left-1 top-1 rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                Kapak
-              </span>
-            ) : null}
-            <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/50 px-2 py-1 opacity-0 transition group-hover:opacity-100">
-              {!p.isCover ? (
-                <button
-                  onClick={() => makeCover(p.id)}
-                  className="text-[10px] text-white hover:underline"
-                >
-                  Kapak yap
-                </button>
-              ) : (
-                <span />
-              )}
-              <button
-                onClick={() => remove(p.id)}
-                className="text-[10px] text-red-200 hover:underline"
-              >
-                Sil
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
+
+      <UploadDropzone
+        accept="image/*"
+        multiple
+        busy={uploadBusy}
+        disabled={busy}
+        compact={orderedPhotos.length > 0}
+        title={orderedPhotos.length > 0 ? "Daha fazla fotoğraf ekle" : "Fotoğraflarını buraya sürükle"}
+        hint={
+          orderedPhotos.length > 0
+            ? "Birden fazla fotoğrafı aynı anda seçebilirsin."
+            : "Ya da bilgisayarından seç. İlk yüklenen fotoğraf kapak olur; sonradan değiştirebilirsin."
+        }
+        buttonLabel="Fotoğraf seç"
+        onFiles={(files) => void onFiles(files)}
+      />
 
       {photoFields.some((f) => f.key === "boat_plan") ? (
-        <section className="space-y-3 border-t border-gray-100 pt-7">
-          <h3 className="text-[15px] font-semibold text-ink">
-            Tekne planı{" "}
-            <span className="font-normal text-gray-400">(Opsiyonel)</span>
-          </h3>
-          <p className="text-body-sm text-gray-500">
-            İstersen tekne planını PDF veya görsel olarak yükleyebilirsin — yüklemeden de devam
-            edebilirsin.
-          </p>
+        <section className="space-y-4 border-t border-gray-200 pt-8">
+          <SectionTitle
+            optional
+            hint="İstersen tekne planını PDF veya görsel olarak yükleyebilirsin — yüklemeden de devam edebilirsin."
+          >
+            Tekne planı
+          </SectionTitle>
           {boatPlanUrl ? (
-            <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm">
               <a
                 href={boatPlanUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-brand-600 hover:underline"
+                className="font-semibold text-brand-600 underline-offset-4 hover:underline"
               >
-                Yüklenen plan
+                Yüklenen planı görüntüle
               </a>
               <button
+                type="button"
                 onClick={() => removeBoatPlan()}
                 disabled={busy}
-                className="text-xs text-red-500 hover:underline"
+                className="text-[13px] font-semibold text-danger-600 hover:underline disabled:opacity-50"
               >
                 Sil
               </button>
             </div>
           ) : null}
-          <input
-            ref={planRef}
-            type="file"
+          <UploadDropzone
             accept="image/*,.pdf"
+            compact
             disabled={busy}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
+            title={boatPlanUrl ? "Planı değiştir" : "Tekne planını yükle"}
+            hint="PDF, JPG veya PNG"
+            onFiles={(files) => {
+              const f = files[0];
               if (f) void uploadBoatPlan(f);
             }}
-            className="text-sm"
           />
         </section>
       ) : null}
@@ -1839,7 +1932,7 @@ export function PricingStep({
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button disabled={busy || hasTimeOrderError} onClick={() => run(save)}>
+          <Button size="lg" disabled={busy || hasTimeOrderError} onClick={() => run(save)}>
             <SaveLabel busy={busy} />
           </Button>
         </>
@@ -1853,12 +1946,9 @@ export function PricingStep({
       ) : null}
 
       <section className="space-y-6 [&_input]:text-[16px] [&_label]:text-[15px] [&_label]:text-gray-900 [&_select]:text-[16px] [&_textarea]:text-[16px]">
-        <h2 className="text-[24px] font-bold tracking-[-0.01em] text-ink">Temel Fiyatlandırma</h2>
-        <p className="text-[13px] text-gray-500">{PRICING_REQUIRED_HINT}</p>
-        <div className="space-y-4">
-          <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-gray-700">
-            Kiralama fiyatları
-          </h3>
+        <SectionTitle hint={PRICING_REQUIRED_HINT}>Temel Fiyatlandırma</SectionTitle>
+        <div className="space-y-4 rounded-card border border-gray-200 p-5">
+          <h3 className="text-[15px] font-bold text-ink">Kiralama fiyatları</h3>
           {models.map((m) => (
             <div key={m.key} data-field={m.key}>
               <Field
@@ -1866,7 +1956,7 @@ export function PricingStep({
                 required
                 error={fieldErrors[m.key]}
               >
-                <div className="flex items-center gap-2">
+                <div className="relative max-w-[260px]">
                   <Input
                     type="number"
                     min={0}
@@ -1874,9 +1964,11 @@ export function PricingStep({
                     error={!!fieldErrors[m.key]}
                     onChange={(e) => setPrices((p) => ({ ...p, [m.key]: e.target.value }))}
                     placeholder="0"
-                    className="max-w-[200px]"
+                    className="pr-10 font-semibold"
                   />
-                  <span className="text-sm text-slate-500">₺</span>
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[15px] font-semibold text-gray-400">
+                    ₺
+                  </span>
                 </div>
               </Field>
             </div>
@@ -1894,13 +1986,10 @@ export function PricingStep({
       </section>
 
       {extraServiceFields.length > 0 ? (
-        <section className="mt-10 space-y-6 border-t border-gray-200 pt-8 [&_input]:text-[16px] [&_label]:text-[15px] [&_label]:text-gray-900 [&_select]:text-[16px] [&_textarea]:text-[16px]">
-          <div>
-            <h2 className="text-[24px] font-bold tracking-[-0.01em] text-ink">Ek Hizmetler ve Ücretler</h2>
-            <p className="mt-1 text-[13px] text-gray-500">
-              Her hizmet için fiyata dahil olup olmadığını, dahil değilse tahmini ücreti belirt.
-            </p>
-          </div>
+        <section className="space-y-6 border-t border-gray-200 pt-8 [&_input]:text-[16px] [&_label]:text-[15px] [&_label]:text-gray-900 [&_select]:text-[16px] [&_textarea]:text-[16px]">
+          <SectionTitle hint="Her hizmet için fiyata dahil olup olmadığını, dahil değilse tahmini ücreti belirt.">
+            Ek Hizmetler ve Ücretler
+          </SectionTitle>
           <DynamicOnboardingFields
             fields={extraServiceFields}
             values={bookingValues}
@@ -1917,6 +2006,12 @@ export function PricingStep({
 }
 
 /* --------------------------- Step 7: Documents -------------------- */
+
+const DOCUMENT_STATUS_LABELS: Record<string, string> = {
+  PENDING: "İnceleniyor",
+  APPROVED: "Onaylandı",
+  REJECTED: "Reddedildi",
+};
 
 export function DocumentsStep({ boat, config, reload, goBack }: StepProps) {
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -1962,7 +2057,7 @@ export function DocumentsStep({ boat, config, reload, goBack }: StepProps) {
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             variant="outline"
             onClick={openPreview}
             className="border-2 border-brand-500 font-semibold text-brand-600 hover:bg-brand-50"
@@ -1977,62 +2072,93 @@ export function DocumentsStep({ boat, config, reload, goBack }: StepProps) {
       {boat.listingModels.length === 0 ? (
         <Alert variant="info">Önce 1. adımda kiralama modeli seçmelisin.</Alert>
       ) : null}
-      {documentTypes.map((dt) => {
-        const docs = boat.documents.filter((d) => d.documentTypeKey === dt.key);
-        return (
-          <section key={dt.key} className="space-y-3 border-t border-gray-100 pt-7">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[15px] font-semibold text-ink">
-                {dt.label}
-                {dt.required ? <span className="text-danger-500"> *</span> : null}
-              </h3>
-              {busyKey === dt.key ? <Spinner /> : null}
-            </div>
-            {docs.length > 0 ? (
-              <ul className="mb-2 space-y-1">
-                {docs.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex items-center justify-between rounded bg-slate-50 px-2 py-1 text-sm"
+      <div className="space-y-4">
+        {documentTypes.map((dt) => {
+          const docs = boat.documents.filter((d) => d.documentTypeKey === dt.key);
+          const uploading = busyKey === dt.key;
+          return (
+            <section
+              key={dt.key}
+              className={cn(
+                "rounded-card border p-5 transition-colors",
+                docs.length > 0 ? "border-green-200 bg-green-50/40" : "border-gray-200 bg-white"
+              )}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={cn(
+                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
+                      docs.length > 0 ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-500"
+                    )}
                   >
-                    <span className="text-slate-700">
-                      {d.publicUrl ? (
-                        <a
-                          href={d.publicUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-brand-600 hover:underline"
-                        >
-                          {d.fileName}
-                        </a>
-                      ) : (
-                        d.fileName
-                      )}{" "}
-                      · {d.status}
-                    </span>
-                    <button
-                      onClick={() => remove(d.id)}
-                      className="text-xs text-red-500 hover:underline"
+                    <FontAwesomeIcon icon={docs.length > 0 ? faCheck : faFileLines} className="text-[15px]" aria-hidden />
+                  </span>
+                  <h3 className="min-w-0 text-[15.5px] font-bold text-ink">
+                    {dt.label}
+                    {dt.required ? <span className="text-danger-500"> *</span> : null}
+                  </h3>
+                </div>
+                <label
+                  className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-[13.5px] font-semibold text-ink transition hover:border-ink",
+                    uploading && "pointer-events-none opacity-60"
+                  )}
+                >
+                  {uploading ? <Spinner /> : <FontAwesomeIcon icon={faCloudArrowUp} className="text-[13px]" aria-hidden />}
+                  {uploading ? "Yükleniyor…" : docs.length > 0 ? "Yeni dosya ekle" : "Dosya yükle"}
+                  <input
+                    type="file"
+                    className="sr-only"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) upload(dt.key, f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+              {docs.length > 0 ? (
+                <ul className="mt-4 space-y-2">
+                  {docs.map((d) => (
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm"
                     >
-                      Sil
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <input
-              type="file"
-              className="text-sm"
-              disabled={busyKey === dt.key}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) upload(dt.key, f);
-                e.target.value = "";
-              }}
-            />
-          </section>
-        );
-      })}
+                      <span className="min-w-0 truncate text-gray-700">
+                        {d.publicUrl ? (
+                          <a
+                            href={d.publicUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-semibold text-brand-600 underline-offset-4 hover:underline"
+                          >
+                            {d.fileName}
+                          </a>
+                        ) : (
+                          <span className="font-semibold">{d.fileName}</span>
+                        )}
+                        <span className="ml-2 text-[12.5px] text-gray-400">
+                          {DOCUMENT_STATUS_LABELS[d.status] ?? d.status}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => remove(d.id)}
+                        disabled={busyKey === d.id}
+                        className="shrink-0 text-[13px] font-semibold text-danger-600 hover:underline disabled:opacity-50"
+                      >
+                        Sil
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          );
+        })}
+      </div>
     </StepShell>
   );
 }
@@ -2049,7 +2175,7 @@ export function PreviewStep({ boat, goBack }: StepProps) {
       footer={
         <>
           <BackButton onClick={goBack} show />
-          <Button
+          <Button size="lg"
             variant="outline"
             onClick={() => window.open(`/boats/${boat.id}/preview`, "_blank", "noopener,noreferrer")}
           >

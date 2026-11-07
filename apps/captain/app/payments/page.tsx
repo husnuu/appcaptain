@@ -55,12 +55,12 @@ function StatCard({
   bg: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
+    <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
+      <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
         <FontAwesomeIcon icon={icon} className={color} aria-hidden />
       </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="mt-0.5 text-xs text-gray-400">{label}</p>
+      <p className="text-[26px] font-extrabold leading-none tracking-tight text-ink">{value}</p>
+      <p className="mt-2 text-[13.5px] font-medium text-gray-500">{label}</p>
     </div>
   );
 }
@@ -152,7 +152,7 @@ function PaymentsContent() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
         {loading ? (
           <div className="flex h-48 items-center justify-center">
             <FontAwesomeIcon icon={faSpinner} spin className="text-2xl text-brand-500" aria-hidden />
@@ -249,7 +249,7 @@ export default function PaymentsPage() {
   return (
     <AppShell active="payments">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Ödemeler</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Ödemeler</h1>
         <p className="mt-1 text-sm text-gray-600">Kazançlarınız ve ödeme durumlarınız</p>
       </div>
       <PaymentsContent />

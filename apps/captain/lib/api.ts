@@ -349,6 +349,38 @@ export const api = {
       method: "DELETE",
       body: { url },
     }),
+  addExperienceCustomerInfoField: (
+    id: string,
+    body: {
+      label: string;
+      fieldType: import("@getyourboat/shared").CustomerInfoFieldType;
+      required?: boolean;
+      helpText?: string | null;
+      options?: string[];
+    }
+  ) =>
+    request<{ items: import("@getyourboat/shared").ExperienceCustomerInfoFieldDTO[] }>(
+      `/experiences/${id}/customer-info-fields`,
+      { method: "POST", body }
+    ),
+  removeExperienceCustomerInfoField: (id: string, fieldId: string) =>
+    request<{ items: import("@getyourboat/shared").ExperienceCustomerInfoFieldDTO[] }>(
+      `/experiences/${id}/customer-info-fields/${fieldId}`,
+      { method: "DELETE" }
+    ),
+  addExperienceSeasonalPricingRule: (
+    id: string,
+    body: { label?: string; startDate: string; endDate: string; price: number }
+  ) =>
+    request<{ items: import("@getyourboat/shared").ExperienceSeasonalPricingRuleDTO[] }>(
+      `/experiences/${id}/seasonal-pricing`,
+      { method: "POST", body }
+    ),
+  removeExperienceSeasonalPricingRule: (id: string, ruleId: string) =>
+    request<{ items: import("@getyourboat/shared").ExperienceSeasonalPricingRuleDTO[] }>(
+      `/experiences/${id}/seasonal-pricing/${ruleId}`,
+      { method: "DELETE" }
+    ),
 
   // ---- Booking calendar ----
   getAvailability: (

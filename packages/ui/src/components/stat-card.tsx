@@ -9,13 +9,22 @@ export type StatAccent =
   | "ink"
   | "danger";
 
-const accentBar: Record<StatAccent, string> = {
+const accentDot: Record<StatAccent, string> = {
   brand: "bg-brand-500",
-  info: "bg-info-500",
+  info: "bg-accent-500",
   success: "bg-success-500",
   warning: "bg-warning-500",
   ink: "bg-ink-800",
   danger: "bg-danger-500",
+};
+
+const accentTint: Record<StatAccent, string> = {
+  brand: "bg-brand-50",
+  info: "bg-accent-50",
+  success: "bg-success-50",
+  warning: "bg-warning-50",
+  ink: "bg-gray-100",
+  danger: "bg-danger-50",
 };
 
 export interface StatCardProps {
@@ -27,8 +36,8 @@ export interface StatCardProps {
 }
 
 /**
- * Dashboard metric card. Label on top, large value below, and a thin colored
- * accent line on the bottom edge (color per metric via `accent`).
+ * Panel metrik kartı (Ahoy dili): üstte renkli nokta + etiket, altında büyük değer.
+ * `accent` yalnızca küçük gösterge rengini belirler; kart beyaz ve sade kalır.
  */
 export function StatCard({
   label,
@@ -38,20 +47,19 @@ export function StatCard({
   loading = false,
 }: StatCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-card border border-gray-300 bg-white p-4 shadow-card">
-      <div className="text-caption font-medium uppercase tracking-wide text-gray-500">
-        {label}
+    <div className="rounded-card border border-gray-200 bg-white p-5 shadow-card">
+      <div className="flex items-center gap-2.5">
+        <span aria-hidden className={cn("flex h-7 w-7 items-center justify-center rounded-lg", accentTint[accent])}>
+          <span className={cn("h-2 w-2 rounded-full", accentDot[accent])} />
+        </span>
+        <span className="text-body-sm font-semibold text-gray-500">{label}</span>
       </div>
       {loading ? (
-        <div className="mt-2 h-8 w-20 animate-pulse rounded bg-gray-100" />
+        <div className="mt-4 h-9 w-24 animate-pulse rounded-lg bg-gray-100" />
       ) : (
-        <div className="mt-1 text-heading text-ink">{value}</div>
+        <div className="mt-3 text-[30px] font-extrabold leading-9 tracking-[-0.03em] text-ink">{value}</div>
       )}
       {hint ? <div className="mt-1 text-caption text-gray-400">{hint}</div> : null}
-      <span
-        aria-hidden
-        className={cn("absolute inset-x-0 bottom-0 h-1", accentBar[accent])}
-      />
     </div>
   );
 }

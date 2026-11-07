@@ -129,7 +129,7 @@ export default function ReviewDetailPage() {
       </div>
 
       {/* Review content */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">Yorum İçeriği</h2>
         <p className="text-gray-800 leading-relaxed">{review.comment ?? <span className="text-gray-400 italic">Yorum metni yok</span>}</p>
       </div>
@@ -175,7 +175,7 @@ export default function ReviewDetailPage() {
                   type="button"
                   disabled={busy === "approveResponse"}
                   onClick={() => doAction(() => api.approveOwnerResponse(id), "approveResponse")}
-                  className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-full bg-brand-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
                 >
                   Onayla
                 </button>
@@ -208,14 +208,14 @@ export default function ReviewDetailPage() {
       </div>
 
       {/* Warn user */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold text-gray-700">Kullanıcıya Uyarı Gönder</h2>
         {warnSent ? (
           <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Uyarı e-postası gönderildi.</p>
         ) : (
           <>
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={3}
               placeholder="Uyarı mesajı…"
               value={warnMsg}
@@ -236,11 +236,11 @@ export default function ReviewDetailPage() {
       {/* Delete confirm modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-3 text-lg font-semibold text-gray-900">Yorumu Kalıcı Sil</h2>
             <p className="mb-4 text-sm text-gray-600">Bu yorum veritabanından tamamen silinecek. Bu işlem geri alınamaz.</p>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setConfirmDelete(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setConfirmDelete(false)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button
                 type="button"
                 disabled={busy === "delete"}
@@ -259,7 +259,7 @@ export default function ReviewDetailPage() {
 
 function InfoBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="rounded-card border border-gray-200/70 bg-white p-4 shadow-card">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>

@@ -61,7 +61,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Kaptan Hesapları</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Kaptan Hesapları</h1>
         <span className="text-sm text-gray-500">{total} kullanıcı</span>
       </div>
 
@@ -72,12 +72,12 @@ export default function AdminUsersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { setPage(1); load(1); } }}
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
         />
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); setTimeout(() => load(1), 0); }}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -86,7 +86,7 @@ export default function AdminUsersPage() {
         <button
           type="button"
           onClick={() => { setPage(1); load(1); }}
-          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50"
         >
           Ara
         </button>
@@ -99,9 +99,9 @@ export default function AdminUsersPage() {
       ) : users.length === 0 ? (
         <div className="py-12 text-center text-gray-400">Kullanıcı bulunamadı.</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">Kullanıcı</th>
                 <th className="px-4 py-3 text-left">Şirket / Adres</th>
@@ -183,7 +183,7 @@ export default function AdminUsersPage() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               ←
             </button>
@@ -191,7 +191,7 @@ export default function AdminUsersPage() {
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               →
             </button>

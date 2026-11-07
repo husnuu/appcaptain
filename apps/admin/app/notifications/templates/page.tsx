@@ -15,10 +15,10 @@ const TYPES = [
 const TYPE_MAP = Object.fromEntries(TYPES.map((t) => [t.value, t]));
 
 const STARTER_TEMPLATES = [
-  { name: "Tekne Onay Bildirimi", type: "APPROVAL", subject: "Tekneniz onaylandı 🎉", body: "Merhaba,\n\nTekneniz inceleme sürecini tamamladı ve yayına alındı.\n\nGetYourBoat platformunda başarılı kiralama diliyoruz!\n\nSaygılarımızla,\nGetYourBoat Ekibi" },
-  { name: "Tekne Red Bildirimi", type: "REJECTION", subject: "Tekne ilanınız hakkında bilgi", body: "Merhaba,\n\nTekne ilanınız incelenmiş olup eksik/uygunsuz bilgiler tespit edildiğinden yayına alınamamıştır.\n\nLütfen ilanınızı düzenleyerek yeniden gönderiniz.\n\nSaygılarımızla,\nGetYourBoat Ekibi" },
-  { name: "Rezervasyon Hatırlatması", type: "REMINDER", subject: "Yaklaşan rezervasyon hatırlatması", body: "Merhaba,\n\nYakında başlayacak bir rezervasyonunuz bulunmaktadır. Teknenizin hazır olduğundan emin olunuz.\n\nSaygılarımızla,\nGetYourBoat Ekibi" },
-  { name: "Sezon Kampanyası", type: "CAMPAIGN", subject: "GetYourBoat Yaz Kampanyası 🌊", body: "Merhaba,\n\nBu yaz GetYourBoat'ta özel fırsatlar sizi bekliyor! Teknenizi listeleyerek daha fazla kazanç elde edin.\n\nSaygılarımızla,\nGetYourBoat Ekibi" },
+  { name: "Tekne Onay Bildirimi", type: "APPROVAL", subject: "Tekneniz onaylandı 🎉", body: "Merhaba,\n\nTekneniz inceleme sürecini tamamladı ve yayına alındı.\n\nAhoy Boats platformunda başarılı kiralama diliyoruz!\n\nSaygılarımızla,\nAhoy Boats Ekibi" },
+  { name: "Tekne Red Bildirimi", type: "REJECTION", subject: "Tekne ilanınız hakkında bilgi", body: "Merhaba,\n\nTekne ilanınız incelenmiş olup eksik/uygunsuz bilgiler tespit edildiğinden yayına alınamamıştır.\n\nLütfen ilanınızı düzenleyerek yeniden gönderiniz.\n\nSaygılarımızla,\nAhoy Boats Ekibi" },
+  { name: "Rezervasyon Hatırlatması", type: "REMINDER", subject: "Yaklaşan rezervasyon hatırlatması", body: "Merhaba,\n\nYakında başlayacak bir rezervasyonunuz bulunmaktadır. Teknenizin hazır olduğundan emin olunuz.\n\nSaygılarımızla,\nAhoy Boats Ekibi" },
+  { name: "Sezon Kampanyası", type: "CAMPAIGN", subject: "Ahoy Boats Yaz Kampanyası 🌊", body: "Merhaba,\n\nBu yaz Ahoy Boats'ta özel fırsatlar sizi bekliyor! Teknenizi listeleyerek daha fazla kazanç elde edin.\n\nSaygılarımızla,\nAhoy Boats Ekibi" },
 ];
 
 export default function NotificationTemplatesPage() {
@@ -91,11 +91,11 @@ export default function NotificationTemplatesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Bildirim Şablonları</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Bildirim Şablonları</h1>
         <button
           type="button"
           onClick={() => setEditing({ name: "", type: "CUSTOM", subject: "", body: "" })}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
         >
           + Yeni Şablon
         </button>
@@ -110,7 +110,7 @@ export default function NotificationTemplatesPage() {
             <button
               type="button"
               onClick={() => setEditing({ name: "", type: "CUSTOM", subject: "", body: "" })}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
             >
               İlk Şablonu Ekle
             </button>
@@ -125,7 +125,7 @@ export default function NotificationTemplatesPage() {
                     key={tpl.name}
                     type="button"
                     onClick={() => addStarter(tpl)}
-                    className="rounded-xl border border-gray-200 bg-white p-4 text-left hover:bg-gray-50 hover:border-brand-300"
+                    className="rounded-full border border-gray-200 bg-white p-4 text-left hover:bg-gray-50 hover:border-brand-300"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${meta?.color ?? "bg-gray-100 text-gray-600"}`}>{meta?.label}</span>
@@ -146,7 +146,7 @@ export default function NotificationTemplatesPage() {
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${group.color}`}>{group.label}</span>
                 <span className="text-xs text-gray-400">{group.items.length} şablon</span>
               </h2>
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-50">
+              <div className="rounded-card border border-gray-200/70 bg-white divide-y divide-gray-50 shadow-card">
                 {group.items.map((tpl) => (
                   <div key={tpl.id} className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-gray-50">
                     <div className="flex-1 min-w-0">
@@ -172,7 +172,7 @@ export default function NotificationTemplatesPage() {
                 {STARTER_TEMPLATES.filter((s) => !templates.find((t) => t.name === s.name)).map((tpl) => {
                   const meta = TYPE_MAP[tpl.type];
                   return (
-                    <button key={tpl.name} type="button" onClick={() => addStarter(tpl)} className="rounded-lg border border-dashed border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50">
+                    <button key={tpl.name} type="button" onClick={() => addStarter(tpl)} className="rounded-full border border-dashed border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50 bg-white">
                       <span className={`inline-block rounded-full px-1.5 py-0.5 mr-1 text-[10px] font-medium ${meta?.color ?? ""}`}>{meta?.label}</span>
                       {tpl.name}
                     </button>
@@ -187,32 +187,32 @@ export default function NotificationTemplatesPage() {
       {/* Editor modal */}
       {editing !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-xl rounded-xl bg-white p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-xl rounded-[24px] bg-white p-6 shadow-modal space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">{editing.id ? "Şablonu Düzenle" : "Yeni Şablon"}</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Şablon Adı *</label>
-                <input value={editing.name ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, name: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <input value={editing.name ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, name: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Tür</label>
-                <select value={editing.type ?? "CUSTOM"} onChange={(e) => setEditing((p) => ({ ...p!, type: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <select value={editing.type ?? "CUSTOM"} onChange={(e) => setEditing((p) => ({ ...p!, type: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white">
                   {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">E-posta Konusu *</label>
-              <input value={editing.subject ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, subject: e.target.value }))} placeholder="Konu satırı" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <input value={editing.subject ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, subject: e.target.value }))} placeholder="Konu satırı" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Mesaj İçeriği *</label>
-              <textarea rows={8} value={editing.body ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, body: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <textarea rows={8} value={editing.body ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, body: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
               <p className="mt-1 text-xs text-gray-400">{(editing.body ?? "").length} karakter</p>
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
-              <button type="button" disabled={formBusy} onClick={handleSave} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">Kaydet</button>
+              <button type="button" onClick={() => setEditing(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
+              <button type="button" disabled={formBusy} onClick={handleSave} className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50">Kaydet</button>
             </div>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function NotificationTemplatesPage() {
       {/* Preview modal */}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-lg rounded-[24px] bg-white p-6 shadow-modal space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">{preview.name}</h2>
@@ -233,8 +233,8 @@ export default function NotificationTemplatesPage() {
               {preview.body}
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setPreview(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Kapat</button>
-              <button type="button" onClick={() => { setEditing({ ...preview }); setPreview(null); }} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Düzenle</button>
+              <button type="button" onClick={() => setPreview(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Kapat</button>
+              <button type="button" onClick={() => { setEditing({ ...preview }); setPreview(null); }} className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600">Düzenle</button>
             </div>
           </div>
         </div>

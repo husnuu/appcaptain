@@ -256,7 +256,7 @@ export default function BoatCalendarPage({
                     style={
                       active
                         ? { background: c.light, color: c.text, borderColor: c.border }
-                        : { background: "white", color: "#6B7280", borderColor: "#E5E7EB" }
+                        : { background: "white", color: "#77726C", borderColor: "#E8E3DD" }
                     }
                   >
                     {calendarModelLabel(key)}
@@ -278,7 +278,7 @@ export default function BoatCalendarPage({
 
           <button
             onClick={() => setBlockModal({ open: true })}
-            className="flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            className="flex items-center gap-2 rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
           >
             <FontAwesomeIcon icon={faPlus} className="text-xs" aria-hidden /> Blokaj Ekle
           </button>
@@ -436,7 +436,7 @@ function MonthView({ availability, model, currentDate, onCellClick }: ViewProps)
   const today = ymd(new Date());
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
       <div className="grid grid-cols-7 border-b border-gray-200">
         {WEEKDAYS.map((d) => (
           <div key={d} className="py-3 text-center text-xs font-bold uppercase text-gray-400">
@@ -453,15 +453,15 @@ function MonthView({ availability, model, currentDate, onCellClick }: ViewProps)
             const isToday = dateStr === today;
             const bg =
               info?.status === SlotStatus.BLOCKED
-                ? "#F3F4F6"
+                ? "#F3F0EC"
                 : info?.status === SlotStatus.BOOKED
-                  ? "#FEE2E2"
+                  ? "#FADCDC"
                   : "white";
             const dot =
               info?.status === SlotStatus.BLOCKED
-                ? "#9CA3AF"
+                ? "#A9A39C"
                 : info?.status === SlotStatus.BOOKED
-                  ? "#EF4444"
+                  ? "#D14343"
                   : colors.bg;
             return (
               <div
@@ -521,7 +521,7 @@ function WeekView({ availability, model, currentDate, onCellClick }: ViewProps) 
     );
     const hours = Array.from({ length: 9 }, (_, i) => i + 9);
     return (
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="grid grid-cols-8 border-b border-gray-200">
           <div className="border-r border-gray-100 py-3" />
           {days.map((d, i) => (
@@ -547,7 +547,7 @@ function WeekView({ availability, model, currentDate, onCellClick }: ViewProps) 
                 slot?.status === SlotStatus.BLOCKED
                   ? colors.light
                   : slot?.status === SlotStatus.BOOKED
-                    ? "#FEE2E2"
+                    ? "#FADCDC"
                     : "transparent";
               return (
                 <div
@@ -580,7 +580,7 @@ function WeekView({ availability, model, currentDate, onCellClick }: ViewProps) 
 
   const dayMap = new Map((availability.days ?? []).map((d) => [d.date, d]));
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
       <div className="grid grid-cols-7">
         {days.map((d, i) => {
           const dateStr = ymd(d);
@@ -588,9 +588,9 @@ function WeekView({ availability, model, currentDate, onCellClick }: ViewProps) 
           const isToday = dateStr === today;
           const bg =
             info?.status === SlotStatus.BLOCKED
-              ? "#F3F4F6"
+              ? "#F3F0EC"
               : info?.status === SlotStatus.BOOKED
-                ? "#FEE2E2"
+                ? "#FADCDC"
                 : "white";
           return (
             <div
@@ -635,7 +635,7 @@ function DayView({ availability, model, currentDate, onCellClick }: ViewProps) {
   if (isHourlyModel(model)) {
     const slots = (availability.slots ?? []).filter((s) => s.date === dateStr);
     return (
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="border-b border-gray-100 p-4">
           <h3 className="font-bold text-gray-900">
             {currentDate.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
@@ -647,7 +647,7 @@ function DayView({ availability, model, currentDate, onCellClick }: ViewProps) {
               slot.status === SlotStatus.BLOCKED
                 ? colors.light
                 : slot.status === SlotStatus.BOOKED
-                  ? "#FEE2E2"
+                  ? "#FADCDC"
                   : "white";
             return (
               <div
@@ -688,7 +688,7 @@ function DayView({ availability, model, currentDate, onCellClick }: ViewProps) {
     info?.status === SlotStatus.BLOCKED
       ? colors.light
       : info?.status === SlotStatus.BOOKED
-        ? "#FEE2E2"
+        ? "#FADCDC"
         : "white";
   return (
     <div
@@ -822,7 +822,7 @@ function CellContextMenu({
             <button
               onClick={handleSetPrice}
               disabled={saving}
-              className="rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+              className="rounded-full bg-brand-500 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-600 disabled:opacity-50"
             >
               {saving ? "..." : "Ayarla"}
             </button>
@@ -1013,7 +1013,7 @@ function CreateBlockModal({
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60"
           >
             {loading && <FontAwesomeIcon icon={faSpinner} className="animate-spin text-xs" aria-hidden />}
             {loading ? "Kaydediliyor..." : "Blokaj Ekle"}

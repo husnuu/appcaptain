@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, Input } from "@getyourboat/ui";
+import { Alert, AuthLayout, Button, Field, Input } from "@getyourboat/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, ApiError } from "../../lib/api";
@@ -27,31 +27,41 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center p-8">
-      <h1 className="text-2xl font-bold text-brand-700">Admin Girişi</h1>
-      <p className="mt-1 text-slate-600">Marka/model yönetimi için oturum açın.</p>
-      <form onSubmit={onSubmit} className="mt-8 space-y-4">
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+    <AuthLayout
+      tag="Admin"
+      title="Yönetim paneline giriş"
+      subtitle="İlan onayları, rezervasyonlar, kullanıcılar ve finans tek yerde."
+      imageTitle="Ahoy Boats operasyon merkezi"
+      imageText="Platformdaki ilanları denetle, kaptanları onayla ve rezervasyon akışını yönet."
+      highlights={["İlan moderasyonu", "Finans raporları", "Denetim kaydı"]}
+      footer={<>© {new Date().getFullYear()} Ahoy Boats · Yalnızca yetkili personel</>}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        {error ? <Alert variant="danger">{error}</Alert> : null}
         <Field label="E-posta">
           <Input
             type="email"
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="ad@ahoyboats.com"
             required
           />
         </Field>
         <Field label="Şifre">
           <Input
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
             required
           />
         </Field>
-        <Button type="submit" disabled={busy}>
-          {busy ? "Giriş yapılıyor…" : "Giriş yap"}
+        <Button type="submit" size="lg" className="w-full" loading={busy}>
+          Giriş yap
         </Button>
       </form>
-    </main>
+    </AuthLayout>
   );
 }

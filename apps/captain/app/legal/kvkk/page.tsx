@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalTitle, Section } from "../components";
 
-export const metadata: Metadata = { title: "KVKK Aydınlatma Metni — SeaHub" };
+export const metadata: Metadata = { title: "KVKK Aydınlatma Metni — Ahoy Kaptan" };
 
 const ROWS: Array<[string, string, string]> = [
   ["Kimlik (ad, soyad)", "Hesap oluşturma, kimlik doğrulama", "Sözleşme ifası"],

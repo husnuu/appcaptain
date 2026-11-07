@@ -99,7 +99,7 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-gray-900">Yorumlar</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Yorumlar</h1>
         <div className="flex items-center gap-3">
           {reportedCount > 0 && (
             <Link href="/reviews/reported" className="rounded-full bg-red-100 px-3 py-0.5 text-xs font-medium text-red-700 hover:bg-red-200">
@@ -115,13 +115,13 @@ export default function ReviewsPage() {
         <input
           type="text"
           placeholder="Yorum, kullanıcı veya tekne ara…"
-          className="flex-1 min-w-[200px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 min-w-[200px] rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           onKeyDown={(e) => { if (e.key === "Enter") load(); }}
         />
         <select
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           value={minRating}
           onChange={(e) => { setMinRating(e.target.value); setPage(1); }}
         >
@@ -129,7 +129,7 @@ export default function ReviewsPage() {
           {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} ★</option>)}
         </select>
         <select
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           value={maxRating}
           onChange={(e) => { setMaxRating(e.target.value); setPage(1); }}
         >
@@ -137,7 +137,7 @@ export default function ReviewsPage() {
           {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} ★</option>)}
         </select>
         <select
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           value={hidden}
           onChange={(e) => { setHidden(e.target.value); setPage(1); }}
         >
@@ -149,9 +149,9 @@ export default function ReviewsPage() {
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
-          <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">Kullanıcı</th>
               <th className="px-4 py-3 text-left">Tekne / Sahip</th>
@@ -249,8 +249,8 @@ export default function ReviewsPage() {
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">←</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">→</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">←</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">→</button>
           </div>
         </div>
       )}
@@ -258,14 +258,14 @@ export default function ReviewsPage() {
       {/* Warn modal */}
       {warnTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">Kullanıcıyı Uyar</h2>
             <p className="mb-3 text-sm text-gray-500">{warnTarget.customer.name} — {warnTarget.customer.email}</p>
             {warnSent ? (
               <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Uyarı e-postası gönderildi.</p>
             ) : (
               <textarea
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 rows={4}
                 placeholder="Uyarı mesajı…"
                 value={warnMsg}
@@ -273,7 +273,7 @@ export default function ReviewsPage() {
               />
             )}
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setWarnTarget(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">
+              <button type="button" onClick={() => setWarnTarget(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">
                 {warnSent ? "Kapat" : "Vazgeç"}
               </button>
               {!warnSent && (
@@ -289,11 +289,11 @@ export default function ReviewsPage() {
       {/* Delete confirm */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-3 text-lg font-semibold text-gray-900">Yorumu Sil</h2>
             <p className="mb-4 text-sm text-gray-600">Bu yorum kalıcı olarak silinecek. Geri alınamaz.</p>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button type="button" disabled={deleteBusy} onClick={handleDelete} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">Sil</button>
             </div>
           </div>

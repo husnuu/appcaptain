@@ -101,7 +101,7 @@ export default function ReservationsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Rezervasyonlar</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Rezervasyonlar</h1>
         <span className="text-sm text-gray-500">{total} rezervasyon</span>
       </div>
 
@@ -111,13 +111,13 @@ export default function ReservationsPage() {
           <input
             type="text"
             placeholder="Misafir adı, e-posta veya tekne ara..."
-            className="flex-1 min-w-[200px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="flex-1 min-w-[200px] rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             onKeyDown={(e) => { if (e.key === "Enter") load(); }}
           />
           <select
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           >
@@ -132,21 +132,21 @@ export default function ReservationsPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             title="Başlangıç tarihi (başından)"
           />
           <input
             type="date"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             title="Başlangıç tarihi (sonuna)"
           />
           {(dateFrom || dateTo) && (
             <button
               type="button"
               onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
+              className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
             >
               Tarihi Temizle
             </button>
@@ -156,9 +156,9 @@ export default function ReservationsPage() {
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
-          <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">Misafir</th>
               <th className="px-4 py-3 text-left">Tekne / Sahip</th>
@@ -243,8 +243,8 @@ export default function ReservationsPage() {
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">←</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">→</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">←</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">→</button>
           </div>
         </div>
       )}
@@ -252,10 +252,10 @@ export default function ReservationsPage() {
       {/* Cancel modal */}
       {cancelId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-3 text-lg font-semibold text-gray-900">Rezervasyonu İptal Et</h2>
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={3}
               placeholder="İptal notu (opsiyonel)"
               value={cancelNote}
@@ -265,7 +265,7 @@ export default function ReservationsPage() {
               <button
                 type="button"
                 onClick={() => { setCancelId(null); setCancelNote(""); }}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white"
               >
                 Vazgeç
               </button>

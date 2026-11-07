@@ -30,13 +30,13 @@ export default function AuditLogPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-gray-900">Denetim Kaydı</h1>
+      <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Denetim Kaydı</h1>
 
       <div className="flex gap-2">
         <input
           type="text"
           placeholder="İşlem adı filtrele (ör: BOAT_STATUS_CHANGED)"
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-xl border border-gray-200 px-3 py-2 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           value={actionFilter}
           onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
         />
@@ -45,9 +45,9 @@ export default function AuditLogPage() {
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
-          <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+          <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">İşlem</th>
               <th className="px-4 py-3 text-left">Admin</th>

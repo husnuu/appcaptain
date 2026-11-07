@@ -181,7 +181,7 @@ export default function AdminBoatsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">İlan Yönetimi</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">İlan Yönetimi</h1>
         <span className="text-sm text-gray-500">{total} ilan</span>
       </div>
 
@@ -195,13 +195,13 @@ export default function AdminBoatsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applySearch(); }}
-            className="flex-1 min-w-48 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 min-w-48 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           {/* Status */}
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -211,7 +211,7 @@ export default function AdminBoatsPage() {
           <select
             value={boatTypeKey}
             onChange={(e) => setBoatTypeKey(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           >
             <option value="">Tüm Tekne Tipleri</option>
             {boatTypes.map((t) => (
@@ -226,7 +226,7 @@ export default function AdminBoatsPage() {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applySearch(); }}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 min-w-40 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           <datalist id="city-suggestions">
             {citySuggestions.map((c) => <option key={c} value={c} />)}
@@ -235,7 +235,7 @@ export default function AdminBoatsPage() {
           <button
             type="button"
             onClick={applySearch}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
           >
             Ara
           </button>
@@ -248,14 +248,14 @@ export default function AdminBoatsPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           <span className="text-xs text-gray-400">–</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           {(dateFrom || dateTo) && (
             <button
@@ -273,7 +273,7 @@ export default function AdminBoatsPage() {
             placeholder="Min"
             value={priceMin}
             onChange={(e) => setPriceMin(e.target.value)}
-            className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-24 rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           <span className="text-xs text-gray-400">–</span>
           <input
@@ -282,7 +282,7 @@ export default function AdminBoatsPage() {
             placeholder="Max"
             value={priceMax}
             onChange={(e) => setPriceMax(e.target.value)}
-            className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-24 rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           {(priceMin || priceMax) && (
             <button
@@ -296,7 +296,7 @@ export default function AdminBoatsPage() {
           <button
             type="button"
             onClick={applySearch}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+            className="rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 bg-white"
           >
             Filtrele
           </button>
@@ -360,9 +360,9 @@ export default function AdminBoatsPage() {
       ) : boats.length === 0 ? (
         <div className="py-12 text-center text-gray-400">İlan bulunamadı.</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left w-10">
                   <input
@@ -425,7 +425,7 @@ export default function AdminBoatsPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/boats/${boat.id}`}
-                        className="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                        className="rounded-full border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50 bg-white"
                       >
                         Detay
                       </Link>
@@ -467,7 +467,7 @@ export default function AdminBoatsPage() {
                           type="button"
                           disabled={actionBusy === boat.id}
                           onClick={() => changeStatus(boat.id, "ACTIVE")}
-                          className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                          className="rounded-full bg-brand-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
                         >
                           Aktifleştir
                         </button>
@@ -491,7 +491,7 @@ export default function AdminBoatsPage() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               ←
             </button>
@@ -499,7 +499,7 @@ export default function AdminBoatsPage() {
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               →
             </button>

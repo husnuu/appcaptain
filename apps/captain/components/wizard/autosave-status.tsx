@@ -1,13 +1,19 @@
 "use client";
 
-import { cn, FontAwesomeIcon, faCircleCheck, faTriangleExclamation } from "@getyourboat/ui";
+import {
+  cn,
+  FontAwesomeIcon,
+  faCircleCheck,
+  faSpinner,
+  faTriangleExclamation,
+} from "@getyourboat/ui";
 import { useEffect, useState } from "react";
 import type { AutosaveStatus } from "../../lib/hooks/useAutosaveDraft";
 
 /**
- * Otomatik kayıt geri bildirimi. Kaydederken input altında dönen spinner
- * göstermek yerine, kayıt tamamlanınca sağ üst köşede 2 saniyelik "Kaydedildi"
- * toast'u gösterir. Hata durumunda satır içi uyarı gösterilir.
+ * Otomatik kayıt geri bildirimi. Sihirbazın üst çubuğunda satır içi gösterilir:
+ * kaydederken sessiz bir "Kaydediliyor…", tamamlanınca 2 saniyelik "Kaydedildi".
+ * Hata durumunda kalıcı uyarı gösterilir.
  */
 export function AutosaveStatusIndicator({
   status,
@@ -29,9 +35,18 @@ export function AutosaveStatusIndicator({
 
   if (status === "error") {
     return (
-      <p className={cn("flex items-center gap-2 text-caption text-danger-600", className)}>
+      <p className={cn("flex items-center gap-2 text-[13px] font-medium text-danger-600", className)}>
         <FontAwesomeIcon icon={faTriangleExclamation} className="text-[12px]" aria-hidden />
         Kaydedilemedi, tekrar deneniyor…
+      </p>
+    );
+  }
+
+  if (status === "saving") {
+    return (
+      <p className={cn("flex items-center gap-1.5 text-[13px] font-medium text-gray-400", className)}>
+        <FontAwesomeIcon icon={faSpinner} spin className="text-[12px]" aria-hidden />
+        Kaydediliyor…
       </p>
     );
   }
@@ -39,13 +54,13 @@ export function AutosaveStatusIndicator({
   if (!showToast) return null;
 
   return (
-    <div
-      className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-full border border-success-200 bg-white px-4 py-2.5 text-body-sm font-medium text-success-700 shadow-md"
+    <p
+      className={cn("flex items-center gap-1.5 text-[13px] font-semibold text-success-600", className)}
       role="status"
       aria-live="polite"
     >
-      <FontAwesomeIcon icon={faCircleCheck} className="text-[14px]" aria-hidden />
+      <FontAwesomeIcon icon={faCircleCheck} className="text-[13px]" aria-hidden />
       Kaydedildi
-    </div>
+    </p>
   );
 }

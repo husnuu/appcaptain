@@ -103,7 +103,7 @@ export default function FinancePage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Ödemeler</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Ödemeler</h1>
         <span className="text-sm text-gray-500">{total} kayıt</span>
       </div>
 
@@ -113,7 +113,7 @@ export default function FinancePage() {
           <SummaryCard label="Toplam Gelir" value={fmtAmount(summary.totalRevenue)} />
           <SummaryCard label="Platform Komisyonu" value={fmtAmount(summary.totalCommission)} color="text-emerald-700" />
           <SummaryCard label="Tekne Sahiplerine Net" value={fmtAmount(summary.totalNetAmount)} />
-          <SummaryCard label="Global Komisyon Oranı" value={`%${summary.globalCommissionRate}`} />
+          <SummaryCard label="Global Komisyon Oranı" value={summary.globalCommissionRate != null ? `%${summary.globalCommissionRate}` : "Tanımsız"} />
         </div>
       )}
 
@@ -123,13 +123,13 @@ export default function FinancePage() {
           <input
             type="text"
             placeholder="Misafir adı, e-posta veya tekne ara…"
-            className="flex-1 min-w-[200px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="flex-1 min-w-[200px] rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             onKeyDown={(e) => { if (e.key === "Enter") load(); }}
           />
           <select
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           >
@@ -140,19 +140,19 @@ export default function FinancePage() {
           </select>
         </div>
         <div className="flex flex-wrap gap-2">
-          <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" title="Başlangıç" />
-          <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" title="Bitiş" />
+          <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" title="Başlangıç" />
+          <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" title="Bitiş" />
           {(dateFrom || dateTo) && (
-            <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">Tarihi Temizle</button>
+            <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">Tarihi Temizle</button>
           )}
         </div>
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
-          <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">Misafir</th>
               <th className="px-4 py-3 text-left">Tekne / Sahip</th>
@@ -252,8 +252,8 @@ export default function FinancePage() {
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">←</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100">→</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">←</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white">→</button>
           </div>
         </div>
       )}
@@ -261,7 +261,7 @@ export default function FinancePage() {
       {/* Payout modal */}
       {payoutTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">
               {payoutAction === "approve" ? "Transfer Onayla" : "Ödemeyi Geciktir"}
             </h2>
@@ -271,14 +271,14 @@ export default function FinancePage() {
               <p className="mb-3 rounded-lg bg-yellow-50 px-3 py-2 text-xs text-yellow-800">Ödeme PAID durumunda kalır. Sahip daha sonra bilgilendirilmek için not eklenebilir.</p>
             )}
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={3}
               placeholder="Not (opsiyonel)"
               value={payoutNote}
               onChange={(e) => setPayoutNote(e.target.value)}
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setPayoutTarget(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setPayoutTarget(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button
                 type="button"
                 disabled={payoutBusy}
@@ -295,7 +295,7 @@ export default function FinancePage() {
       {/* Refund modal */}
       {refundTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">İade Başlat</h2>
             <p className="mb-3 text-sm text-gray-500">{refundTarget.boatName}</p>
             <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -305,14 +305,14 @@ export default function FinancePage() {
               İade Tutarı: {refundTarget.currency} {refundTarget.amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
             </p>
             <textarea
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               rows={3}
               placeholder="İade notu (opsiyonel)"
               value={refundNote}
               onChange={(e) => setRefundNote(e.target.value)}
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setRefundTarget(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setRefundTarget(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button
                 type="button"
                 disabled={refundBusy}
@@ -331,9 +331,9 @@ export default function FinancePage() {
 
 function SummaryCard({ label, value, color = "text-gray-900" }: { label: string; value: string; color?: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${color}`}>{value}</p>
+    <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className={`mt-2 text-[24px] font-extrabold leading-tight tracking-tight ${color}`}>{value}</p>
     </div>
   );
 }

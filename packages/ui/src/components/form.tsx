@@ -10,7 +10,7 @@ import { FontAwesomeIcon, faChevronDown, type IconDefinition } from "../icons";
 
 const base =
   "w-full rounded-xl border bg-white text-body-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:ring-4 disabled:opacity-60 disabled:bg-gray-100";
-const ok = "border-gray-200 focus:border-brand-500 focus:ring-brand-500/15";
+const ok = "border-gray-300 hover:border-gray-400 focus:border-brand-500 focus:ring-brand-500/15";
 const bad = "border-danger-500 focus:border-danger-500 focus:ring-danger-500/15";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -99,7 +99,7 @@ export function Label({
 }: React.LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
   return (
     <label
-      className={cn("mb-1.5 block text-[13px] font-medium text-gray-600", className)}
+      className={cn("mb-2 block text-[14px] font-semibold text-ink", className)}
       {...props}
     >
       {children}

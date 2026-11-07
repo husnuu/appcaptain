@@ -105,7 +105,7 @@ export default function GuestDetailPage() {
             ← Geri
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+            <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">{user.name}</h1>
             <StatusBadge user={user} />
           </div>
           <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
@@ -124,7 +124,7 @@ export default function GuestDetailPage() {
           { label: "Yorum", value: user.stats.reviewCount },
           { label: "Toplam Harcama", value: `€${user.stats.totalSpending.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div key={stat.label} className="rounded-card border border-gray-200/70 bg-white p-4 shadow-card">
             <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{stat.label}</div>
             <div className="mt-1 text-2xl font-bold text-gray-900">{stat.value}</div>
           </div>
@@ -132,7 +132,7 @@ export default function GuestDetailPage() {
       </div>
 
       {/* Status Actions */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-4 text-sm font-semibold text-gray-700 uppercase tracking-wide">Hesap İşlemleri</h2>
         <div className="flex flex-wrap gap-3">
           {user.bannedAt ? (
@@ -140,7 +140,7 @@ export default function GuestDetailPage() {
               type="button"
               disabled={actionBusy}
               onClick={() => handleSuspend(false)}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
             >
               Engeli Kaldır
             </button>
@@ -150,7 +150,7 @@ export default function GuestDetailPage() {
                 type="button"
                 disabled={actionBusy}
                 onClick={() => handleSuspend(false)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
               >
                 Askıyı Kaldır
               </button>
@@ -187,7 +187,7 @@ export default function GuestDetailPage() {
             type="button"
             disabled={actionBusy}
             onClick={handleResetPassword}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
           >
             Şifre Sıfırlama Gönder
           </button>
@@ -202,7 +202,7 @@ export default function GuestDetailPage() {
       </div>
 
       {/* Reservation History */}
-      <div className="rounded-xl border border-gray-200 bg-white">
+      <div className="rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
             Rezervasyon Geçmişi
@@ -213,7 +213,7 @@ export default function GuestDetailPage() {
           <div className="py-8 text-center text-sm text-gray-400">Henüz rezervasyon yok.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">Tekne</th>
                 <th className="px-4 py-3 text-left">Tarih</th>
@@ -251,7 +251,7 @@ export default function GuestDetailPage() {
       </div>
 
       {/* Reviews */}
-      <div className="rounded-xl border border-gray-200 bg-white">
+      <div className="rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
             Değerlendirmeler

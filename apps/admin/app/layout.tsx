@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { AdminAppLayout } from "../components/AdminAppLayout";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["700"],
-  variable: "--font-serif",
+// Ahoy Boats — web sitesiyle aynı yazı tipi (logo için 800 ağırlığı dahil).
+const manrope = Manrope({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "GetYourBoat — Admin",
-  description: "Moderation and management console",
+  title: "Ahoy Admin",
+  description: "Ahoy Boats moderasyon ve yönetim paneli",
 };
 
 export default function RootLayout({
@@ -22,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={playfair.variable}>
+    <html lang="tr" className={manrope.variable}>
       <body>
         <AdminAppLayout>{children}</AdminAppLayout>
       </body>

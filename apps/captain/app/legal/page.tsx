@@ -11,7 +11,7 @@ import {
 } from "@getyourboat/ui";
 import { LegalTitle } from "./components";
 
-export const metadata: Metadata = { title: "Yasal — SeaHub" };
+export const metadata: Metadata = { title: "Yasal — Ahoy Kaptan" };
 
 const CARDS: Array<{
   href: string;
@@ -54,7 +54,7 @@ export default function LegalHubPage() {
           <Link
             key={card.href}
             href={card.href}
-            className="group flex items-start gap-4 rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm"
+            className="group flex items-start gap-4 rounded-card border border-gray-200/70 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm shadow-card"
           >
             <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
               <FontAwesomeIcon icon={card.icon} aria-hidden />

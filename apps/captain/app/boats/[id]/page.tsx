@@ -3,7 +3,7 @@
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Protected, TopBar } from "../../../components/protected";
+import { Protected } from "../../../components/protected";
 import { Wizard } from "../../../components/wizard/Wizard";
 import { Spinner } from "../../../components/ui";
 import { useProfile } from "../../../lib/hooks";
@@ -35,10 +35,8 @@ export default function BoatWizardPage({
 
   return (
     <Protected>
-      <div className="min-h-screen bg-white">
-        <TopBar />
-        <Wizard key={id} boatId={id} />
-      </div>
+      {/* Sihirbaz kendi odak düzenini (üst çubuk + alt gezinme) çizer. */}
+      <Wizard key={id} boatId={id} />
     </Protected>
   );
 }

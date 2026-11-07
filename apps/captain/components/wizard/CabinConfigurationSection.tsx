@@ -11,6 +11,7 @@ import {
 import { Button, Modal, cn } from "@getyourboat/ui";
 import { useState } from "react";
 import { Field, Select } from "../ui";
+import { SectionTitle, TileCheck, tileClass } from "./focus";
 
 const CABIN_TYPES = Object.values(CabinType);
 
@@ -52,30 +53,27 @@ export function CabinConfigurationSection({
   }
 
   return (
-    <section className="space-y-4 border-t border-gray-100 pt-7">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-[15px] font-semibold text-ink">Kabin bilgisi</h3>
-          <p className="mt-0.5 text-caption text-gray-500">
-            Kabin tipi, WC detayı ve adet ekleyin.
-          </p>
-        </div>
+    <section className="space-y-4 border-t border-gray-200 pt-8">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SectionTitle hint="Kabin tipi, WC detayı ve adet ekleyin.">Kabin bilgisi</SectionTitle>
         <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>
           Kabin & WC ekle
         </Button>
       </div>
 
       {configurations.length === 0 ? (
-        <p className="text-body-sm text-gray-500">Henüz kabin konfigürasyonu eklenmedi.</p>
+        <p className="rounded-2xl border border-dashed border-gray-300 px-4 py-5 text-center text-[14px] text-gray-500">
+          Henüz kabin konfigürasyonu eklenmedi.
+        </p>
       ) : (
         <ul className="space-y-2">
           {configurations.map((c, index) => (
             <li
               key={`${c.cabinType}-${index}`}
-              className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3.5"
             >
               <div>
-                <p className="text-body-sm font-medium text-ink">
+                <p className="text-[15px] font-semibold text-ink">
                   {CABIN_TYPE_LABELS[c.cabinType]} × {c.quantity}
                 </p>
                 {c.wcType ? (
@@ -84,7 +82,7 @@ export function CabinConfigurationSection({
               </div>
               <button
                 type="button"
-                className="text-caption text-danger-600 hover:underline"
+                className="text-[13px] font-semibold text-danger-600 hover:underline"
                 onClick={() => removeAt(index)}
               >
                 Kaldır
@@ -104,14 +102,12 @@ export function CabinConfigurationSection({
                   key={type}
                   type="button"
                   onClick={() => setDraftType(type)}
-                  className={cn(
-                    "rounded-xl border px-3 py-3 text-left text-caption font-medium transition",
-                    draftType === type
-                      ? "border-brand-500 bg-brand-50 text-brand-700"
-                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                  )}
+                  role="radio"
+                  aria-checked={draftType === type}
+                  className={cn(tileClass(draftType === type), "py-3 pl-3.5 pr-8 text-[13.5px] font-semibold")}
                 >
                   {CABIN_TYPE_LABELS[type]}
+                  <TileCheck on={draftType === type} />
                 </button>
               ))}
             </div>
@@ -135,27 +131,27 @@ export function CabinConfigurationSection({
           </Field>
 
           <Field label="Bu konfigürasyondan kaç adet?">
-            <div className="flex items-center gap-3">
-              <Button
+            <div className="flex items-center gap-2">
+              <button
                 type="button"
-                size="sm"
-                variant="outline"
+                aria-label="Azalt"
                 disabled={draftQty <= 1}
                 onClick={() => setDraftQty((q) => Math.max(1, q - 1))}
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-300 text-[18px] text-ink transition hover:border-ink disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-300"
               >
                 −
-              </Button>
-              <span className="min-w-[2rem] text-center text-body-sm font-semibold">
+              </button>
+              <span className="min-w-[2.5rem] text-center text-[17px] font-semibold tabular-nums">
                 {draftQty}
               </span>
-              <Button
+              <button
                 type="button"
-                size="sm"
-                variant="outline"
+                aria-label="Arttır"
                 onClick={() => setDraftQty((q) => q + 1)}
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-300 text-[18px] text-ink transition hover:border-ink"
               >
                 +
-              </Button>
+              </button>
             </div>
           </Field>
 

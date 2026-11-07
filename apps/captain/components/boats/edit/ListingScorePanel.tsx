@@ -67,7 +67,7 @@ export function ListingScorePanel({
         </div>
 
         {/* Aktif adım açıklaması — üst stepper ile tekrar olmaması için adım listesi kaldırıldı */}
-        <div className="border-t border-gray-100 bg-[#fafafa] px-5 py-4">
+        <div className="border-t border-gray-100 bg-[#FAF8F5] px-5 py-4">
           <p className="text-[13px] font-semibold text-ink">{tip.title}</p>
           <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500">{tip.description}</p>
         </div>

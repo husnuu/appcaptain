@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalTitle, Section } from "../components";
 
-export const metadata: Metadata = { title: "Gizlilik Politikası — SeaHub" };
+export const metadata: Metadata = { title: "Gizlilik Politikası — Ahoy Kaptan" };
 
 export default function PrivacyPage() {
   return (

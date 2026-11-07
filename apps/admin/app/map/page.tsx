@@ -63,7 +63,7 @@ export default function MapPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Harita Görünümü</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Harita Görünümü</h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {data.total} aktif ilan
             {data.withCoords > 0 && (
@@ -88,7 +88,7 @@ export default function MapPage() {
           { label: "Ülke", value: data.byCountry.length },
           { label: "Şehir", value: data.byCity.length },
         ].map((card) => (
-          <div key={card.label} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+          <div key={card.label} className="rounded-card border border-gray-200/70 bg-white p-4 text-center shadow-card">
             <p className="text-2xl font-bold text-gray-900">{card.value}</p>
             <p className="text-xs text-gray-400 mt-0.5">{card.label}</p>
           </div>
@@ -118,13 +118,13 @@ export default function MapPage() {
             placeholder="İlan, şehir veya kaptan ara…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
         )}
       </div>
 
       {viewMode === "country" && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 space-y-3 shadow-card">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Ülkelere Göre Dağılım</h2>
           {data.byCountry.length === 0 ? (
             <p className="text-sm text-gray-400">Ülke verisi bulunamadı — teknelere lokasyon bilgisi ekleyin.</p>
@@ -137,7 +137,7 @@ export default function MapPage() {
       )}
 
       {viewMode === "city" && (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-card border border-gray-200/70 bg-white overflow-hidden shadow-card">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-100">
             {data.byCity.length === 0 ? (
               <div className="col-span-4 bg-white p-8 text-center text-sm text-gray-400">
@@ -156,9 +156,9 @@ export default function MapPage() {
       )}
 
       {viewMode === "list" && (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
           <table className="min-w-full divide-y divide-gray-100 text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">İlan</th>
                 <th className="px-4 py-3 text-left">Tür</th>

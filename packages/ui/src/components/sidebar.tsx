@@ -3,9 +3,9 @@ import { cn } from "../lib/cn";
 import { FontAwesomeIcon, type IconDefinition } from "../icons";
 
 /**
- * Sidebar navigation. Desktop: fixed 240px, navy (ink) background. Active item
- * gets a Brand Orange left accent + lightened background. On mobile this is
- * replaced by a bottom tab bar at the app level.
+ * Sidebar navigation (Ahoy panel dili). Beyaz zemin, ince sağ kenarlık;
+ * aktif öğe açık lacivert zemin + lacivert metin. Mobilde uygulama seviyesinde
+ * açılır çekmece olarak kullanılır.
  */
 export function Sidebar({
   className,
@@ -14,7 +14,7 @@ export function Sidebar({
 }: React.HTMLAttributes<HTMLElement>) {
   return (
     <aside
-      className={cn("flex h-full w-60 flex-col gap-1 bg-ink-800 p-3 text-gray-100", className)}
+      className={cn("flex h-full w-64 flex-col gap-1 border-r border-gray-200 bg-white px-4 py-5 text-ink", className)}
       {...props}
     >
       {children}
@@ -24,7 +24,7 @@ export function Sidebar({
 
 export function SidebarBrand({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-4 px-2 py-3 text-subheading font-bold text-white">{children}</div>
+    <div className="mb-6 px-2 pt-1">{children}</div>
   );
 }
 
@@ -40,16 +40,20 @@ export const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
       ref={ref}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-body-sm font-medium transition",
+        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium tracking-[-0.01em] transition",
         active
-          ? "bg-brand-500 text-white hover:bg-brand-600"
-          : "text-gray-300 hover:bg-white/5 hover:text-white",
+          ? "bg-brand-50 font-semibold text-brand-600"
+          : "text-gray-600 hover:bg-gray-100 hover:text-ink",
         className
       )}
       {...props}
     >
       {icon ? (
-        <FontAwesomeIcon icon={icon} className="w-5 shrink-0 text-[18px]" aria-hidden />
+        <FontAwesomeIcon
+          icon={icon}
+          className={cn("w-5 shrink-0 text-[17px]", active ? "text-brand-500" : "text-gray-400 group-hover:text-gray-600")}
+          aria-hidden
+        />
       ) : null}
       {children}
     </a>

@@ -23,7 +23,7 @@ export function Spinner({ className }: { className?: string }) {
 }
 
 const alertVariants = cva(
-  "flex items-start gap-2 rounded-lg border px-3 py-2 text-body-sm",
+  "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-body-sm",
   {
     variants: {
       variant: {

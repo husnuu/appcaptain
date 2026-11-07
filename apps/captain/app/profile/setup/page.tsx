@@ -84,7 +84,7 @@ function ProfileSetupForm() {
   return (
     <div className="mx-auto max-w-[640px] px-4 py-10 sm:px-6">
       <div className="mb-8 space-y-1">
-        <h1 className="text-[26px] font-bold tracking-tight text-ink">Profil bilgileri</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Profil bilgileri</h1>
         <p className="text-body-sm text-gray-500">
           Tekne eklemeye başlamadan önce iletişim bilgilerini tamamla. E-posta ve şifre Supabase
           hesabın üzerinden yönetilir.

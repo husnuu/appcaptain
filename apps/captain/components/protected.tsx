@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
+import { AhoyLogo } from "@getyourboat/ui";
 import { useAuth } from "./auth-provider";
 import { Spinner } from "./ui";
 
@@ -26,7 +27,7 @@ export function Protected({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F3]">
         <Spinner />
       </div>
     );
@@ -40,36 +41,22 @@ export function Protected({ children }: { children: ReactNode }) {
 export function TopBar() {
   const { user, isAuthenticated, signOut } = useAuth();
   return (
-    <header className="sticky top-0 z-10 bg-ink-800 text-white">
+    <header className="sticky top-0 z-10 border-b border-gray-200 bg-cream/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-content items-center justify-between px-4 py-3">
-        <Link
-          href="/"
-          className="flex flex-col leading-tight transition-opacity hover:opacity-80"
-          title="Ana sayfaya dön"
-        >
-          <span
-            className="font-bold"
-            style={{ fontFamily: 'var(--font-serif), Georgia, "Times New Roman", serif', fontSize: "22px", lineHeight: 1.1 }}
-          >
-            <span style={{ color: "#4BAFD6" }}>Sea</span>
-            {/* Koyu üst bar üzerinde okunabilirlik için "Hub" açık mavi. */}
-            <span style={{ color: "#B8D9F0" }}> Hub</span>
-          </span>
-          <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
-            Captain
-          </span>
+        <Link href="/" className="inline-flex transition-opacity hover:opacity-80" title="Ana sayfaya dön">
+          <AhoyLogo size={26} tag="Kaptan" />
         </Link>
-        <div className="flex items-center gap-3 text-body-sm text-gray-300">
+        <div className="flex items-center gap-3 text-body-sm text-gray-600">
           {isAuthenticated && user?.email ? (
             <span className="hidden sm:inline">{user.email}</span>
           ) : (
-            <Link href="/login" className="text-white hover:underline">
+            <Link href="/login" className="font-semibold text-brand-600 hover:underline">
               Giriş yap
             </Link>
           )}
           <button
             onClick={() => signOut()}
-            className="rounded-lg border border-white/20 px-3 py-1.5 font-medium text-white transition hover:bg-white/10"
+            className="rounded-full border border-gray-300 bg-white px-4 py-1.5 font-semibold text-ink transition hover:bg-gray-100"
           >
             Çıkış
           </button>

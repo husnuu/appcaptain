@@ -181,7 +181,7 @@ export default function BoatDetailPage() {
           <button type="button" onClick={() => router.back()} className="mb-2 text-sm text-gray-400 hover:text-gray-600">
             ← Geri
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{boat.title ?? "(isimsiz)"}</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">{boat.title ?? "(isimsiz)"}</h1>
           {locationText && <p className="text-sm text-gray-500 mt-0.5">📍 {locationText}</p>}
           <p className="text-xs font-mono text-gray-300 mt-0.5">{boat.id}</p>
         </div>
@@ -207,7 +207,7 @@ export default function BoatDetailPage() {
           { label: "Değerlendirme", value: boat.stats.reviewCount },
           { label: "Ortalama Puan", value: boat.stats.averageRating != null ? `⭐ ${boat.stats.averageRating}` : "—" },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-gray-200 bg-white p-4 text-center">
+          <div key={s.label} className="rounded-card border border-gray-200/70 bg-white p-4 text-center shadow-card">
             <div className="text-2xl font-bold text-gray-900">{s.value}</div>
             <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
           </div>
@@ -215,7 +215,7 @@ export default function BoatDetailPage() {
       </div>
 
       {/* Approval checklist */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Onay Kontrol Listesi</h2>
         <ul className="space-y-1.5">
           {boat.checklist.map((item) => (
@@ -247,7 +247,7 @@ export default function BoatDetailPage() {
       </div>
 
       {/* Status actions */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Durum Yönetimi</h2>
         {boat.status === "REJECTED" && boat.rejectionReason && (
           <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -281,7 +281,7 @@ export default function BoatDetailPage() {
           )}
           {boat.status === "SUSPENDED" && (
             <button type="button" disabled={actionBusy} onClick={() => changeStatus("ACTIVE")}
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              className="rounded-full bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50">
               Aktifleştir
             </button>
           )}
@@ -296,12 +296,12 @@ export default function BoatDetailPage() {
       </div>
 
       {/* Basic info — view or edit */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">İlan Bilgileri</h2>
           {editMode && (
             <button type="button" disabled={editBusy} onClick={saveFields}
-              className="rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              className="rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50">
               {editBusy ? "Kaydediliyor…" : "Kaydet"}
             </button>
           )}
@@ -310,28 +310,28 @@ export default function BoatDetailPage() {
           <div className="space-y-4">
             <Field label="Başlık">
               <input type="text" value={editFields.title} onChange={(e) => setEditFields((f) => ({ ...f, title: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
             </Field>
             <Field label="Açıklama">
               <textarea rows={5} value={editFields.description} onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" />
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 resize-y focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
             </Field>
             <Field label="Tekne Tipi (key)">
               <input type="text" value={editFields.boatTypeKey} onChange={(e) => setEditFields((f) => ({ ...f, boatTypeKey: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
             </Field>
             <Field label="Kurallar">
               <textarea rows={3} value={editFields.rulesText} onChange={(e) => setEditFields((f) => ({ ...f, rulesText: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" />
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 resize-y focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
             </Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Check-in Notları">
                 <textarea rows={3} value={editFields.checkInNotes} onChange={(e) => setEditFields((f) => ({ ...f, checkInNotes: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" />
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 resize-y focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
               </Field>
               <Field label="Check-out Notları">
                 <textarea rows={3} value={editFields.checkOutNotes} onChange={(e) => setEditFields((f) => ({ ...f, checkOutNotes: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" />
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 resize-y focus:ring-brand-500/15 focus:border-brand-400 bg-white" />
               </Field>
             </div>
           </div>
@@ -371,7 +371,7 @@ export default function BoatDetailPage() {
       </div>
 
       {/* Owner info */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Kaptan Bilgileri</h2>
         <dl className="space-y-1.5 text-sm">
           <Row label="Ad Soyad" value={boat.owner.fullName ?? "—"} />
@@ -383,7 +383,7 @@ export default function BoatDetailPage() {
 
       {/* Pricing */}
       {boat.pricing.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Fiyatlandırma</h2>
           <div className="space-y-2">
             {boat.pricing.map((p) => {
@@ -399,20 +399,20 @@ export default function BoatDetailPage() {
                         step={0.01}
                         value={entry.price}
                         onChange={(e) => setPricingEdit((prev) => ({ ...prev, [p.listingModelKey]: { ...entry, price: e.target.value } }))}
-                        className="w-28 rounded-lg border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-28 rounded-xl border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                       />
                       <input
                         type="text"
                         maxLength={3}
                         value={entry.currency}
                         onChange={(e) => setPricingEdit((prev) => ({ ...prev, [p.listingModelKey]: { ...entry, currency: e.target.value.toUpperCase() } }))}
-                        className="w-16 rounded-lg border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-16 rounded-xl border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                       />
                       <button
                         type="button"
                         disabled={pricingBusy === p.listingModelKey}
                         onClick={() => savePricing(p.listingModelKey)}
-                        className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                        className="rounded-full bg-brand-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
                       >
                         {pricingBusy === p.listingModelKey ? "…" : "Kaydet"}
                       </button>
@@ -428,7 +428,7 @@ export default function BoatDetailPage() {
       )}
 
       {/* Photos */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">
           Fotoğraflar ({boat.photos.length})
         </h2>
@@ -445,7 +445,7 @@ export default function BoatDetailPage() {
                   <div className="h-36 bg-gray-100 flex items-center justify-center text-gray-400 text-xs">Görsel yok</div>
                 )}
                 {photo.isCover && (
-                  <span className="absolute top-1 left-1 rounded bg-blue-600 px-1.5 py-0.5 text-xs text-white font-medium">Kapak</span>
+                  <span className="absolute top-1 left-1 rounded-full bg-brand-500 px-1.5 py-0.5 text-xs text-white font-semibold">Kapak</span>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
                   {!photo.isCover && (
@@ -453,7 +453,7 @@ export default function BoatDetailPage() {
                       type="button"
                       disabled={photoBusy === photo.id}
                       onClick={() => setCover(photo.id)}
-                      className="rounded-md bg-blue-600 px-2 py-1 text-xs text-white font-medium hover:bg-blue-700 disabled:opacity-50"
+                      className="rounded-full bg-brand-500 px-2 py-1 text-xs text-white font-semibold hover:bg-brand-600 disabled:opacity-50"
                     >
                       Kapak Yap
                     </button>
@@ -493,7 +493,7 @@ export default function BoatDetailPage() {
 
       {/* Documents */}
       {boat.documents.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">
             Belgeler ({boat.documents.length})
           </h2>

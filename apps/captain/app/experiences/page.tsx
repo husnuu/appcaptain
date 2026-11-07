@@ -24,13 +24,13 @@ import { Alert, Modal } from "../../components/ui";
 
 /** Durum rozeti renkleri — Teknelerim kartlarıyla uyumlu. */
 const STATUS_BADGE_STYLES: Record<ExperienceStatus, string> = {
-  [ExperienceStatus.DRAFT]: "bg-[#FEF3C7] text-[#92400E]",
-  [ExperienceStatus.PENDING_REVIEW]: "bg-[#DBEAFE] text-[#1D4ED8]",
-  [ExperienceStatus.CHANGES_REQUESTED]: "bg-[#FEF3C7] text-[#92400E]",
-  [ExperienceStatus.APPROVED]: "bg-[#D1FAE5] text-[#065F46]",
-  [ExperienceStatus.ACTIVE]: "bg-[#D1FAE5] text-[#065F46]",
-  [ExperienceStatus.PAUSED]: "bg-[#F1F5F9] text-[#475569]",
-  [ExperienceStatus.REJECTED]: "bg-[#FEE2E2] text-[#991B1B]",
+  [ExperienceStatus.DRAFT]: "bg-[#FBEACB] text-[#925C16]",
+  [ExperienceStatus.PENDING_REVIEW]: "bg-[#DCE5F3] text-[#143470]",
+  [ExperienceStatus.CHANGES_REQUESTED]: "bg-[#FBEACB] text-[#925C16]",
+  [ExperienceStatus.APPROVED]: "bg-[#D2EEE7] text-[#1F6F60]",
+  [ExperienceStatus.ACTIVE]: "bg-[#D2EEE7] text-[#1F6F60]",
+  [ExperienceStatus.PAUSED]: "bg-[#F3F0EC] text-[#475569]",
+  [ExperienceStatus.REJECTED]: "bg-[#FADCDC] text-[#982B2B]",
 };
 
 function formatDuration(minutes: number): string | null {
@@ -62,9 +62,9 @@ function ExperienceCard({
   const percent = Math.max(5, exp.completionPercent);
 
   return (
-    <div className="flex overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="flex overflow-hidden rounded-card border border-gray-200/70 bg-white transition-shadow hover:shadow-card-hover shadow-card">
       {/* Sol: Thumbnail */}
-      <div className="relative flex w-36 shrink-0 items-center justify-center bg-gradient-to-br from-[#E0F7FA] to-[#B2EBF2]">
+      <div className="relative flex w-36 shrink-0 items-center justify-center bg-gradient-to-br from-[#EEF2F9] to-[#DCE5F3]">
         {exp.coverPhotoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -136,7 +136,7 @@ function ExperienceCard({
                   className="h-full rounded-full transition-all"
                   style={{
                     width: `${percent}%`,
-                    backgroundColor: exp.completionPercent >= 100 ? "#10B981" : "#0097A7",
+                    backgroundColor: exp.completionPercent >= 100 ? "#2F9E8A" : "#183D85",
                   }}
                 />
               </div>
@@ -266,7 +266,7 @@ function ExperiencesContent() {
     <>
       <div className="mb-8 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-bold tracking-[-0.02em] text-gray-900">Deneyimlerim</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Deneyimlerim</h1>
           <p className="mt-1 text-sm text-gray-500">Tekneden bağımsız tur ve aktivite ilanları</p>
         </div>
         <Button onClick={() => void createNew()} disabled={creating}>
@@ -282,13 +282,13 @@ function ExperiencesContent() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-32 animate-pulse rounded-2xl border border-gray-100 bg-white"
+              className="h-32 animate-pulse rounded-card border border-gray-200/70 bg-white"
             />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-[#F8FAFC] py-20">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#E0F7FA]">
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF7F3] py-20">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#EEF2F9]">
             <FontAwesomeIcon icon={faStar} className="text-[28px] text-brand-500" aria-hidden />
           </div>
           <h3 className="mb-1 text-lg font-semibold text-gray-700">Henüz deneyim yok</h3>

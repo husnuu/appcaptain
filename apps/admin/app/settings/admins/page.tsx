@@ -93,13 +93,13 @@ export default function AdminsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Yöneticiler</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Yöneticiler</h1>
           <p className="text-sm text-gray-400 mt-0.5">{total} admin kullanıcısı</p>
         </div>
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
         >
           + Yönetici Ekle
         </button>
@@ -107,7 +107,7 @@ export default function AdminsPage() {
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-50">
+      <div className="rounded-card border border-gray-200/70 bg-white divide-y divide-gray-50 shadow-card">
         {loading ? (
           <p className="px-5 py-8 text-center text-gray-400 text-sm">Yükleniyor…</p>
         ) : items.length === 0 ? (
@@ -133,7 +133,7 @@ export default function AdminsPage() {
                 value={admin.role}
                 disabled={updatingId === admin.id}
                 onChange={(e) => void changeRole(admin.id, e.target.value)}
-                className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                className="rounded-xl border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 disabled:opacity-50 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>{ROLE_META[r]?.label ?? r}</option>
@@ -160,7 +160,7 @@ export default function AdminsPage() {
       {/* Create modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-modal space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">Yeni Yönetici</h2>
 
             <div className="grid grid-cols-2 gap-3">
@@ -170,7 +170,7 @@ export default function AdminsPage() {
                   type="text"
                   value={form.fullName}
                   onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 />
               </div>
               <div className="col-span-2">
@@ -179,7 +179,7 @@ export default function AdminsPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 />
               </div>
               <div>
@@ -188,7 +188,7 @@ export default function AdminsPage() {
                   type="password"
                   value={form.password}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 />
               </div>
               <div>
@@ -196,7 +196,7 @@ export default function AdminsPage() {
                 <select
                   value={form.role}
                   onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 >
                   {ROLES.map((r) => <option key={r} value={r}>{ROLE_META[r]?.label ?? r}</option>)}
                 </select>
@@ -208,8 +208,8 @@ export default function AdminsPage() {
             </p>
 
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setShowCreate(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
-              <button type="button" disabled={creating} onClick={handleCreate} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">
+              <button type="button" onClick={() => setShowCreate(false)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
+              <button type="button" disabled={creating} onClick={handleCreate} className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50">
                 {creating ? "Oluşturuluyor…" : "Oluştur"}
               </button>
             </div>

@@ -36,7 +36,7 @@ export default function FeatureFlagsPage() {
   return (
     <div className="space-y-5 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Feature Flags</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Feature Flags</h1>
         <p className="text-sm text-gray-400 mt-0.5">Modülleri canlıda açıp kapatın. Değişiklikler anında etkinleşir.</p>
       </div>
 
@@ -45,7 +45,7 @@ export default function FeatureFlagsPage() {
       {loading ? (
         <p className="text-gray-400 text-sm">Yükleniyor…</p>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-50">
+        <div className="rounded-card border border-gray-200/70 bg-white divide-y divide-gray-50 shadow-card">
           {flags.map((flag) => (
             <div key={flag.name} className="flex items-center justify-between gap-4 px-5 py-4">
               <div className="flex-1 min-w-0">

@@ -69,7 +69,7 @@ export default function BrandModelRequestsPage() {
     <main className="mx-auto max-w-4xl p-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-700">Bekleyen Marka/Model Talepleri</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Bekleyen Marka/Model Talepleri</h1>
           <p className="text-slate-600">Kaptanların &quot;listede yok&quot; talepleri.</p>
         </div>
         <div className="flex gap-2">

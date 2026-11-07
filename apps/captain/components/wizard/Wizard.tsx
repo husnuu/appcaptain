@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Button,
-  FontAwesomeIcon,
-  faArrowLeft,
-  faCalendarDays,
-  faEye,
-  faHouse,
-  faPaperPlane,
-} from "@getyourboat/ui";
+import { Button, FontAwesomeIcon, faPaperPlane } from "@getyourboat/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../../lib/api";
@@ -20,12 +12,10 @@ import {
   STEP_ORDER,
   stepIndex,
 } from "../../lib/onboarding";
-import type { BoatStatus, OnboardingStep, SerializedBoat } from "../../lib/types";
-import type { FeatureSubTabId } from "@getyourboat/shared";
+import type { OnboardingStep, SerializedBoat } from "../../lib/types";
 import { Alert, Spinner } from "../ui";
-import { ListingScorePanel } from "../boats/edit/ListingScorePanel";
 import { AutosaveStatusIndicator } from "./autosave-status";
-import { Stepper, type StepperItem } from "./Stepper";
+import { FocusTopBar, TopBarButton, WizardChromeProvider, type FocusStep } from "./focus";
 import {
   AmenitiesStep,
   BoatTypeFeaturesStep,
@@ -41,16 +31,6 @@ import {
 
 const PREVIEW_ID = "PREVIEW";
 type WizardStep = OnboardingStep | typeof PREVIEW_ID;
-
-// Tıklanamaz durum rozeti renkleri (duruma göre). Butona benzemesin diye
-// pointer-events-none + küçük yuvarlak nokta ile durum göstergesi olarak sunulur.
-const STATUS_BADGE_CLASS: Record<BoatStatus, string> = {
-  DRAFT: "bg-amber-50 text-amber-700 border-amber-200",
-  PENDING_REVIEW: "bg-blue-50 text-blue-700 border-blue-200",
-  ACTIVE: "bg-green-50 text-green-700 border-green-200",
-  REJECTED: "bg-red-50 text-red-600 border-red-200",
-  SUSPENDED: "bg-gray-100 text-gray-600 border-gray-200",
-};
 
 const STEP_COMPONENTS: Record<OnboardingStep, (p: StepProps) => JSX.Element> = {
   LISTING_MODEL: ListingModelStep,
@@ -70,7 +50,6 @@ export function Wizard({ boatId }: { boatId: string }) {
   const [synced, setSynced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [featureSubTab, setFeatureSubTab] = useState<FeatureSubTabId>("specs");
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
 
   useEffect(() => {
@@ -114,15 +93,22 @@ export function Wizard({ boatId }: { boatId: string }) {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mx-auto max-w-[720px] px-5 py-16">
         <Alert>{error}</Alert>
+        <button
+          type="button"
+          onClick={() => router.push("/boats")}
+          className="mt-6 text-[15px] font-semibold text-brand-600 underline-offset-4 hover:underline"
+        >
+          Teknelerime dön
+        </button>
       </div>
     );
   }
 
   if (loading || !config || !boat || boat.id !== boatId) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <Spinner className="h-6 w-6" />
       </div>
     );
@@ -150,7 +136,7 @@ export function Wizard({ boatId }: { boatId: string }) {
   // (revisit) or it is the next step to complete. Jumping ahead to a locked
   // step is not allowed until the preceding steps are saved.
   const allStepsDone = STEP_ORDER.every((s) => completed.includes(s));
-  const stepperItems: StepperItem[] = [
+  const stepperItems: FocusStep[] = [
     ...STEP_ORDER.map((step, i) => ({
       id: step,
       label: STEP_LABELS[step],
@@ -161,181 +147,133 @@ export function Wizard({ boatId }: { boatId: string }) {
     {
       id: PREVIEW_ID,
       label: "Önizleme",
-      icon: faEye,
       done: false,
       reachable: allStepsDone,
       lockedHint: "Önizleme için önce tüm adımları tamamlayın.",
     },
   ];
 
+  // Alt çubuktaki ilerleme: akıştaki konum (önizleme dahil).
+  const progress = ((isPreview ? STEP_ORDER.length + 1 : idx + 1) / (STEP_ORDER.length + 1)) * 100;
+
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6">
-      <button
-        onClick={() => router.push("/boats")}
-        className="mb-5 flex items-center gap-1.5 text-body-sm font-medium text-brand-600 transition hover:text-brand-700"
-      >
-        <FontAwesomeIcon icon={faArrowLeft} className="text-[14px]" aria-hidden />
-        Teknelerim
-      </button>
+    <WizardChromeProvider value={{ progress }}>
+      <div className="min-h-screen bg-white">
+        <FocusTopBar
+          steps={stepperItems}
+          currentId={active}
+          onSelect={(id) => setActive(id as WizardStep)}
+          actions={
+            <>
+              {canEditSteps ? (
+                <AutosaveStatusIndicator
+                  status={autosaveStatus}
+                  lastSavedAt={boat.lastSavedAt}
+                  className="mr-2 hidden md:flex"
+                />
+              ) : null}
+              <TopBarButton onClick={() => router.push("/boats")} title="Değişiklikler otomatik kaydedilir">
+                <span className="sm:hidden">Çık</span>
+                <span className="hidden sm:inline">Kaydet ve çık</span>
+              </TopBarButton>
+            </>
+          }
+        />
 
-      <div className="mb-8 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-caption font-medium uppercase tracking-wide text-gray-400">
-            Tekne düzenle
-          </p>
-          <h1 className="text-[26px] font-bold tracking-tight text-ink">
-            {boat.title || "İsimsiz taslak"}
-          </h1>
-          {canEditSteps ? (
-            <AutosaveStatusIndicator
-              status={autosaveStatus}
-              lastSavedAt={boat.lastSavedAt}
-              className="mt-1"
-            />
-          ) : null}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button
-            variant="outline"
-            className="border-2 border-brand-200 font-semibold text-brand-700 hover:bg-brand-50"
-            onClick={() => router.push(`/calendar`)}
-          >
-            <FontAwesomeIcon icon={faCalendarDays} className="text-[14px]" aria-hidden />
-            Takvim
-          </Button>
-          <Button
-            variant="outline"
-            className="border-2 border-brand-500 font-semibold text-brand-600 hover:bg-brand-50"
-            onClick={() => window.open(`/boats/${boat.id}/preview`, "_blank", "noopener,noreferrer")}
-          >
-            <FontAwesomeIcon icon={faEye} className="text-[14px]" aria-hidden />
-            Önizle
-          </Button>
-          <span
-            className={`pointer-events-none flex select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${STATUS_BADGE_CLASS[boat.status]}`}
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden />
-            {STATUS_LABELS[boat.status]}
-          </span>
-        </div>
-      </div>
+        <main
+          className={
+            isPreview
+              ? "mx-auto w-full max-w-[1100px] px-5 pb-36 pt-10 sm:px-8"
+              : "mx-auto w-full max-w-[720px] px-5 pb-36 pt-10 sm:px-8 sm:pt-14"
+          }
+        >
+          <div className="min-w-0">
+            <h2 className="mb-6 truncate text-[13px] font-semibold text-accent-600">
+              {boat.title || "İsimsiz taslak"}
+              <span className="font-medium text-gray-400"> · Tekne ilanı</span>
+            </h2>
 
-      {boat.status === "REJECTED" && boat.rejectionReason ? (
-        <div className="mb-4">
-          <Alert>Reddedildi: {boat.rejectionReason}. Düzenleyip tekrar gönderebilirsin.</Alert>
-        </div>
-      ) : null}
+            {boat.status === "REJECTED" && boat.rejectionReason ? (
+              <div className="mb-8">
+                <Alert>Reddedildi: {boat.rejectionReason}. Düzenleyip tekrar gönderebilirsin.</Alert>
+              </div>
+            ) : null}
 
-      {boat.status === "PENDING_REVIEW" ? (
-        <div className="mb-4 space-y-3">
-          <Alert variant="info">
-            İlanın{boat.title ? ` "${boat.title}"` : ""} incelemeye gönderildi. Ortalama onay
-            süresi 24-48 saattir. Onay durumunu &quot;Teknelerim&quot; sayfasından takip
-            edebilirsin. İnceleme sürerken de düzenleme yapabilirsin; değişikliklerin kaydedilir
-            ve ilan onay beklemeye devam eder.
-          </Alert>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="inline-flex items-center gap-2 rounded-full bg-[#0F4C75] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0d3d5e]"
-            >
-              <FontAwesomeIcon icon={faHouse} className="text-[14px]" aria-hidden />
-              Ana Sayfaya Dön
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/boats")}
-              className="inline-flex items-center rounded-full border-2 border-[#0097A7] bg-white px-6 py-3 text-sm font-semibold text-[#0097A7] transition-colors hover:bg-[#E0F7FA]"
-            >
-              Teknelerim
-            </button>
-          </div>
-        </div>
-      ) : null}
+            {boat.status === "PENDING_REVIEW" ? (
+              <div className="mb-8">
+                <Alert variant="info">
+                  İlanın incelemede (ortalama 24-48 saat). Düzenlemeye devam edebilirsin;
+                  değişikliklerin kaydedilir ve ilan onay beklemeye devam eder.
+                </Alert>
+              </div>
+            ) : null}
 
-      {boat.status === "ACTIVE" ? (
-        <div className="mb-4">
-          <Alert variant="success">İlanın onaylandı ve yayında! 🎉</Alert>
-        </div>
-      ) : null}
+            {boat.status === "ACTIVE" ? (
+              <div className="mb-8">
+                <Alert variant="success">İlanın onaylandı ve yayında! 🎉</Alert>
+              </div>
+            ) : null}
 
-      <div className="mb-10">
-        <Stepper items={stepperItems} currentId={active} onSelect={(id) => setActive(id as WizardStep)} />
-      </div>
-
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0">
-          {isPreview ? (
-            <PreviewStep
-              boat={boat}
-              config={config}
-              onSaved={handleSaved}
-              reload={reload}
-              goBack={() => setActive("DOCUMENTS")}
-            />
-          ) : canEditSteps && StepComponent ? (
-            <StepComponent
-              boat={boat}
-              config={config}
-              onSaved={handleSaved}
-              reload={reload}
-              goBack={() => setActive(STEP_ORDER[Math.max(idx - 1, 0)] ?? active)}
-              syncBoat={syncBoat}
-              onAutosaveStatusChange={setAutosaveStatus}
-              onFeatureSubTabChange={
-                active === "BOAT_TYPE_FEATURES" ? setFeatureSubTab : undefined
-              }
-            />
-          ) : (
-            <p className="text-sm text-slate-500">
-              Bu ilan şu an düzenlenemez ({STATUS_LABELS[boat.status]}).
-            </p>
-          )}
-        </div>
-
-        <aside className="order-first lg:order-none">
-          <ListingScorePanel
-            boat={boat}
-            activeStep={isPreview ? "PREVIEW" : (active as OnboardingStep)}
-            featureSubTab={featureSubTab}
-          />
-        </aside>
-      </div>
-
-      {canSubmit ? (
-        <div className="mt-8 border-t border-gray-200 pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-md">
-              <p className="text-body-sm font-semibold text-ink">İncelemeye gönder</p>
-              <p className="mt-0.5 text-caption text-gray-500">
-                Tüm zorunlu adımlar tamamlandığında (en az 1 fotoğraf, fiyat ve belge)
-                gönderebilirsin.
+            {isPreview ? (
+              <PreviewStep
+                boat={boat}
+                config={config}
+                onSaved={handleSaved}
+                reload={reload}
+                goBack={() => setActive("DOCUMENTS")}
+              />
+            ) : canEditSteps && StepComponent ? (
+              <StepComponent
+                boat={boat}
+                config={config}
+                onSaved={handleSaved}
+                reload={reload}
+                goBack={() => setActive(STEP_ORDER[Math.max(idx - 1, 0)] ?? active)}
+                syncBoat={syncBoat}
+                onAutosaveStatusChange={setAutosaveStatus}
+              />
+            ) : (
+              <p className="text-sm text-gray-500">
+                Bu ilan şu an düzenlenemez ({STATUS_LABELS[boat.status]}).
               </p>
-            </div>
-            <Button
-              size="lg"
-              className="sm:shrink-0"
-              disabled={!boat.progress.isReadyForReview || submitting}
-              onClick={submit}
-            >
-              {submitting ? (
-                "Gönderiliyor…"
-              ) : (
-                <>
-                  Gönder
-                  <FontAwesomeIcon icon={faPaperPlane} className="text-[14px]" aria-hidden />
-                </>
-              )}
-            </Button>
+            )}
+
+            {canSubmit && (isPreview || active === "DOCUMENTS") ? (
+              <section className="mt-12 rounded-card border border-gray-200 bg-cream/60 p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="max-w-md">
+                    <p className="text-[16px] font-bold text-ink">İncelemeye gönder</p>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-gray-500">
+                      Tüm zorunlu adımlar tamamlandığında (en az 1 fotoğraf, fiyat ve belge)
+                      gönderebilirsin.
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    className="sm:shrink-0"
+                    disabled={!boat.progress.isReadyForReview || submitting}
+                    onClick={submit}
+                  >
+                    {submitting ? (
+                      "Gönderiliyor…"
+                    ) : (
+                      <>
+                        Gönder
+                        <FontAwesomeIcon icon={faPaperPlane} className="text-[14px]" aria-hidden />
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {submitError ? (
+                  <div className="mt-3">
+                    <Alert>{submitError}</Alert>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
           </div>
-          {submitError ? (
-            <div className="mt-3">
-              <Alert>{submitError}</Alert>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+        </main>
+      </div>
+    </WizardChromeProvider>
   );
 }

@@ -65,11 +65,11 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Yanıt Şablonları</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Yanıt Şablonları</h1>
         <button
           type="button"
           onClick={() => setEditing({ name: "", body: "", category: "" })}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
         >
           + Yeni Şablon
         </button>
@@ -94,7 +94,7 @@ export default function TemplatesPage() {
         Object.entries(grouped).map(([category, items]) => (
           <div key={category} className="space-y-2">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">{category}</h2>
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-50">
+            <div className="rounded-card border border-gray-200/70 bg-white divide-y divide-gray-50 shadow-card">
               {items.map((tpl) => (
                 <div key={tpl.id} className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-gray-50">
                   <div className="flex-1 min-w-0">
@@ -134,7 +134,7 @@ export default function TemplatesPage() {
       {/* Editor modal */}
       {editing !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-xl rounded-xl bg-white p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-xl rounded-[24px] bg-white p-6 shadow-modal space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">
               {editing.id ? "Şablonu Düzenle" : "Yeni Şablon"}
             </h2>
@@ -146,7 +146,7 @@ export default function TemplatesPage() {
                   value={editing.name ?? ""}
                   onChange={(e) => setEditing((prev) => ({ ...prev!, name: e.target.value }))}
                   placeholder="ör. Rezervasyon İptal - Standart"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 />
               </div>
               <div>
@@ -156,7 +156,7 @@ export default function TemplatesPage() {
                   value={editing.category ?? ""}
                   onChange={(e) => setEditing((prev) => ({ ...prev!, category: e.target.value }))}
                   placeholder="ör. Rezervasyon"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 />
                 <datalist id="category-options">
                   {DEFAULT_CATEGORIES.map((c) => <option key={c} value={c} />)}
@@ -171,18 +171,18 @@ export default function TemplatesPage() {
                 value={editing.body ?? ""}
                 onChange={(e) => setEditing((prev) => ({ ...prev!, body: e.target.value }))}
                 placeholder="Şablon metnini buraya yazın…"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               />
               <p className="mt-1 text-xs text-gray-400">{(editing.body ?? "").length} karakter</p>
             </div>
 
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setEditing(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button
                 type="button"
                 disabled={formBusy}
                 onClick={handleSave}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
               >
                 Kaydet
               </button>
@@ -194,7 +194,7 @@ export default function TemplatesPage() {
       {/* Preview modal */}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-lg rounded-[24px] bg-white p-6 shadow-modal space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">{preview.name}</h2>
@@ -206,11 +206,11 @@ export default function TemplatesPage() {
               {preview.body}
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setPreview(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Kapat</button>
+              <button type="button" onClick={() => setPreview(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Kapat</button>
               <button
                 type="button"
                 onClick={() => { setEditing({ ...preview }); setPreview(null); }}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
               >
                 Düzenle
               </button>

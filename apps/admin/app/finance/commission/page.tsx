@@ -86,10 +86,10 @@ export default function CommissionPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Komisyon Oranları</h1>
+      <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Komisyon Oranları</h1>
 
       {/* Global rate */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold text-gray-900">Global Komisyon Oranı</h2>
@@ -101,7 +101,7 @@ export default function CommissionPage() {
               <button
                 type="button"
                 onClick={() => { setGlobalEdit(true); setGlobalInput(String(data.globalRate)); }}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white"
               >
                 Düzenle
               </button>
@@ -115,16 +115,16 @@ export default function CommissionPage() {
                 step={0.1}
                 value={globalInput}
                 onChange={(e) => setGlobalInput(e.target.value)}
-                className="w-24 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-24 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 autoFocus
               />
               <span className="text-sm text-gray-500">%</span>
-              <button type="button" onClick={() => setGlobalEdit(false)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50">İptal</button>
+              <button type="button" onClick={() => setGlobalEdit(false)} className="rounded-full border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50 bg-white">İptal</button>
               <button
                 type="button"
                 disabled={globalBusy}
                 onClick={handleGlobalSave}
-                className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                className="rounded-full bg-brand-500 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
               >
                 Kaydet
               </button>
@@ -134,7 +134,7 @@ export default function CommissionPage() {
       </div>
 
       {/* Per-owner overrides */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <h2 className="font-semibold text-gray-900">Özel Oran Tanımlı Sahipler</h2>
           <span className="text-sm text-gray-400">{data.overrides.length} özel oran</span>
@@ -143,7 +143,7 @@ export default function CommissionPage() {
           <p className="px-5 py-8 text-center text-gray-400 text-sm">Henüz özel oran tanımlanmamış.</p>
         ) : (
           <table className="min-w-full divide-y divide-gray-100 text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-5 py-3 text-left">Sahip</th>
                 <th className="px-5 py-3 text-right">Global Oran</th>
@@ -209,7 +209,7 @@ export default function CommissionPage() {
       {/* Owner rate modal */}
       {ownerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-[24px] bg-white p-6 shadow-modal">
             <h2 className="mb-1 text-lg font-semibold text-gray-900">Özel Oran Düzenle</h2>
             <p className="mb-3 text-sm text-gray-500">{ownerModal.name}</p>
             <div className="flex items-center gap-2">
@@ -220,18 +220,18 @@ export default function CommissionPage() {
                 step={0.1}
                 value={ownerInput}
                 onChange={(e) => setOwnerInput(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                 autoFocus
               />
               <span className="text-sm text-gray-500 whitespace-nowrap">%</span>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setOwnerModal(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Vazgeç</button>
+              <button type="button" onClick={() => setOwnerModal(null)} className="rounded-full border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 bg-white">Vazgeç</button>
               <button
                 type="button"
                 disabled={ownerBusy}
                 onClick={handleOwnerSave}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
               >
                 Kaydet
               </button>

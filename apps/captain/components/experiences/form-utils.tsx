@@ -1,8 +1,14 @@
 "use client";
 
 import type { ValidationFieldError } from "@getyourboat/shared";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Alert, Field, Label, Textarea } from "../ui";
+import {
+  WizardBackButton,
+  WizardFooterBar,
+  WizardHeading,
+  useWizardChrome,
+} from "../wizard/focus";
 
 /** Textarea where each non-empty line becomes a list item. */
 export function LinesField({
@@ -50,33 +56,53 @@ export function StepShell({
   children,
   error,
   fieldErrors,
+  footer,
 }: {
   title: string;
   description?: string;
   children: ReactNode;
   error?: string | null;
   fieldErrors?: ValidationFieldError[];
+  /** Alt çubuğun sağ tarafı (Devam et / İncelemeye gönder). */
+  footer?: ReactNode;
 }) {
+  const { onBack } = useWizardChrome();
   const hasFieldErrors = !!fieldErrors && fieldErrors.length > 0;
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  // Alttaki butondan sonra oluşan hatayı görünür yap.
+  useEffect(() => {
+    if (hasFieldErrors || error) {
+      alertRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [hasFieldErrors, error, fieldErrors]);
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-        {description ? <p className="mt-1 text-sm text-gray-600">{description}</p> : null}
-      </div>
-      {hasFieldErrors ? (
-        <Alert variant="danger">
-          <p className="font-medium">Lütfen aşağıdaki alanları düzeltin:</p>
-          <ul className="mt-1.5 list-disc space-y-1 pl-5">
-            {fieldErrors!.map((f) => (
-              <li key={f.field}>{f.message}</li>
-            ))}
-          </ul>
-        </Alert>
-      ) : error ? (
-        <Alert variant="danger">{error}</Alert>
+    <div>
+      <WizardHeading title={title} description={description} />
+      {hasFieldErrors || error ? (
+        <div ref={alertRef} className="mb-8">
+          {hasFieldErrors ? (
+            <Alert variant="danger">
+              <div>
+                <p className="font-medium">Lütfen aşağıdaki alanları düzeltin:</p>
+                <ul className="mt-1.5 list-disc space-y-1 pl-5">
+                  {fieldErrors!.map((f) => (
+                    <li key={f.field}>{f.message}</li>
+                  ))}
+                </ul>
+              </div>
+            </Alert>
+          ) : (
+            <Alert variant="danger">{error}</Alert>
+          )}
+        </div>
       ) : null}
-      <div className="space-y-4">{children}</div>
+      <div className="space-y-7">{children}</div>
+      <WizardFooterBar>
+        {onBack ? <WizardBackButton onClick={onBack} /> : <span />}
+        {footer}
+      </WizardFooterBar>
     </div>
   );
 }

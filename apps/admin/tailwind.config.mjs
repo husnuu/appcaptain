@@ -1,8 +1,11 @@
-import preset from "@getyourboat/config/tailwind";
+import panel from "@getyourboat/config/tailwind/panel";
 
-/** @type {import("tailwindcss").Config} */
+/**
+ * Admin paneli — Ahoy Boats panel ön ayarı (lacivert/gök mavisi/krem, Manrope).
+ * @type {import("tailwindcss").Config}
+ */
 const config = {
-  presets: [preset],
+  presets: [panel],
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

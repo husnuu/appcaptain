@@ -132,7 +132,7 @@ function MessagesContent() {
   });
 
   return (
-    <div className="flex h-[calc(100vh-9rem)] overflow-hidden rounded-2xl border border-gray-200 bg-white">
+    <div className="flex h-[calc(100vh-9rem)] overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
       {/* Left: conversation list */}
       <div
         className={`flex w-full flex-col border-r border-gray-100 md:w-80 lg:w-96 ${selected && showChat ? "hidden md:flex" : "flex"}`}
@@ -324,7 +324,7 @@ function MessagesContent() {
                 <button
                   onClick={() => void send()}
                   disabled={!input.trim() || sending}
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-md transition-colors hover:bg-brand-700 disabled:opacity-40"
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-md transition-colors hover:bg-brand-600 disabled:opacity-40 font-semibold"
                   aria-label="Gönder"
                 >
                   <FontAwesomeIcon icon={faPaperPlane} className="text-sm" aria-hidden />
@@ -342,7 +342,7 @@ export default function MessagesPage() {
   return (
     <AppShell active="messages">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Mesajlar</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Mesajlar</h1>
         <p className="mt-1 text-sm text-gray-600">
           Rezervasyon taleplerinden gelen misafir mesajları
         </p>

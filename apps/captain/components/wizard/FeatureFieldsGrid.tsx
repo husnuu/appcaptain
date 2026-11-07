@@ -22,6 +22,7 @@ import {
 import { Checkbox, Field, Input, Select } from "../ui";
 import { isBrandModelFieldKey } from "./BrandModelFields";
 import { NumberStepper } from "./NumberStepper";
+import { CounterRow, SectionTitle } from "./focus";
 import { HourFieldSelect, UnitFieldInput } from "./UnitFieldInput";
 import type { FieldErrorsMap } from "@getyourboat/shared";
 
@@ -73,8 +74,8 @@ export function CrewFieldsSection({
   const crewError = fieldErrors?.[CREW_FIELD_KEY];
   const crewIncludedError = fieldErrors?.[CREW_INCLUDED_FIELD_KEY];
   return (
-    <section className="space-y-4 border-b border-gray-100 pb-7">
-      <h3 className="text-[15px] font-semibold text-ink">Mürettebat</h3>
+    <section>
+      <SectionTitle>Mürettebat</SectionTitle>
       <Checkbox
         label="Mürettebat yok / bilmiyorum"
         checked={noCrewMembers ?? false}
@@ -83,48 +84,52 @@ export function CrewFieldsSection({
           if (e.target.checked) onChange(CREW_FIELD_KEY, "0");
         }}
       />
-      <div data-field={CREW_FIELD_KEY}>
-        <Field
-          label="Toplam Mürettebat Sayısı"
-          required={requiredKeys?.has(CREW_FIELD_KEY) ?? false}
-          error={crewError}
-        >
-          {noCrewMembers ? (
-            <Input
-              type="number"
-              min={0}
-              inputMode="numeric"
-              placeholder="Örn. 2"
-              value={values[CREW_FIELD_KEY] ?? ""}
-              disabled
-              error={!!crewError}
-              onChange={(e) => onChange(CREW_FIELD_KEY, e.target.value)}
-            />
-          ) : (
+      <div className="mt-2 divide-y divide-gray-200">
+        <div data-field={CREW_FIELD_KEY}>
+          <CounterRow
+            label="Toplam Mürettebat Sayısı"
+            required={requiredKeys?.has(CREW_FIELD_KEY) ?? false}
+            error={crewError}
+          >
+            {noCrewMembers ? (
+              <Input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                placeholder="Örn. 2"
+                value={values[CREW_FIELD_KEY] ?? ""}
+                disabled
+                error={!!crewError}
+                onChange={(e) => onChange(CREW_FIELD_KEY, e.target.value)}
+                className="w-24 text-center"
+                aria-label="Toplam Mürettebat Sayısı"
+              />
+            ) : (
+              <NumberStepper
+                value={values[CREW_FIELD_KEY] ?? ""}
+                min={0}
+                error={!!crewError}
+                ariaLabel="Toplam Mürettebat Sayısı"
+                onChange={(v) => onChange(CREW_FIELD_KEY, v)}
+              />
+            )}
+          </CounterRow>
+        </div>
+        <div data-field={CREW_INCLUDED_FIELD_KEY}>
+          <CounterRow
+            label="Fiyata Dahil Mürettebat Sayısı"
+            required={requiredKeys?.has(CREW_INCLUDED_FIELD_KEY) ?? false}
+            error={crewIncludedError}
+          >
             <NumberStepper
-              value={values[CREW_FIELD_KEY] ?? ""}
+              value={values[CREW_INCLUDED_FIELD_KEY] ?? ""}
               min={0}
-              error={!!crewError}
-              ariaLabel="Toplam Mürettebat Sayısı"
-              onChange={(v) => onChange(CREW_FIELD_KEY, v)}
+              error={!!crewIncludedError}
+              ariaLabel="Fiyata Dahil Mürettebat Sayısı"
+              onChange={(v) => onChange(CREW_INCLUDED_FIELD_KEY, v)}
             />
-          )}
-        </Field>
-      </div>
-      <div data-field={CREW_INCLUDED_FIELD_KEY}>
-        <Field
-          label="Fiyata Dahil Mürettebat Sayısı"
-          required={requiredKeys?.has(CREW_INCLUDED_FIELD_KEY) ?? false}
-          error={crewIncludedError}
-        >
-          <NumberStepper
-            value={values[CREW_INCLUDED_FIELD_KEY] ?? ""}
-            min={0}
-            error={!!crewIncludedError}
-            ariaLabel="Fiyata Dahil Mürettebat Sayısı"
-            onChange={(v) => onChange(CREW_INCLUDED_FIELD_KEY, v)}
-          />
-        </Field>
+          </CounterRow>
+        </div>
       </div>
     </section>
   );
@@ -165,138 +170,181 @@ export function FeatureFieldsGrid({
         );
         if (features.length === 0) return null;
 
-        return (
-          <section key={group.key} className="space-y-4 border-t border-gray-100 pt-7">
-            <h3 className="text-[15px] font-semibold text-ink">
-              {getFeatureGroupLabel(group.key, group.label)}
-            </h3>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-              {features.map((f) => {
-                if (hideFuelFields && FUEL_FIELDS_HIDDEN_FOR_ENGINE.has(f.key)) return null;
+        // Alan sırası korunur; art arda gelen sayaç alanları tek bir çizgili liste olur.
+        const blocks: { kind: "count" | "field"; key: string; node: React.ReactNode }[] = [];
+        for (const f of features) {
+          if (hideFuelFields && FUEL_FIELDS_HIDDEN_FOR_ENGINE.has(f.key)) continue;
+          const fieldError = fieldErrors?.[f.key];
+          const isRequired = requiredKeys?.has(f.key) ?? false;
 
-                if (f.key === HULL_MATERIAL_FIELD_KEY) {
-                  const fieldError = fieldErrors?.[f.key];
-                  return (
-                    <FieldShell key={f.key} fieldKey={f.key}>
-                      <Field
-                        label={getFieldLabel(f)}
-                        required={requiredKeys?.has(f.key) ?? false}
-                        error={fieldError}
-                      >
-                        <Select
-                          value={values[f.key] ?? ""}
-                          error={!!fieldError}
-                          onChange={(e) => onChange(f.key, e.target.value)}
-                        >
-                          <option value="">Seçiniz…</option>
-                          {HULL_MATERIAL_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                    </FieldShell>
-                  );
-                }
-
-                if (f.key === FUEL_TYPE_FIELD_KEY) {
-                  const fuelValue = normalizeFuelType(values[f.key] ?? "");
-                  const fieldError = fieldErrors?.[f.key];
-                  return (
-                    <FieldShell key={f.key} fieldKey={f.key}>
-                      <Field
-                        label={getFieldLabel(f)}
-                        required={requiredKeys?.has(f.key) ?? false}
-                        error={fieldError}
-                      >
-                        <Select
-                          value={fuelValue}
-                          error={!!fieldError}
-                          onChange={(e) => onChange(f.key, e.target.value)}
-                        >
-                          <option value="">Seçiniz…</option>
-                          {FUEL_TYPE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                    </FieldShell>
-                  );
-                }
-
-                if (isUnitFieldKey(f.key)) {
-                  return (
-                    <FieldShell key={f.key} fieldKey={f.key}>
-                      <UnitFieldInput
-                        fieldKey={f.key}
-                        label={getFieldLabel(f)}
-                        values={values}
-                        error={fieldErrors?.[f.key]}
-                        onChange={(next) => {
-                          const keys = new Set([f.key, `${f.key}_unit`, `${f.key}_raw`]);
-                          for (const key of keys) {
-                            const v = next[key] ?? "";
-                            if ((values[key] ?? "") !== v) onChange(key, v);
-                          }
-                        }}
-                      />
-                    </FieldShell>
-                  );
-                }
-
-                if (isHourFieldKey(f.key)) {
-                  return (
-                    <FieldShell key={f.key} fieldKey={f.key}>
-                      <HourFieldSelect
-                        fieldKey={f.key}
-                        label={getFieldLabel(f)}
-                        value={values[f.key] ?? ""}
-                        error={fieldErrors?.[f.key]}
-                        onChange={onChange}
-                      />
-                    </FieldShell>
-                  );
-                }
-
-                const isNumeric =
-                  NUMERIC_SPEC_FIELD_KEYS.has(f.key) || NUMERIC_CABIN_FIELD_KEYS.has(f.key);
-                const fieldError = fieldErrors?.[f.key];
-                const isRequired = requiredKeys?.has(f.key) ?? false;
-
-                return (
-                  <FieldShell key={f.key} fieldKey={f.key}>
-                    <Field
-                      label={getFieldLabel(f)}
-                      required={isRequired}
-                      error={fieldError}
+          if (f.key === HULL_MATERIAL_FIELD_KEY) {
+            blocks.push({
+              kind: "field",
+              key: f.key,
+              node: (
+                <FieldShell key={f.key} fieldKey={f.key}>
+                  <Field label={getFieldLabel(f)} required={isRequired} error={fieldError}>
+                    <Select
+                      value={values[f.key] ?? ""}
+                      error={!!fieldError}
+                      onChange={(e) => onChange(f.key, e.target.value)}
                     >
-                      {isCountField(f.key) ? (
-                        <NumberStepper
-                          value={values[f.key] ?? ""}
-                          min={0}
-                          error={!!fieldError}
-                          ariaLabel={getFieldLabel(f)}
-                          onChange={(v) => onChange(f.key, v)}
-                        />
-                      ) : (
-                        <Input
-                          type={isNumeric ? "number" : "text"}
-                          min={isNumeric ? 0 : undefined}
-                          inputMode={isNumeric ? "numeric" : undefined}
-                          placeholder={isNumeric ? "0" : undefined}
-                          value={values[f.key] ?? ""}
-                          error={!!fieldError}
-                          onChange={(e) => onChange(f.key, e.target.value)}
-                        />
-                      )}
-                    </Field>
-                  </FieldShell>
-                );
-              })}
+                      <option value="">Seçiniz…</option>
+                      {HULL_MATERIAL_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </FieldShell>
+              ),
+            });
+            continue;
+          }
+
+          if (f.key === FUEL_TYPE_FIELD_KEY) {
+            const fuelValue = normalizeFuelType(values[f.key] ?? "");
+            blocks.push({
+              kind: "field",
+              key: f.key,
+              node: (
+                <FieldShell key={f.key} fieldKey={f.key}>
+                  <Field label={getFieldLabel(f)} required={isRequired} error={fieldError}>
+                    <Select
+                      value={fuelValue}
+                      error={!!fieldError}
+                      onChange={(e) => onChange(f.key, e.target.value)}
+                    >
+                      <option value="">Seçiniz…</option>
+                      {FUEL_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </FieldShell>
+              ),
+            });
+            continue;
+          }
+
+          if (isUnitFieldKey(f.key)) {
+            blocks.push({
+              kind: "field",
+              key: f.key,
+              node: (
+                <FieldShell key={f.key} fieldKey={f.key}>
+                  <UnitFieldInput
+                    fieldKey={f.key}
+                    label={getFieldLabel(f)}
+                    values={values}
+                    error={fieldError}
+                    onChange={(next) => {
+                      const keys = new Set([f.key, `${f.key}_unit`, `${f.key}_raw`]);
+                      for (const key of keys) {
+                        const v = next[key] ?? "";
+                        if ((values[key] ?? "") !== v) onChange(key, v);
+                      }
+                    }}
+                  />
+                </FieldShell>
+              ),
+            });
+            continue;
+          }
+
+          if (isHourFieldKey(f.key)) {
+            blocks.push({
+              kind: "field",
+              key: f.key,
+              node: (
+                <FieldShell key={f.key} fieldKey={f.key}>
+                  <HourFieldSelect
+                    fieldKey={f.key}
+                    label={getFieldLabel(f)}
+                    value={values[f.key] ?? ""}
+                    error={fieldError}
+                    onChange={onChange}
+                  />
+                </FieldShell>
+              ),
+            });
+            continue;
+          }
+
+          if (isCountField(f.key)) {
+            blocks.push({
+              kind: "count",
+              key: f.key,
+              node: (
+                <FieldShell key={f.key} fieldKey={f.key}>
+                  <CounterRow label={getFieldLabel(f)} required={isRequired} error={fieldError}>
+                    <NumberStepper
+                      value={values[f.key] ?? ""}
+                      min={0}
+                      error={!!fieldError}
+                      ariaLabel={getFieldLabel(f)}
+                      onChange={(v) => onChange(f.key, v)}
+                    />
+                  </CounterRow>
+                </FieldShell>
+              ),
+            });
+            continue;
+          }
+
+          const isNumeric =
+            NUMERIC_SPEC_FIELD_KEYS.has(f.key) || NUMERIC_CABIN_FIELD_KEYS.has(f.key);
+          blocks.push({
+            kind: "field",
+            key: f.key,
+            node: (
+              <FieldShell key={f.key} fieldKey={f.key}>
+                <Field label={getFieldLabel(f)} required={isRequired} error={fieldError}>
+                  <Input
+                    type={isNumeric ? "number" : "text"}
+                    min={isNumeric ? 0 : undefined}
+                    inputMode={isNumeric ? "numeric" : undefined}
+                    placeholder={isNumeric ? "0" : undefined}
+                    value={values[f.key] ?? ""}
+                    error={!!fieldError}
+                    onChange={(e) => onChange(f.key, e.target.value)}
+                  />
+                </Field>
+              </FieldShell>
+            ),
+          });
+        }
+
+        // Art arda gelen sayaç alanlarını gruplayarak ekrana bas.
+        const rendered: React.ReactNode[] = [];
+        let counterRun: React.ReactNode[] = [];
+        const flushCounters = (key: string) => {
+          if (counterRun.length === 0) return;
+          rendered.push(
+            <div key={`counters-${key}`} className="divide-y divide-gray-200">
+              {counterRun}
             </div>
+          );
+          counterRun = [];
+        };
+        blocks.forEach((b) => {
+          if (b.kind === "count") {
+            counterRun.push(b.node);
+          } else {
+            flushCounters(b.key);
+            rendered.push(b.node);
+          }
+        });
+        flushCounters("end");
+        if (rendered.length === 0) return null;
+
+        return (
+          <section key={group.key} className="border-t border-gray-200 pt-8">
+            <SectionTitle>{getFeatureGroupLabel(group.key, group.label)}</SectionTitle>
+            <div className="space-y-5">{rendered}</div>
           </section>
         );
       })}

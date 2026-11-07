@@ -118,7 +118,7 @@ export default function TicketDetailPage() {
       </div>
 
       {/* Header */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -130,7 +130,7 @@ export default function TicketDetailPage() {
               </span>
               <span className="text-xs text-gray-400">#{ticket.id.slice(-8)}</span>
             </div>
-            <h1 className="text-lg font-bold text-gray-900">{ticket.subject}</h1>
+            <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">{ticket.subject}</h1>
             <div className="mt-1 text-xs text-gray-400">
               {ticket.guestName} · {ticket.guestEmail}
               {ticket.guestPhone && ` · ${ticket.guestPhone}`}
@@ -151,7 +151,7 @@ export default function TicketDetailPage() {
                 disabled={!!busy}
                 value={ticket.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="rounded-xl border border-gray-200 px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               >
                 {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
@@ -159,7 +159,7 @@ export default function TicketDetailPage() {
                 disabled={!!busy}
                 value={ticket.priority}
                 onChange={(e) => handlePriorityChange(e.target.value)}
-                className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="rounded-xl border border-gray-200 px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               >
                 {Object.entries(PRIORITY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
@@ -170,7 +170,7 @@ export default function TicketDetailPage() {
                 type="button"
                 disabled={!!busy}
                 onClick={handleAssignMe}
-                className="rounded border border-gray-200 px-2 py-0.5 text-xs hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-full border border-gray-200 px-2 py-0.5 text-xs hover:bg-gray-50 disabled:opacity-50 bg-white"
               >
                 Bana Al
               </button>
@@ -215,7 +215,7 @@ export default function TicketDetailPage() {
 
       {/* Reply / Note composer */}
       {!isClosed && (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-card border border-gray-200/70 bg-white overflow-hidden shadow-card">
           <div className="flex border-b border-gray-100">
             <button
               type="button"
@@ -246,7 +246,7 @@ export default function TicketDetailPage() {
                     {showTemplates ? "Şablonları Gizle ▲" : "Şablondan Seç ▼"}
                   </button>
                   {showTemplates && templates.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-80 rounded-xl border border-gray-200 bg-white shadow-lg">
+                    <div className="absolute z-10 mt-1 w-80 rounded-card border border-gray-200/70 bg-white shadow-lg shadow-card">
                       {templates.map((tpl) => (
                         <button
                           key={tpl.id}
@@ -268,7 +268,7 @@ export default function TicketDetailPage() {
                 <textarea
                   rows={5}
                   placeholder="Yanıtınızı yazın…"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
                 />
@@ -287,7 +287,7 @@ export default function TicketDetailPage() {
                     type="button"
                     disabled={replyBusy || !replyBody.trim()}
                     onClick={handleReply}
-                    className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                    className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
                   >
                     Yanıtla
                   </button>
@@ -298,7 +298,7 @@ export default function TicketDetailPage() {
                 <textarea
                   rows={4}
                   placeholder="İç not (yalnızca adminler görebilir)…"
-                  className="w-full rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="w-full rounded-xl border border-yellow-200 bg-yellow-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-brand-500/15 focus:border-brand-400"
                   value={noteBody}
                   onChange={(e) => setNoteBody(e.target.value)}
                 />

@@ -66,7 +66,7 @@ function BookingCard({
   busy: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate font-bold text-ink">{booking.guestName}</h3>
@@ -132,7 +132,7 @@ function BookingCard({
             type="button"
             disabled={busy}
             onClick={() => onApprove(booking)}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand-600 py-2.5 text-body-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-brand-500 py-2.5 text-body-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60"
           >
             <FontAwesomeIcon icon={faCheck} className="text-[13px]" aria-hidden />
             Onayla
@@ -219,7 +219,7 @@ function BookingsContent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[26px] font-bold tracking-tight text-ink">Rezervasyonlar</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Rezervasyonlar</h1>
         <p className="mt-1 text-body-sm text-gray-500">
           Teknelerine gelen rezervasyon taleplerini onayla veya reddet.
           {pendingCount > 0 ? (

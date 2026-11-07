@@ -44,31 +44,31 @@ export function StatGrid({ stats, loading, error }: StatGridProps) {
 
   const cards: CardConfig[] = [
     {
-      label: "Toplam Kazanç",
+      label: "Toplam kazanç",
       value: stats ? formatMoney(stats.totalEarning.amount, stats.totalEarning.currency) : "—",
       icon: faArrowTrendUp,
-      iconBox: "bg-success-50 text-success-500",
+      iconBox: "bg-green-50 text-green-600",
     },
     {
-      label: "Onay Bekleyen Müsaitlik",
+      label: "Onay bekleyen müsaitlik",
       value: stats ? String(stats.availabilityAwaiting) : "—",
       icon: faClock,
-      iconBox: "bg-warning-50 text-warning-500",
+      iconBox: "bg-amber-50 text-amber-600",
     },
     {
-      label: "Onaylanan Müsaitlik",
+      label: "Onaylanan müsaitlik",
       value: stats ? String(stats.availabilityConfirmed) : "—",
       icon: faCircleCheck,
-      iconBox: "bg-info-50 text-info-500",
+      iconBox: "bg-accent-50 text-accent-600",
     },
     {
       label: "Opsiyonlu",
       value: stats ? String(stats.optioned) : "—",
       icon: faLayerGroup,
-      iconBox: "bg-[#F5F3FF] text-[#8B5CF6]",
+      iconBox: "bg-violet-50 text-violet-500",
     },
     {
-      label: "Aktif Tekneler",
+      label: "Aktif tekneler",
       value: stats ? String(stats.activeBoats) : "—",
       icon: faAnchor,
       iconBox: "bg-brand-50 text-brand-500",
@@ -78,35 +78,30 @@ export function StatGrid({ stats, loading, error }: StatGridProps) {
       value: stats?.rating.average != null ? stats.rating.average.toFixed(1) : "–",
       hint: stats ? `${stats.rating.count} değerlendirme` : undefined,
       icon: faStar,
-      iconBox: "bg-[#FEFCE8] text-[#EAB308]",
+      iconBox: "bg-amber-50 text-amber-500",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
       {cards.map((c) => (
         <div
           key={c.label}
-          className="group rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] transition duration-150 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+          className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card transition duration-150 hover:-translate-y-0.5 hover:shadow-card-hover"
         >
           <span
-            className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-lg text-[15px]",
-              c.iconBox
-            )}
+            className={cn("grid h-10 w-10 place-items-center rounded-xl text-[16px]", c.iconBox)}
             aria-hidden
           >
             <FontAwesomeIcon icon={c.icon} />
           </span>
-          <div className="mt-3 text-[11px] font-medium uppercase tracking-wide text-gray-500">
-            {c.label}
-          </div>
           {loading ? (
-            <div className="mt-1.5 h-8 w-20 animate-pulse rounded bg-gray-100" />
+            <div className="mt-4 h-7 w-20 animate-pulse rounded-lg bg-gray-100" />
           ) : (
-            <div className="mt-1 text-[28px] font-bold leading-tight text-ink">{c.value}</div>
+            <div className="mt-4 text-[26px] font-extrabold leading-none tracking-tight text-ink">{c.value}</div>
           )}
-          {c.hint ? <div className="mt-0.5 text-caption text-gray-400">{c.hint}</div> : null}
+          <div className="mt-2 text-[13.5px] font-medium text-gray-500">{c.label}</div>
+          {c.hint ? <div className="mt-0.5 text-[12px] text-gray-400">{c.hint}</div> : null}
         </div>
       ))}
     </div>

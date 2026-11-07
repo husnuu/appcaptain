@@ -105,7 +105,7 @@ export default function AdminExperiencesPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Deneyim Yönetimi</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Deneyim Yönetimi</h1>
         <span className="text-sm text-gray-500">{total} deneyim</span>
       </div>
 
@@ -116,12 +116,12 @@ export default function AdminExperiencesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") applySearch(); }}
-          className="flex-1 min-w-48 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 min-w-48 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -130,7 +130,7 @@ export default function AdminExperiencesPage() {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
         >
           <option value="">Tüm Kategoriler</option>
           {Object.entries(EXPERIENCE_CATEGORY_LABELS).map(([key, label]) => (
@@ -140,7 +140,7 @@ export default function AdminExperiencesPage() {
         <button
           type="button"
           onClick={applySearch}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
         >
           Ara
         </button>
@@ -153,9 +153,9 @@ export default function AdminExperiencesPage() {
       ) : items.length === 0 ? (
         <div className="py-12 text-center text-gray-400">Deneyim bulunamadı.</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-card border border-gray-200/70 bg-white shadow-card">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">Deneyim</th>
                 <th className="px-4 py-3 text-left">Kategori</th>
@@ -193,7 +193,7 @@ export default function AdminExperiencesPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/experiences/${exp.id}`}
-                        className="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                        className="rounded-full border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50 bg-white"
                       >
                         Detay
                       </Link>
@@ -244,7 +244,7 @@ export default function AdminExperiencesPage() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               ←
             </button>
@@ -252,7 +252,7 @@ export default function AdminExperiencesPage() {
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="rounded-md border px-3 py-1 disabled:opacity-40 hover:bg-gray-100"
+              className="rounded-full border px-3 py-1 disabled:opacity-40 hover:bg-gray-100 bg-white"
             >
               →
             </button>

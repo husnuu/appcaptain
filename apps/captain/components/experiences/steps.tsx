@@ -3,21 +3,28 @@
 import {
   CANCELLATION_POLICY_LABELS,
   CancellationPolicyType,
+  CustomerInfoFieldType,
+  CUSTOMER_INFO_FIELD_TYPE_LABELS,
   EXPERIENCE_CATEGORY_LABELS,
+  EXPERIENCE_DIFFICULTY_LEVEL_LABELS,
   EXPERIENCE_PRICING_TYPE_LABELS,
+  EXPERIENCE_PRODUCT_TYPE_LABELS,
   ExperienceCategory,
   ExperienceDTO,
+  ExperienceDifficultyLevel,
   ExperiencePricingType,
+  ExperienceProductType,
   ExperienceStep,
   ValidationFieldError,
 } from "@getyourboat/shared";
-import { Button, cn, FontAwesomeIcon, faXmark, LocationPicker } from "@getyourboat/ui";
+import { Button, cn, FontAwesomeIcon, faTrash, faXmark, LocationPicker } from "@getyourboat/ui";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError, uploadToStorage } from "../../lib/api";
-import { Alert, Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
+import { Checkbox, Field, Input, Label, Select, Textarea } from "../ui";
 import { ChipInput } from "./ChipInput";
 import { LinesField, StepShell } from "./form-utils";
+import { ChoiceTiles, SectionTitle, ToggleTile, UploadDropzone } from "../wizard/focus";
 
 const INCLUDED_SUGGESTIONS = ["Kaptan", "Yakıt", "Ekipman", "Sigorta", "Atıştırmalık", "Su"];
 const EXCLUDED_SUGGESTIONS = ["Ulaşım", "Öğle yemeği", "Kişisel harcamalar", "Bahşiş"];
@@ -27,7 +34,7 @@ const NOT_ALLOWED_SUGGESTIONS = ["Evcil hayvan", "Cam şişe", "Sigara (iç meka
 const MIN_AGE_OPTIONS = ["", "0", "6", "8", "10", "12", "16", "18"];
 
 const TICKET_TYPE_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Belirtilmedi" },
+  { value: "" as const, label: "Belirtilmedi" },
   { value: "mobile", label: "Mobil bilet" },
   { value: "printed", label: "Baskılı bilet" },
   { value: "both", label: "Her ikisi de" },
@@ -75,7 +82,17 @@ function useStepSave(step: ExperienceStep) {
 
 export function CategoryStep({ experience, onSaved, onNext }: ExperienceStepProps) {
   const [category, setCategory] = useState(experience.category ?? ExperienceCategory.BOAT_TOUR);
+  const [secondaryCategories, setSecondaryCategories] = useState<ExperienceCategory[]>(
+    experience.secondaryCategories
+  );
+  const [productType, setProductType] = useState(experience.productType ?? "");
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.CATEGORY);
+
+  function toggleSecondary(key: ExperienceCategory) {
+    setSecondaryCategories((prev) =>
+      prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
+    );
+  }
 
   return (
     <StepShell
@@ -83,23 +100,70 @@ export function CategoryStep({ experience, onSaved, onNext }: ExperienceStepProp
       description="Deneyiminin türünü seç."
       error={error}
       fieldErrors={fieldErrors}
+      footer={
+        <Button size="lg"
+          onClick={() =>
+            void save(
+              experience.id,
+              { category, secondaryCategories, productType: productType || null },
+              (next) => { onSaved(next); onNext(); }
+            )
+          }
+          disabled={saving}
+        >
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </Button>
+      }
     >
-      <Field>
-        <Label>Kategori *</Label>
-        <Select value={category} onChange={(e) => setCategory(e.target.value as ExperienceCategory)}>
-          {Object.entries(EXPERIENCE_CATEGORY_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <Button
-        onClick={() => void save(experience.id, { category }, (next) => { onSaved(next); onNext(); })}
-        disabled={saving}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      <section>
+        <SectionTitle>
+          Kategori <span className="text-danger-500">*</span>
+        </SectionTitle>
+        <ChoiceTiles<ExperienceCategory>
+          ariaLabel="Kategori"
+          value={category}
+          onChange={setCategory}
+          options={Object.entries(EXPERIENCE_CATEGORY_LABELS).map(([key, label]) => ({
+            value: key as ExperienceCategory,
+            label,
+          }))}
+        />
+      </section>
+      <section>
+        <SectionTitle
+          optional
+          hint="Vitrindeki ek kategori sayfalarında da listelenmesini istiyorsan seç."
+        >
+          İkincil kategoriler
+        </SectionTitle>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Object.entries(EXPERIENCE_CATEGORY_LABELS)
+            .filter(([key]) => key !== category)
+            .map(([key, label]) => (
+              <ToggleTile
+                key={key}
+                on={secondaryCategories.includes(key as ExperienceCategory)}
+                onToggle={() => toggleSecondary(key as ExperienceCategory)}
+                label={label}
+              />
+            ))}
+        </div>
+      </section>
+      <section>
+        <SectionTitle>Program tipi</SectionTitle>
+        <ChoiceTiles<ExperienceProductType | "">
+          ariaLabel="Program tipi"
+          value={productType as ExperienceProductType | ""}
+          onChange={(v) => setProductType(v)}
+          options={[
+            { value: "" as const, label: "Belirtilmedi" },
+            ...Object.entries(EXPERIENCE_PRODUCT_TYPE_LABELS).map(([key, label]) => ({
+              value: key as ExperienceProductType,
+              label,
+            })),
+          ]}
+        />
+      </section>
     </StepShell>
   );
 }
@@ -139,7 +203,15 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
 
   function handleSubmit() {
     setAttempted(true);
-    if (!isValid) return;
+    if (!isValid) {
+      // Butonu alttaki çubukta; ilk hatalı alanı görünür yap.
+      requestAnimationFrame(() =>
+        document
+          .querySelector('[aria-invalid="true"]')
+          ?.scrollIntoView({ behavior: "smooth", block: "center" })
+      );
+      return;
+    }
     void save(
       experience.id,
       {
@@ -163,6 +235,22 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
       description="Başlık konum adıyla başlamalı (örn. Bodrum Gün Batımı Yelken Turu)."
       error={error}
       fieldErrors={fieldErrors}
+      footer={
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving}
+          aria-disabled={!isValid}
+          className={cn(
+            "inline-flex h-12 items-center justify-center rounded-full px-7 text-[15px] font-semibold transition-all disabled:opacity-60",
+            isValid
+              ? "bg-brand-500 text-white hover:bg-brand-600"
+              : "cursor-not-allowed bg-gray-200 text-gray-400"
+          )}
+        >
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </button>
+      }
     >
       <Field>
         <Label>Başlık *</Label>
@@ -236,20 +324,6 @@ export function TitleDescriptionStep({ experience, onSaved, onNext }: Experience
         value={keywords}
         onChange={setKeywords}
       />
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={saving}
-        aria-disabled={!isValid}
-        className={cn(
-          "inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold transition-all disabled:opacity-60",
-          isValid
-            ? "bg-brand-600 text-white hover:bg-brand-700"
-            : "cursor-not-allowed bg-gray-200 text-gray-400"
-        )}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </button>
     </StepShell>
   );
 }
@@ -263,10 +337,34 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(
     experience.emergencyContactPhone ?? ""
   );
+  const [difficultyLevel, setDifficultyLevel] = useState(experience.difficultyLevel ?? "");
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.INCLUDED_INFO);
 
   return (
-    <StepShell title="Dahil / Hariç / Bilgilendirme" error={error} fieldErrors={fieldErrors}>
+    <StepShell title="Dahil / Hariç / Bilgilendirme" error={error} fieldErrors={fieldErrors}
+      footer={
+        <Button size="lg"
+          onClick={() =>
+            void save(
+              experience.id,
+              {
+                included,
+                notIncluded,
+                toBring,
+                notAllowed,
+                knowBeforeYouGo,
+                emergencyContactPhone: emergencyContactPhone || null,
+                difficultyLevel: difficultyLevel || null,
+              },
+              (next) => { onSaved(next); onNext(); }
+            )
+          }
+          disabled={saving}
+        >
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </Button>
+      }
+    >
       <ChipInput
         label="Fiyata dahil olanlar"
         description="Bilet fiyatına dahil olan her şeyi ekle"
@@ -311,25 +409,21 @@ export function IncludedInfoStep({ experience, onSaved, onNext }: ExperienceStep
         <Label>Acil durum telefonu</Label>
         <Input value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} />
       </Field>
-      <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              included,
-              notIncluded,
-              toBring,
-              notAllowed,
-              knowBeforeYouGo,
-              emergencyContactPhone: emergencyContactPhone || null,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
-        disabled={saving}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      <section>
+        <SectionTitle>Zorluk seviyesi</SectionTitle>
+        <ChoiceTiles<ExperienceDifficultyLevel | "">
+          ariaLabel="Zorluk seviyesi"
+          value={difficultyLevel as ExperienceDifficultyLevel | ""}
+          onChange={(v) => setDifficultyLevel(v)}
+          options={[
+            { value: "" as const, label: "Belirtilmedi" },
+            ...Object.entries(EXPERIENCE_DIFFICULTY_LEVEL_LABELS).map(([key, label]) => ({
+              value: key as ExperienceDifficultyLevel,
+              label,
+            })),
+          ]}
+        />
+      </section>
     </StepShell>
   );
 }
@@ -356,6 +450,11 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   const [accessibilityOptions, setAccessibilityOptions] = useState<string[]>(
     experience.accessibilityOptions
   );
+  const [pickupOffered, setPickupOffered] = useState(experience.pickupOffered);
+  const [pickupAreas, setPickupAreas] = useState(experience.pickupAreas ?? "");
+  const [pickupFee, setPickupFee] = useState(
+    experience.pickupFee != null ? String(experience.pickupFee) : ""
+  );
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.LOGISTICS);
 
@@ -371,7 +470,41 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
   }
 
   return (
-    <StepShell title="Lojistik" error={error} fieldErrors={fieldErrors}>
+    <StepShell title="Lojistik" error={error} fieldErrors={fieldErrors}
+      footer={
+        <Button size="lg"
+          onClick={() =>
+            void save(
+              experience.id,
+              {
+                durationMinutes: Number(durationMinutes),
+                meetingPoint,
+                meetingPointLat: meetingPointLat ? Number(meetingPointLat) : null,
+                meetingPointLng: meetingPointLng ? Number(meetingPointLng) : null,
+                meetingTime,
+                isSameEndPoint,
+                endPoint: isSameEndPoint ? "" : endPoint,
+                languages,
+                minParticipants: Number(minParticipants),
+                maxParticipants: Number(maxParticipants),
+                minAge: minAge ? Number(minAge) : null,
+                ticketType: ticketType || null,
+                requiredEquipment,
+                accessibilityInfo: accessibilityInfo || null,
+                accessibilityOptions,
+                pickupOffered,
+                pickupAreas: pickupAreas || null,
+                pickupFee: pickupFee ? Number(pickupFee) : null,
+              },
+              (next) => { onSaved(next); onNext(); }
+            )
+          }
+          disabled={saving}
+        >
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </Button>
+      }
+    >
       <Field>
         <Label>Süre (dakika) *</Label>
         <Input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} />
@@ -424,6 +557,30 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
           />
         </Field>
       ) : null}
+      <Field>
+        <Checkbox
+          checked={pickupOffered}
+          onChange={(e) => setPickupOffered(e.target.checked)}
+          label="Otelden alış (pickup) hizmeti sunuyorum"
+        />
+      </Field>
+      {pickupOffered ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field>
+            <Label>Hizmet bölgeleri / oteller</Label>
+            <Textarea
+              rows={2}
+              value={pickupAreas}
+              onChange={(e) => setPickupAreas(e.target.value)}
+              placeholder="Örn. Bodrum merkez otelleri, Gümbet…"
+            />
+          </Field>
+          <Field>
+            <Label>Ek ücret (varsa)</Label>
+            <Input type="number" min="0" step="0.01" value={pickupFee} onChange={(e) => setPickupFee(e.target.value)} />
+          </Field>
+        </div>
+      ) : null}
       <LinesField label="Diller" value={languages} onChange={setLanguages} required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
@@ -458,52 +615,147 @@ export function LogisticsStep({ experience, onSaved, onNext }: ExperienceStepPro
         </Field>
       </div>
       <LinesField label="Gerekli ekipman / beceriler" value={requiredEquipment} onChange={setRequiredEquipment} />
-      <Field>
-        <Label>Erişilebilirlik seçenekleri</Label>
-        <div className="mt-1 grid gap-2 sm:grid-cols-2">
+      <section>
+        <SectionTitle>Erişilebilirlik seçenekleri</SectionTitle>
+        <div className="grid gap-3 sm:grid-cols-2">
           {ACCESSIBILITY_OPTIONS.map((option) => (
-            <Checkbox
+            <ToggleTile
               key={option}
-              checked={accessibilityOptions.includes(option)}
-              onChange={() => toggleAccessibility(option)}
+              on={accessibilityOptions.includes(option)}
+              onToggle={() => toggleAccessibility(option)}
               label={option}
             />
           ))}
         </div>
-      </Field>
+      </section>
       <Field>
         <Label>Ek erişilebilirlik notu</Label>
         <Textarea rows={3} value={accessibilityInfo} onChange={(e) => setAccessibilityInfo(e.target.value)} />
       </Field>
-      <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              durationMinutes: Number(durationMinutes),
-              meetingPoint,
-              meetingPointLat: meetingPointLat ? Number(meetingPointLat) : null,
-              meetingPointLng: meetingPointLng ? Number(meetingPointLng) : null,
-              meetingTime,
-              isSameEndPoint,
-              endPoint: isSameEndPoint ? "" : endPoint,
-              languages,
-              minParticipants: Number(minParticipants),
-              maxParticipants: Number(maxParticipants),
-              minAge: minAge ? Number(minAge) : null,
-              ticketType: ticketType || null,
-              requiredEquipment,
-              accessibilityInfo: accessibilityInfo || null,
-              accessibilityOptions,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
-        disabled={saving}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      <CustomerInfoFieldBuilder experience={experience} onSaved={onSaved} />
     </StepShell>
+  );
+}
+
+function CustomerInfoFieldBuilder({
+  experience,
+  onSaved,
+}: {
+  experience: ExperienceDTO;
+  onSaved: (next: ExperienceDTO) => void;
+}) {
+  const [label, setLabel] = useState("");
+  const [fieldType, setFieldType] = useState<CustomerInfoFieldType>(CustomerInfoFieldType.TEXT);
+  const [required, setRequired] = useState(false);
+  const [options, setOptions] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleAdd() {
+    if (label.trim().length < 2) {
+      setError("Alan adı en az 2 karakter olmalı");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const { items } = await api.addExperienceCustomerInfoField(experience.id, {
+        label: label.trim(),
+        fieldType,
+        required,
+        options:
+          fieldType === CustomerInfoFieldType.DROPDOWN
+            ? options.split(",").map((o) => o.trim()).filter(Boolean)
+            : [],
+      });
+      onSaved({ ...experience, customerInfoFields: items });
+      setLabel("");
+      setOptions("");
+      setRequired(false);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Alan eklenemedi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemove(fieldId: string) {
+    setRemovingId(fieldId);
+    setError(null);
+    try {
+      const { items } = await api.removeExperienceCustomerInfoField(experience.id, fieldId);
+      onSaved({ ...experience, customerInfoFields: items });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Alan silinemedi");
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  return (
+    <Field>
+      <Label>Müşteriden istenecek ek bilgiler</Label>
+      <p className="mb-2 text-xs text-gray-500">
+        Rezervasyon sırasında müşteriden istenecek özel alanlar (ör. pasaport no, diyet kısıtlaması).
+      </p>
+      {experience.customerInfoFields.length > 0 ? (
+        <ul className="mb-3 space-y-2">
+          {experience.customerInfoFields.map((f) => (
+            <li
+              key={f.id}
+              className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <span>
+                {f.label}{" "}
+                <span className="text-xs text-gray-400">
+                  ({CUSTOMER_INFO_FIELD_TYPE_LABELS[f.fieldType]}
+                  {f.required ? ", zorunlu" : ""})
+                </span>
+              </span>
+              <button
+                type="button"
+                disabled={removingId === f.id}
+                onClick={() => void handleRemove(f.id)}
+                className="text-gray-400 transition-colors hover:text-red-500 disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faTrash} className="text-[13px]" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Alan adı (ör. Pasaport No)" />
+        <Select value={fieldType} onChange={(e) => setFieldType(e.target.value as CustomerInfoFieldType)}>
+          {Object.entries(CUSTOMER_INFO_FIELD_TYPE_LABELS).map(([key, l]) => (
+            <option key={key} value={key}>
+              {l}
+            </option>
+          ))}
+        </Select>
+      </div>
+      {fieldType === CustomerInfoFieldType.DROPDOWN ? (
+        <Input
+          className="mt-2"
+          value={options}
+          onChange={(e) => setOptions(e.target.value)}
+          placeholder="Seçenekler (virgülle ayır)"
+        />
+      ) : null}
+      <div className="mt-2 flex items-center justify-between">
+        <Checkbox checked={required} onChange={(e) => setRequired(e.target.checked)} label="Zorunlu alan" />
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void handleAdd()}
+          className="rounded-full border-2 border-brand-500 px-4 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-500 hover:text-white disabled:opacity-50"
+        >
+          {busy ? "Ekleniyor…" : "Alan Ekle"}
+        </button>
+      </div>
+      {error ? <p className="mt-1 text-xs text-danger-600">{error}</p> : null}
+    </Field>
   );
 }
 
@@ -514,10 +766,34 @@ export function PricingStep({ experience, onSaved, onNext }: ExperienceStepProps
   const [childDiscountPercent, setChildDiscountPercent] = useState(
     experience.childDiscountPercent != null ? String(experience.childDiscountPercent) : ""
   );
+  const [currencyLocked, setCurrencyLocked] = useState(experience.currencyLocked);
+  const [displayCurrency, setDisplayCurrency] = useState(experience.displayCurrency ?? "");
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.PRICING);
 
   return (
-    <StepShell title="Fiyatlandırma" error={error} fieldErrors={fieldErrors}>
+    <StepShell title="Fiyatlandırma" error={error} fieldErrors={fieldErrors}
+      footer={
+        <Button size="lg"
+          onClick={() =>
+            void save(
+              experience.id,
+              {
+                basePrice: Number(basePrice),
+                currency,
+                pricingType,
+                childDiscountPercent: childDiscountPercent ? Number(childDiscountPercent) : null,
+                currencyLocked,
+                displayCurrency: displayCurrency || null,
+              },
+              (next) => { onSaved(next); onNext(); }
+            )
+          }
+          disabled={saving}
+        >
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </Button>
+      }
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
           <Label>Temel fiyat *</Label>
@@ -528,16 +804,21 @@ export function PricingStep({ experience, onSaved, onNext }: ExperienceStepProps
           <Input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={3} />
         </Field>
       </div>
-      <Field>
-        <Label>Fiyatlandırma tipi *</Label>
-        <Select value={pricingType} onChange={(e) => setPricingType(e.target.value as ExperiencePricingType)}>
-          {Object.entries(EXPERIENCE_PRICING_TYPE_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      <section>
+        <SectionTitle>
+          Fiyatlandırma tipi <span className="text-danger-500">*</span>
+        </SectionTitle>
+        <ChoiceTiles<ExperiencePricingType>
+          columns={2}
+          ariaLabel="Fiyatlandırma tipi"
+          value={pricingType}
+          onChange={setPricingType}
+          options={Object.entries(EXPERIENCE_PRICING_TYPE_LABELS).map(([key, label]) => ({
+            value: key as ExperiencePricingType,
+            label,
+          }))}
+        />
+      </section>
       <Field>
         <Label>Çocuk indirimi (%)</Label>
         <Input
@@ -548,24 +829,131 @@ export function PricingStep({ experience, onSaved, onNext }: ExperienceStepProps
           onChange={(e) => setChildDiscountPercent(e.target.value)}
         />
       </Field>
-      <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              basePrice: Number(basePrice),
-              currency,
-              pricingType,
-              childDiscountPercent: childDiscountPercent ? Number(childDiscountPercent) : null,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
-        disabled={saving}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      <Field>
+        <Checkbox
+          checked={currencyLocked}
+          onChange={(e) => setCurrencyLocked(e.target.checked)}
+          label="Zorunlu para birimi (müşteri görüntüleme para birimini değiştiremez)"
+        />
+      </Field>
+      <Field>
+        <Label>Alternatif gösterim para birimi</Label>
+        <p className="mb-2 text-xs text-gray-500">
+          Opsiyonel — seçilirse fiyatın yanında parantez içinde bu para biriminde de gösterilir. Satışı etkilemez.
+        </p>
+        <Input
+          value={displayCurrency}
+          onChange={(e) => setDisplayCurrency(e.target.value.toUpperCase())}
+          maxLength={3}
+          placeholder="Örn. EUR"
+        />
+      </Field>
+      <SeasonalPricingBuilder experience={experience} onSaved={onSaved} />
     </StepShell>
+  );
+}
+
+function SeasonalPricingBuilder({
+  experience,
+  onSaved,
+}: {
+  experience: ExperienceDTO;
+  onSaved: (next: ExperienceDTO) => void;
+}) {
+  const [label, setLabel] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [price, setPrice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleAdd() {
+    if (!startDate || !endDate || !price) {
+      setError("Tarih aralığı ve fiyat gerekli");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const { items } = await api.addExperienceSeasonalPricingRule(experience.id, {
+        label: label.trim() || undefined,
+        startDate,
+        endDate,
+        price: Number(price),
+      });
+      onSaved({ ...experience, seasonalPricingRules: items });
+      setLabel("");
+      setStartDate("");
+      setEndDate("");
+      setPrice("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Kural eklenemedi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemove(ruleId: string) {
+    setRemovingId(ruleId);
+    setError(null);
+    try {
+      const { items } = await api.removeExperienceSeasonalPricingRule(experience.id, ruleId);
+      onSaved({ ...experience, seasonalPricingRules: items });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Kural silinemedi");
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  return (
+    <Field>
+      <Label>Sezonluk fiyat kuralları</Label>
+      <p className="mb-2 text-xs text-gray-500">
+        Belirli tarih aralıkları için farklı bir fiyat tanımla (ör. yüksek sezon).
+      </p>
+      {experience.seasonalPricingRules.length > 0 ? (
+        <ul className="mb-3 space-y-2">
+          {experience.seasonalPricingRules.map((r) => (
+            <li
+              key={r.id}
+              className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <span>
+                {r.label ? `${r.label}: ` : ""}
+                {new Date(r.startDate).toLocaleDateString("tr-TR")} –{" "}
+                {new Date(r.endDate).toLocaleDateString("tr-TR")} —{" "}
+                <span className="font-semibold">{r.price.toLocaleString("tr-TR")}</span>
+              </span>
+              <button
+                type="button"
+                disabled={removingId === r.id}
+                onClick={() => void handleRemove(r.id)}
+                className="text-gray-400 transition-colors hover:text-red-500 disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faTrash} className="text-[13px]" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Etiket (ör. Yüksek Sezon)" />
+        <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Fiyat" />
+        <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+        <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void handleAdd()}
+        className="mt-2 rounded-full border-2 border-brand-500 px-4 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-500 hover:text-white disabled:opacity-50"
+      >
+        {busy ? "Ekleniyor…" : "Kural Ekle"}
+      </button>
+      {error ? <p className="mt-1 text-xs text-danger-600">{error}</p> : null}
+    </Field>
   );
 }
 
@@ -574,7 +962,20 @@ export function CancellationStep({ experience, onSaved, onNext }: ExperienceStep
   const [cancellationPolicyText, setCancellationPolicyText] = useState(
     experience.cancellationPolicyText ?? ""
   );
+  const [tiers, setTiers] = useState(experience.cancellationTiers);
   const { saving, error, fieldErrors, save } = useStepSave(ExperienceStep.CANCELLATION);
+
+  function addTier() {
+    setTiers((prev) => [...prev, { daysBefore: 7, refundPercent: 50 }]);
+  }
+
+  function updateTier(index: number, patch: Partial<{ daysBefore: number; refundPercent: number }>) {
+    setTiers((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
+  }
+
+  function removeTier(index: number) {
+    setTiers((prev) => prev.filter((_, i) => i !== index));
+  }
 
   return (
     <StepShell
@@ -582,44 +983,90 @@ export function CancellationStep({ experience, onSaved, onNext }: ExperienceStep
       description="Tam açıklamadaki iptal koşulları bu seçimle çelişmemeli."
       error={error}
       fieldErrors={fieldErrors}
-    >
-      <Field>
-        <Label>İptal politikası *</Label>
-        <Select
-          value={cancellationPolicy}
-          onChange={(e) => setCancellationPolicy(e.target.value as CancellationPolicyType)}
+      footer={
+        <Button size="lg"
+          onClick={() =>
+            void save(
+              experience.id,
+              {
+                cancellationPolicy,
+                cancellationPolicyText:
+                  cancellationPolicy === CancellationPolicyType.CUSTOM
+                    ? cancellationPolicyText
+                    : null,
+                cancellationTiers: tiers,
+              },
+              (next) => { onSaved(next); onNext(); }
+            )
+          }
+          disabled={saving}
         >
-          {Object.entries(CANCELLATION_POLICY_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </Select>
-      </Field>
+          {saving ? "Kaydediliyor…" : "Kaydet ve ilerle"}
+        </Button>
+      }
+    >
+      <section>
+        <SectionTitle>
+          İptal politikası <span className="text-danger-500">*</span>
+        </SectionTitle>
+        <ChoiceTiles<CancellationPolicyType>
+          columns={2}
+          ariaLabel="İptal politikası"
+          value={cancellationPolicy}
+          onChange={setCancellationPolicy}
+          options={Object.entries(CANCELLATION_POLICY_LABELS).map(([key, label]) => ({
+            value: key as CancellationPolicyType,
+            label,
+          }))}
+        />
+      </section>
       {cancellationPolicy === CancellationPolicyType.CUSTOM ? (
         <Field>
           <Label>Özel iptal metni *</Label>
           <Textarea rows={4} value={cancellationPolicyText} onChange={(e) => setCancellationPolicyText(e.target.value)} />
         </Field>
       ) : null}
-      <Button
-        onClick={() =>
-          void save(
-            experience.id,
-            {
-              cancellationPolicy,
-              cancellationPolicyText:
-                cancellationPolicy === CancellationPolicyType.CUSTOM
-                  ? cancellationPolicyText
-                  : null,
-            },
-            (next) => { onSaved(next); onNext(); }
-          )
-        }
-        disabled={saving}
-      >
-        {saving ? "Kaydediliyor…" : "Devam et"}
-      </Button>
+      <Field>
+        <Label>Zaman dilimli iptal kesinti tablosu</Label>
+        <p className="mb-2 text-xs text-gray-500">
+          “Tur tarihinden X gün öncesine kadar %Y iade” şeklinde birden fazla kademe ekleyebilirsin.
+        </p>
+        {tiers.map((tier, i) => (
+          <div key={i} className="mb-2 flex items-center gap-2">
+            <Input
+              type="number"
+              min="0"
+              value={tier.daysBefore}
+              onChange={(e) => updateTier(i, { daysBefore: Number(e.target.value) })}
+              className="w-24"
+            />
+            <span className="text-xs text-gray-500 whitespace-nowrap">gün öncesine kadar %</span>
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              value={tier.refundPercent}
+              onChange={(e) => updateTier(i, { refundPercent: Number(e.target.value) })}
+              className="w-20"
+            />
+            <span className="text-xs text-gray-500 whitespace-nowrap">iade</span>
+            <button
+              type="button"
+              onClick={() => removeTier(i)}
+              className="ml-auto text-gray-400 transition-colors hover:text-red-500"
+            >
+              <FontAwesomeIcon icon={faTrash} className="text-[13px]" aria-hidden />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addTier}
+          className="rounded-full border-2 border-brand-500 px-4 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-500 hover:text-white"
+        >
+          Kademe Ekle
+        </button>
+      </Field>
     </StepShell>
   );
 }
@@ -695,83 +1142,94 @@ export function MediaStep({ experience, onSaved }: ExperienceStepProps) {
       description="Kapak fotoğrafı zorunlu. Galeri için en az 5 foto önerilir."
       error={error || saveError}
       fieldErrors={fieldErrors}
+      footer={
+        <Button size="lg"
+          onClick={handleSubmitForReview}
+          disabled={saving || submitting || !experience.coverPhotoUrl}
+        >
+          {saving ? "Kaydediliyor…" : submitting ? "Gönderiliyor…" : "İncelemeye Gönder"}
+        </Button>
+      }
     >
-      {experience.coverPhotoUrl ? (
-        <div className="relative">
-          {/* Supabase'den gelen uzak URL; next/image için domain yapılandırması gerektirmesin diye <img>. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={experience.coverPhotoUrl} alt="Kapak" className="h-40 w-full rounded-xl object-cover" />
-          <button
-            type="button"
-            aria-label="Kapak fotoğrafını sil"
-            disabled={removingUrl === experience.coverPhotoUrl}
-            onClick={() => void handleRemovePhoto(experience.coverPhotoUrl)}
-            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
-          >
-            <FontAwesomeIcon icon={faXmark} className="text-[13px]" aria-hidden />
-          </button>
-        </div>
-      ) : (
-        <Alert variant="info">Kapak fotoğrafı henüz yüklenmedi.</Alert>
-      )}
-
-      <Field>
-        <Label>Kapak fotoğrafı yükle</Label>
-        <Input
-          type="file"
+      <section>
+        <SectionTitle hint="Deneyimin vitrinde bu fotoğrafla görünür.">
+          Kapak fotoğrafı <span className="text-danger-500">*</span>
+        </SectionTitle>
+        {experience.coverPhotoUrl ? (
+          <figure className="relative mb-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+            {/* Supabase'den gelen uzak URL; next/image için domain yapılandırması gerektirmesin diye <img>. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={experience.coverPhotoUrl} alt="Kapak" className="aspect-[16/9] w-full object-cover" />
+            <span className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-1 text-[12.5px] font-semibold text-brand-600 shadow-sm">
+              Kapak fotoğrafı
+            </span>
+            <button
+              type="button"
+              aria-label="Kapak fotoğrafını sil"
+              disabled={removingUrl === experience.coverPhotoUrl}
+              onClick={() => void handleRemovePhoto(experience.coverPhotoUrl)}
+              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition-colors hover:bg-danger-600 hover:text-white disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={faXmark} className="text-[14px]" aria-hidden />
+            </button>
+          </figure>
+        ) : null}
+        <UploadDropzone
           accept="image/*"
-          disabled={uploading}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
+          compact={!!experience.coverPhotoUrl}
+          busy={uploading}
+          title={experience.coverPhotoUrl ? "Kapak fotoğrafını değiştir" : "Kapak fotoğrafını buraya sürükle"}
+          hint={experience.coverPhotoUrl ? undefined : "Ya da bilgisayarından seç. Yatay ve aydınlık bir fotoğraf en iyi sonucu verir."}
+          buttonLabel="Fotoğraf seç"
+          onFiles={(files) => {
+            const file = files[0];
             if (file) void handleUpload(file, true);
           }}
         />
-      </Field>
+      </section>
 
-      <Field>
-        <Label>Galeri fotoğrafı ekle</Label>
-        <Input
-          type="file"
+      <section className="border-t border-gray-200 pt-8">
+        <SectionTitle hint="Galeri için en az 5 fotoğraf önerilir.">Galeri</SectionTitle>
+        {experience.photoUrls.length > 0 ? (
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {experience.photoUrls.map((url) => (
+              <figure key={url} className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="aspect-[4/3] w-full object-cover" />
+                <button
+                  type="button"
+                  aria-label="Fotoğrafı sil"
+                  disabled={removingUrl === url}
+                  onClick={() => void handleRemovePhoto(url)}
+                  className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition-colors hover:bg-danger-600 hover:text-white disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="text-[12px]" aria-hidden />
+                </button>
+              </figure>
+            ))}
+          </div>
+        ) : null}
+        <UploadDropzone
           accept="image/*"
-          disabled={uploading}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void handleUpload(file, false);
+          multiple
+          compact
+          busy={uploading}
+          title="Galeriye fotoğraf ekle"
+          hint="Birden fazla fotoğrafı aynı anda seçebilirsin."
+          buttonLabel="Fotoğraf seç"
+          onFiles={async (files) => {
+            for (const file of files) {
+              await handleUpload(file, false);
+            }
           }}
         />
-      </Field>
-
-      {experience.photoUrls.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
-          {experience.photoUrls.map((url) => (
-            <div key={url} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="h-24 w-full rounded-lg object-cover" />
-              <button
-                type="button"
-                aria-label="Fotoğrafı sil"
-                disabled={removingUrl === url}
-                onClick={() => void handleRemovePhoto(url)}
-                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
-              >
-                <FontAwesomeIcon icon={faXmark} className="text-[11px]" aria-hidden />
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : null}
+      </section>
 
       <Field>
         <Label>Video URL (opsiyonel)</Label>
         <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://..." />
       </Field>
 
-      <Button
-        onClick={handleSubmitForReview}
-        disabled={saving || submitting || !experience.coverPhotoUrl}
-      >
-        {saving ? "Kaydediliyor…" : submitting ? "Gönderiliyor…" : "İncelemeye Gönder"}
-      </Button>
     </StepShell>
   );
 }

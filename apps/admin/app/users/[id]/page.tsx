@@ -154,7 +154,7 @@ export default function OwnerDetailPage() {
         <div className="flex items-start gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{profile.fullName ?? "—"}</h1>
+              <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">{profile.fullName ?? "—"}</h1>
               {profile.badge && (
                 <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-yellow-800">
                   {profile.badge}
@@ -183,7 +183,7 @@ export default function OwnerDetailPage() {
           { label: "Platform Komisyonu", value: `€${stats.totalCommission.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
           { label: "Ortalama Puan", value: stats.avgRating !== null ? stats.avgRating.toFixed(1) + " / 5" : "—" },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div key={s.label} className="rounded-card border border-gray-200/70 bg-white p-4 shadow-card">
             <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{s.label}</div>
             <div className="mt-1 text-xl font-bold text-gray-900">{s.value}</div>
           </div>
@@ -193,7 +193,7 @@ export default function OwnerDetailPage() {
       {/* Actions: suspend + badge + warn */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Suspend */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Hesap Durumu</h2>
           <button
             type="button"
@@ -208,7 +208,7 @@ export default function OwnerDetailPage() {
         </div>
 
         {/* Badge */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Rozet Ata</h2>
           <div className="flex gap-2">
             <input
@@ -216,7 +216,7 @@ export default function OwnerDetailPage() {
               value={badgeInput}
               onChange={(e) => setBadgeInput(e.target.value)}
               placeholder="Rozet adı..."
-              className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             />
             <datalist id="badge-presets">
               {BADGE_PRESETS.map((b) => <option key={b} value={b} />)}
@@ -225,7 +225,7 @@ export default function OwnerDetailPage() {
               type="button"
               disabled={actionBusy}
               onClick={() => handleSetBadge(badgeInput.trim() || null)}
-              className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              className="rounded-full bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
             >
               Ata
             </button>
@@ -244,7 +244,7 @@ export default function OwnerDetailPage() {
         </div>
 
         {/* Warn */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Uyarı Gönder</h2>
           {!warnOpen ? (
             <button
@@ -261,7 +261,7 @@ export default function OwnerDetailPage() {
                 onChange={(e) => setWarnMsg(e.target.value)}
                 rows={3}
                 placeholder="Uyarı mesajı..."
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
               />
               <div className="flex gap-2">
                 <button
@@ -275,7 +275,7 @@ export default function OwnerDetailPage() {
                 <button
                   type="button"
                   onClick={() => { setWarnOpen(false); setWarnMsg(""); setWarnResult(null); }}
-                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50"
+                  className="rounded-full border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50 bg-white"
                 >
                   İptal
                 </button>
@@ -291,7 +291,7 @@ export default function OwnerDetailPage() {
       </div>
 
       {/* Boats */}
-      <div className="rounded-xl border border-gray-200 bg-white">
+      <div className="rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
             İlanlar
@@ -302,7 +302,7 @@ export default function OwnerDetailPage() {
           <div className="py-8 text-center text-sm text-gray-400">Henüz ilan yok.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">İlan</th>
                 <th className="px-4 py-3 text-left">Durum</th>
@@ -338,7 +338,7 @@ export default function OwnerDetailPage() {
       </div>
 
       {/* Recent Payments */}
-      <div className="rounded-xl border border-gray-200 bg-white">
+      <div className="rounded-card border border-gray-200/70 bg-white shadow-card">
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
             Son Ödemeler
@@ -349,7 +349,7 @@ export default function OwnerDetailPage() {
           <div className="py-8 text-center text-sm text-gray-400">Henüz ödeme yok.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
               <tr>
                 <th className="px-4 py-3 text-left">Tekne</th>
                 <th className="px-4 py-3 text-left">Tutar</th>

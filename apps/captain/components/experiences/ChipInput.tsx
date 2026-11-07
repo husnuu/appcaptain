@@ -60,7 +60,7 @@ export function ChipInput({
       {description ? <p className="mb-1.5 text-xs text-gray-500">{description}</p> : null}
 
       <div
-        className="flex min-h-[52px] cursor-text flex-wrap gap-2 rounded-xl border border-gray-200 bg-white p-2.5 transition focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/15"
+        className="flex min-h-[52px] cursor-text flex-wrap gap-2 rounded-card border border-gray-200/70 bg-white p-2.5 transition focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/15 shadow-card"
         onClick={() => document.getElementById(inputId)?.focus()}
       >
         {value.map((chip, i) => (

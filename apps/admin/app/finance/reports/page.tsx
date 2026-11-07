@@ -49,7 +49,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Finans Raporları</h1>
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-[30px]">Finans Raporları</h1>
         <a
           href={exportUrl}
           target="_blank"
@@ -77,7 +77,7 @@ export default function ReportsPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             title="Başlangıç tarihi"
           />
           <span className="text-gray-400">—</span>
@@ -85,11 +85,11 @@ export default function ReportsPage() {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
             title="Bitiş tarihi"
           />
           {(dateFrom || dateTo) && (
-            <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); }} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">Temizle</button>
+            <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); }} className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">Temizle</button>
           )}
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function ReportsPage() {
       ) : data && data.trend.length > 0 ? (
         <>
           {/* Revenue trend chart (CSS bar chart) */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
             <h2 className="mb-4 font-semibold text-gray-900">Gelir Trendi</h2>
             <div className="overflow-x-auto">
               <div className="flex items-end gap-1 min-h-[120px]" style={{ minWidth: `${data.trend.length * 36}px` }}>
@@ -131,9 +131,9 @@ export default function ReportsPage() {
           </div>
 
           {/* Trend table */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-card border border-gray-200/70 bg-white shadow-card">
             <table className="min-w-full divide-y divide-gray-100 text-sm">
-              <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+              <thead className="border-b border-gray-200/70 bg-cream-100/60 text-[12.5px] font-semibold text-gray-500">
                 <tr>
                   <th className="px-4 py-3 text-left">Dönem</th>
                   <th className="px-4 py-3 text-right">Gelir</th>
@@ -160,7 +160,7 @@ export default function ReportsPage() {
 
           {/* Payment method breakdown */}
           {data.methodBreakdown.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
               <h2 className="mb-4 font-semibold text-gray-900">Ödeme Yöntemi Dağılımı</h2>
               <div className="space-y-3">
                 {data.methodBreakdown.map((m) => {
@@ -193,9 +193,9 @@ export default function ReportsPage() {
 
 function SummaryCard({ label, value, color = "text-gray-900" }: { label: string; value: string; color?: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${color}`}>{value}</p>
+    <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className={`mt-2 text-[24px] font-extrabold leading-tight tracking-tight ${color}`}>{value}</p>
     </div>
   );
 }

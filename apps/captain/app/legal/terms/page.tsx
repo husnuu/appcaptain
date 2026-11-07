@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalTitle, Section } from "../components";
 
-export const metadata: Metadata = { title: "Kullanım Koşulları — SeaHub" };
+export const metadata: Metadata = { title: "Kullanım Koşulları — Ahoy Kaptan" };
 
 export default function TermsPage() {
   return (

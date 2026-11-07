@@ -44,30 +44,30 @@ export function ReservationsChart() {
 
   const secondary: SecondaryMetric[] = [
     {
-      label: "Dönem Toplamı",
+      label: "Dönem toplamı",
       value: String(total),
       icon: faCalendarDays,
       iconBox: "bg-brand-50 text-brand-500",
     },
     {
-      label: "Ortalama / Aralık",
+      label: "Ortalama / aralık",
       value: String(average),
       icon: faArrowTrendUp,
-      iconBox: "bg-success-50 text-success-500",
+      iconBox: "bg-green-50 text-green-600",
     },
     {
-      label: "Yanıt Oranı",
+      label: "Yanıt oranı",
       value: "%98",
       icon: faComments,
-      iconBox: "bg-info-50 text-info-500",
+      iconBox: "bg-accent-50 text-accent-600",
     },
   ];
 
   return (
-    <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] sm:p-6">
+    <section className="mt-6 rounded-card border border-gray-200/70 bg-white p-5 shadow-card sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-subheading font-semibold text-ink">Rezervasyonlar</h2>
+          <h2 className="text-[17px] font-bold tracking-tight text-ink">Rezervasyonlar</h2>
           <p className="mt-0.5 text-caption text-gray-500">
             Seçili dönemde toplam {total} rezervasyon.
           </p>
@@ -99,16 +99,16 @@ export function ReservationsChart() {
             <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="reservationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0097A7" />
-                  <stop offset="100%" stopColor="#80DEEA" />
+                  <stop offset="0%" stopColor="#183D85" />
+                  <stop offset="100%" stopColor="#6FC3E2" />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F0EC" vertical={false} />
               <XAxis
                 dataKey="label"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 11, fill: "#9AA1AC" }}
+                tick={{ fontSize: 11, fill: "#A9A39C" }}
                 interval="preserveStartEnd"
                 minTickGap={16}
               />
@@ -116,19 +116,19 @@ export function ReservationsChart() {
                 allowDecimals={false}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 11, fill: "#9AA1AC" }}
+                tick={{ fontSize: 11, fill: "#A9A39C" }}
                 width={32}
               />
               <Tooltip
-                cursor={{ fill: "rgba(249,115,22,0.06)" }}
+                cursor={{ fill: "rgba(24,61,133,0.06)" }}
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #E5E7EB",
+                  border: "1px solid #E8E3DD",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
                   padding: "8px 12px",
                   fontSize: 12,
                 }}
-                labelStyle={{ fontWeight: 600, color: "#111827", marginBottom: 2 }}
+                labelStyle={{ fontWeight: 600, color: "#222830", marginBottom: 2 }}
                 formatter={(value) => [`${value} rezervasyon`, ""]}
                 separator=""
               />
@@ -159,7 +159,7 @@ export function ReservationsChart() {
               <FontAwesomeIcon icon={m.icon} />
             </span>
             <div className="min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              <div className="text-[12.5px] font-medium text-gray-500">
                 {m.label}
               </div>
               <div className="text-body font-semibold text-ink">{m.value}</div>

@@ -116,7 +116,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col rounded-xl border border-gray-200 bg-white">
+    <div className="flex h-[calc(100vh-8rem)] flex-col rounded-card border border-gray-200/70 bg-white shadow-card">
       <div className="border-b border-gray-200 px-4 py-3">
         <Link href="/messages" className="text-sm text-brand-600 hover:underline">
           ← Mesajlara dön
@@ -167,7 +167,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
             }}
             rows={2}
             placeholder="Mesajınızı yazın…"
-            className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="flex-1 resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/15 focus:border-brand-400 bg-white"
           />
           <Button onClick={() => void handleSend()} disabled={sending || !draft.trim()}>
             Gönder

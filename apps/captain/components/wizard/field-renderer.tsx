@@ -190,7 +190,7 @@ function CheckInOutGroup({
     group.enforceOrder && inMin != null && outMin != null && outMin <= inMin;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5" data-field={group.inKey}>
+    <div className="rounded-card border border-gray-200/70 bg-white p-5 shadow-card" data-field={group.inKey}>
       <div className="flex items-center gap-2">
         <FontAwesomeIcon icon={faClock} className="text-[16px] text-gray-400" aria-hidden />
         <h4 className="text-[13px] font-semibold uppercase tracking-[0.04em] text-gray-700">

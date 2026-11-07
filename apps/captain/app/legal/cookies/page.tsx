@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalTitle, Section } from "../components";
 
-export const metadata: Metadata = { title: "Çerez Politikası — SeaHub" };
+export const metadata: Metadata = { title: "Çerez Politikası — Ahoy Kaptan" };
 
 const ROWS: Array<[string, string, string, string]> = [
   ["sb-auth-token", "Zorunlu", "Supabase oturum yönetimi", "Oturum"],

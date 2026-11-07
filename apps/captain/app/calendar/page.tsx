@@ -65,14 +65,14 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 // Orange for all owner-created blocks (maintenance, personal use, etc.)
-const BLOCK_COLOR = "#F97316";
+const BLOCK_COLOR = "#DE6238";
 
 // Distinct per-model colors for customer reservations
 const RESERVATION_COLORS: Record<BookingModel, string> = {
-  [BookingModel.HOURLY]:        "#F87171", // pastel red
+  [BookingModel.HOURLY]:        "#E06464", // pastel red
   [BookingModel.DAILY]:         "#3B82F6", // blue
-  [BookingModel.STAY_INCLUDED]: "#A855F7", // purple
-  [BookingModel.WEEKLY]:        "#10B981", // green
+  [BookingModel.STAY_INCLUDED]: "#8F7AD4", // purple
+  [BookingModel.WEEKLY]:        "#2F9E8A", // green
 };
 
 // Fallback for unknown model
@@ -635,7 +635,7 @@ function CreateBlockModal({
         <div>
           <label className="mb-1 block text-sm text-white/70">Not (opsiyonel)</label>
           <input
-            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
+            className="w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
             placeholder="Açıklama..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -647,22 +647,22 @@ function CreateBlockModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm text-white/70">Başlangıç</label>
-              <input type="time" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <input type="time" className="w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
             </div>
             <div>
               <label className="mb-1 block text-sm text-white/70">Bitiş</label>
-              <input type="time" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <input type="time" className="w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm text-white/70">Başlangıç</label>
-              <input type="date" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <input type="date" className="w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
             <div>
               <label className="mb-1 block text-sm text-white/70">Bitiş</label>
-              <input type="date" className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <input type="date" className="w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
         )}
@@ -743,7 +743,7 @@ function PricingPanel({
                   <>
                     <input
                       autoFocus
-                      className="w-28 rounded border border-white/20 bg-white/10 px-2 py-1 text-right text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+                      className="w-28 rounded-xl border border-white/20 bg-white/10 px-2 py-1 text-right text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") void save(m.key); if (e.key === "Escape") setEditing(null); }}
@@ -846,21 +846,21 @@ function MockReservationPanel({
         </Select>
         <input
           type="date"
-          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+          className="rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
           placeholder="Başlangıç"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
         />
         <input
           type="date"
-          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+          className="rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
           placeholder="Bitiş"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
         />
         <input
           type="text"
-          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
+          className="rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-white/30"
           placeholder="Misafir adı (opsiyonel)"
           value={guestName}
           onChange={(e) => setGuestName(e.target.value)}
