@@ -34,13 +34,14 @@ const DEFAULT_SUGGESTIONS: LocationSuggestion[] = [
 const NAV_LINKS: { href: string; label: string; match: (path: string) => boolean }[] = [
   { href: '/tekne-kiralama', label: 'Tekneler', match: p => p.startsWith('/tekne-kiralama') || p.startsWith('/listing') },
   { href: '/deneyimler', label: 'Deneyimler', match: p => p.startsWith('/deneyimler') },
-  { href: '/#neden-ahoy', label: 'Neden Ahoy', match: () => false },
+  { href: '/neden-ahoy', label: 'Neden Ahoy', match: p => p.startsWith('/neden-ahoy') },
 ]
 
 const USER_MENU_PAGES = [
   { href: '/tekne-kiralama', label: 'Tekneler' },
   { href: '/deneyimler', label: 'Deneyimler' },
-  { href: '/#neden-ahoy', label: 'Neden Ahoy' },
+  { href: '/neden-ahoy', label: 'Neden Ahoy' },
+  { href: '/hakkimizda', label: 'Hakkımızda' },
 ]
 const USER_MENU_DISCOVER = [
   { href: '/forum', label: 'Forum' },

@@ -127,3 +127,45 @@ export function groupAmenities(raw: RawAmenity[]): AmenityGroup[] {
       items: items.sort((x, y) => Number(x.isExtra) - Number(y.isExtra)),
     }))
 }
+
+/**
+ * Teknede yoksa "Mevcut olmayan imkanlar" altında üstü çizili gösterilecek
+ * önemli imkanlar — önem sırasıyla (güvenlik ekipmanları başta).
+ */
+const KEY_AMENITIES = [
+  'life_jackets',
+  'first_aid_kit',
+  'wi_fi',
+  'air_conditioning',
+  'hot_water',
+  'shower',
+  'fridge',
+  'towels',
+  'kitchen_utensils',
+  'bimini',
+  'swim_platform',
+  'bathing_ladder',
+  'audio_system_hoparlor',
+  'dinghy',
+]
+
+/** Güvenlik ekipmanları: yoksa "kaptana sor" notu da gösterilir. */
+const SAFETY_AMENITIES = new Set(['life_jackets', 'first_aid_kit', 'life_raft', 'life_belts'])
+
+export interface MissingAmenity {
+  key: string
+  label: string
+  icon: FeatureIcon
+  safety: boolean
+}
+
+export function missingAmenities(raw: RawAmenity[]): MissingAmenity[] {
+  const have = new Set(raw.filter(a => a.isIncluded || a.isExtra).map(a => a.key))
+  return KEY_AMENITIES.filter(k => !have.has(k)).map(k => ({
+    key: k,
+    label: AMENITIES[k]?.label ?? k,
+    icon: AMENITY_ICONS[k] ?? DEFAULT_AMENITY_ICON,
+    safety: SAFETY_AMENITIES.has(k),
+  }))
+}
+

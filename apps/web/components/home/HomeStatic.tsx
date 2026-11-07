@@ -96,7 +96,7 @@ export function DiscoverBanner() {
               <Link href="/tekne-kiralama" className="sh-btn sh-btn--white">
                 Hemen aramıza katıl <ArrowRight size={18} strokeWidth={1.8} aria-hidden="true" />
               </Link>
-              <Link href="/#neden-ahoy" className="sh-btn sh-btn--glass">
+              <Link href="/neden-ahoy" className="sh-btn sh-btn--glass">
                 Neden Ahoy
               </Link>
             </div>

@@ -9,7 +9,7 @@ const TOP_LINKS = [
   { label: 'Keşfet', href: '/#lokasyonlar' },
   { label: 'Tekne Kirala', href: '/tekne-kiralama' },
   { label: 'Deneyimler', href: '/deneyimler' },
-  { label: 'Neden Ahoy', href: '/#neden-ahoy' },
+  { label: 'Neden Ahoy', href: '/neden-ahoy' },
   { label: 'Kaptan Paneli', href: CAPTAIN_APP_URL },
 ]
 
@@ -17,7 +17,7 @@ const COLUMNS = [
   {
     title: 'Ahoy',
     links: [
-      { label: 'Neden Ahoy?', href: '/#neden-ahoy' },
+      { label: 'Neden Ahoy?', href: '/neden-ahoy' },
       { label: 'Basında Biz', href: '#' },
       { label: 'Kariyer', href: '#' },
       { label: 'Tekne Sahipleri', href: '/charter-firmalari' },
@@ -26,11 +26,11 @@ const COLUMNS = [
   {
     title: 'Keşfet',
     links: [
-      { label: 'Hakkımızda', href: '#' },
+      { label: 'Hakkımızda', href: '/hakkimizda' },
       { label: 'Arkadaşını Davet Et', href: '#' },
       { label: 'Müşteri Yorumları', href: '#' },
       { label: 'Blog', href: '/blog' },
-      { label: 'İletişim', href: '#' },
+      { label: 'İletişim', href: '/hakkimizda#iletisim' },
     ],
   },
   {

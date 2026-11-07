@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ArrowLeft,
   BadgeCheck,
@@ -10,28 +11,35 @@ import {
   CalendarCheck,
   Check,
   CreditCard,
+  Gift,
   Loader2,
   Lock,
-  MailCheck,
   Sailboat,
   ShieldCheck,
+  Star,
+  X,
+  type LucideIcon,
 } from 'lucide-react'
 import { toBoatDetailViewModel, type SerializedBoatDTO } from '@getyourboat/shared'
 import AuthModal from '@/components/auth/AuthModal'
+import HostAvatar from '@/components/listing/HostAvatar'
 import TripPickerModal, { tripIsComplete, type TripValue } from '@/components/listing/TripPickerModal'
 import { buildRules } from '@/components/listing/listingRules'
 import { fetchAvailability, submitBooking, type BlockedRange } from '@/lib/api'
 import { checkoutHref, depositRatio, estimatePrice, parseCheckoutParams } from '@/lib/bookingPrice'
-import { boatTypeLabel, cleanText, formatLongDate, formatMoney, listingModelLabel, toISODate } from '@/lib/boatFormat'
+import { boatTypeLabel, formatDayMonth, formatLongDate, formatMoney, listingModelLabel, toISODate } from '@/lib/boatFormat'
 import { toRentalType } from '@/lib/pricing'
 import { supabase } from '@/lib/supabase'
 
 type PayMethod = 'card' | 'transfer'
+type PayWhen = 'full' | 'split'
 
 const PAY_OPTIONS: { key: PayMethod; icon: typeof CreditCard; title: string; desc: string; how: string }[] = [
-  { key: 'card', icon: CreditCard, title: 'Kredi veya banka kartı', desc: 'Onaydan sonra kartınla ödersin.', how: 'kartınla' },
-  { key: 'transfer', icon: Building2, title: 'Havale / EFT', desc: 'Onaydan sonra banka havalesiyle ödersin.', how: 'havale veya EFT ile' },
+  { key: 'card', icon: CreditCard, title: 'Kredi veya banka kartı', desc: 'Kaptan onayından sonra kartınla ödersin.', how: 'kartınla' },
+  { key: 'transfer', icon: Building2, title: 'Havale / EFT', desc: 'Kaptan onayından sonra banka havalesiyle ödersin.', how: 'havale veya EFT ile' },
 ]
+
+const STEP_TITLES = ['Ne zaman ödeyeceğini seç', 'Ödeme yöntemini seç', 'Kaptana bir mesaj yaz', 'Talebini gözden geçir']
 
 interface Props {
   boat: SerializedBoatDTO
@@ -54,9 +62,14 @@ export default function CheckoutClient({ boat, search }: Props) {
     startTime: initial.startTime,
     endTime: initial.endTime,
   })
+  const [step, setStep] = useState(1)
+  const [reached, setReached] = useState(1)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
+  const closeBreakdown = useCallback(() => setBreakdownOpen(false), [])
   const [blocked, setBlocked] = useState<BlockedRange[]>([])
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [payWhen, setPayWhen] = useState<PayWhen>('full')
   const [pay, setPay] = useState<PayMethod>('card')
   const [agree, setAgree] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -65,6 +78,7 @@ export default function CheckoutClient({ boat, search }: Props) {
   const [done, setDone] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
+  const closeAuth = useCallback(() => setAuthOpen(false), [])
 
   const ready = tripIsComplete(trip, hourly)
 
@@ -108,44 +122,84 @@ export default function CheckoutClient({ boat, search }: Props) {
 
   const estimate = estimatePrice(price, trip.range.start, trip.range.end, trip.startTime, trip.endTime)
   const ratio = depositRatio((boat.structuredRules as Record<string, unknown> | null)?.deposit_type_payment_before)
+  const canSplit = !!ratio && ratio < 1
   const rules = useMemo(
     () => buildRules(boat.structuredRules as Record<string, unknown> | null, model.contactForFuelCost, model.fuelCostNote),
     [boat.structuredRules, model.contactForFuelCost, model.fuelCostNote],
   )
   const cover = model.gallery[0]?.url ?? null
   const type = boatTypeLabel(boat.boatType) ?? model.boatTypeLabel
-  const loc = model.location
-  const place = cleanText([loc?.marina, loc?.city].filter(Boolean).join(', ') || 'Türkiye')
+  const owner = boat.owner ?? null
+  const hostName = owner?.name ?? 'Kaptan'
   const listingUrl = `/listing/${boat.id}`
+  const money = (n: number) => (price ? formatMoney(n, price.currency) : '—')
 
   const dateText = trip.range.start
     ? hourly
       ? `${formatLongDate(trip.range.start)}${trip.startTime && trip.endTime ? `, ${trip.startTime}–${trip.endTime}` : ''}`
       : trip.range.end
-        ? `${formatLongDate(trip.range.start)} – ${formatLongDate(trip.range.end)}`
+        ? `${formatDayMonth(trip.range.start)} – ${formatDayMonth(trip.range.end)} ${trip.range.end.getFullYear()}`
         : formatLongDate(trip.range.start)
     : 'Tarih seçilmedi'
 
-  const validate = () => {
+  const whenText =
+    payWhen === 'split' && canSplit && estimate
+      ? `Onaydan sonra ${money(estimate.total * ratio!)} · kalanı ${money(estimate.total * (1 - ratio!))}`
+      : estimate
+        ? `Onaydan sonra tamamı: ${money(estimate.total)}`
+        : 'Onaydan sonra tamamı'
+
+  /* ---------- doğrulama + adım geçişi ---------- */
+  const clearError = (key: string) => setErrors(({ [key]: _omit, ...rest }) => rest)
+
+  const validateStep = (n: number) => {
     const e: Record<string, string> = {}
-    if (!ready) e.trip = 'Lütfen tarih seçin.'
-    if (form.name.trim().length < 2) e.name = 'Ad soyad en az 2 karakter olmalı.'
-    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = 'Geçerli bir e-posta adresi girin.'
-    if (form.phone.trim() && form.phone.replace(/\D/g, '').length < 10) e.phone = 'Geçerli bir telefon numarası girin.'
-    if (!agree) e.agree = 'Devam etmek için koşulları kabul etmelisin.'
+    if (n === 1 && !ready) e.trip = 'Devam etmek için tarih seç.'
+    if (n === 3) {
+      if (form.name.trim().length < 2) e.name = 'Ad soyad en az 2 karakter olmalı.'
+      if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = 'Geçerli bir e-posta adresi gir.'
+      if (form.phone.trim() && form.phone.replace(/\D/g, '').length < 10) e.phone = 'Geçerli bir telefon numarası gir.'
+    }
+    if (n === 4 && !agree) e.agree = 'Devam etmek için koşulları kabul etmelisin.'
     setErrors(e)
+    if (e.trip) setPickerOpen(true)
     return Object.keys(e).length === 0
+  }
+
+  const goTo = (n: number) => {
+    setStep(n)
+    setReached(r => Math.max(r, n))
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`co-step-${n}`)
+      if (el && window.innerWidth > 860) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      else window.scrollTo({ top: 0 })
+    })
+  }
+
+  const back = () => {
+    setStep(s => Math.max(1, s - 1))
+    window.scrollTo({ top: 0 })
+  }
+
+  const next = () => {
+    if (!validateStep(step)) return
+    // Önceden tamamlanan bir adım düzenlendiyse kalınan yere dön.
+    if (step < 4) return goTo(reached > step + 1 ? reached : step + 1)
+    // Göndermeden önce tarih ve iletişim adımlarını son kez doğrula.
+    for (const n of [1, 3]) {
+      if (!validateStep(n)) return goTo(n)
+    }
+    void submit()
   }
 
   const submit = async () => {
     setSubmitError('')
-    if (!validate()) {
-      document.querySelector('.sh-ck-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
-    }
     if (!trip.range.start || !trip.range.end) return
     setSubmitting(true)
-    const payLine = `Ödeme tercihi: ${PAY_OPTIONS.find(o => o.key === pay)!.title}`
+    const payLines = [
+      `Ödeme zamanı: ${payWhen === 'split' && canSplit ? `Ön ödeme (%${Math.round(ratio! * 100)}) + kalan` : 'Tamamı onaydan sonra'}`,
+      `Ödeme yöntemi: ${PAY_OPTIONS.find(o => o.key === pay)!.title}`,
+    ]
     try {
       await submitBooking({
         boatId: boat.id,
@@ -158,13 +212,13 @@ export default function CheckoutClient({ boat, search }: Props) {
         endDate: toISODate(trip.range.end),
         startTime: hourly ? trip.startTime : null,
         endTime: hourly ? trip.endTime : null,
-        message: [form.message.trim(), payLine].filter(Boolean).join('\n\n'),
+        message: [form.message.trim(), payLines.join('\n')].filter(Boolean).join('\n\n'),
       })
       setDone(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (e) {
       const raw = e instanceof Error ? e.message : ''
-      setSubmitError(!raw || /fetch|network/i.test(raw) ? 'Bağlantı hatası oluştu. Lütfen tekrar deneyin.' : raw)
+      setSubmitError(!raw || /fetch|network/i.test(raw) ? 'Bağlantı hatası oluştu. Lütfen tekrar dene.' : raw)
     } finally {
       setSubmitting(false)
     }
@@ -172,123 +226,201 @@ export default function CheckoutClient({ boat, search }: Props) {
 
   const field = (key: 'name' | 'email' | 'phone') => ({
     value: form[key],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
       setForm(f => ({ ...f, [key]: e.target.value }))
-      if (errors[key]) setErrors(({ [key]: _omit, ...rest }) => rest)
+      if (errors[key]) clearError(key)
     },
     'aria-invalid': !!errors[key],
   })
 
-  /* ---------- özet kartı ---------- */
-  const summary = (
-    <aside className="sh-ck-sum" aria-label="Rezervasyon özeti">
-      <div className="sh-ck-sum-boat">
-        {cover && (
-          <span className="sh-ck-sum-img">
-            <Image src={cover} alt="" fill sizes="120px" />
-          </span>
-        )}
-        <span>
-          {type && <small>{type}</small>}
-          <b>{model.title}</b>
-          <em>{place}</em>
+  /* ---------- sağ sütun: özet ---------- */
+  const listingRow = (
+    <div className="sh-co-boat">
+      {cover && (
+        <span className="sh-co-boat-img">
+          <Image src={cover} alt="" fill sizes="104px" />
         </span>
-      </div>
+      )}
+      <span>
+        <b>{model.title}</b>
+        <small>
+          <Star size={13} strokeWidth={0} fill="currentColor" aria-hidden="true" /> Yeni ilan
+          {type && <> · {type}</>}
+        </small>
+      </span>
+    </div>
+  )
+
+  const summary = (
+    <aside className="sh-co-sum" aria-label="Rezervasyon özeti">
+      {listingRow}
 
       {model.cancellationLabel && (
-        <div className="sh-ck-sum-sec">
+        <div className="sh-co-sum-sec">
           <b>{model.cancellationLabel}</b>
-          <p>Bu teknede kaptanın {model.cancellationLabel.toLocaleLowerCase('tr')} politikası geçerlidir.</p>
+          <p>Kaptanın iptal politikası geçerlidir.</p>
         </div>
       )}
 
-      <div className="sh-ck-sum-sec sh-ck-sum-row">
+      <div className="sh-co-sum-sec sh-co-sum-row">
         <span>
-          <b>Tarih</b>
+          <b>{hourly ? 'Tarih ve saat' : 'Tarihler'}</b>
           <p>{dateText}</p>
         </span>
         {!done && (
-          <button type="button" className="sh-ck-change" onClick={() => setPickerOpen(true)}>
-            Değiştir
+          <button type="button" className="sh-co-pill" onClick={() => setPickerOpen(true)}>
+            {ready ? 'Değiştir' : 'Tarih seç'}
           </button>
         )}
       </div>
 
-      <div className="sh-ck-sum-sec sh-ck-sum-row">
+      <div className="sh-co-sum-sec sh-co-sum-row">
         <span>
           <b>Misafirler</b>
           <p>{trip.guests} misafir</p>
         </span>
         {!done && (
-          <button type="button" className="sh-ck-change" onClick={() => setPickerOpen(true)}>
+          <button type="button" className="sh-co-pill" onClick={() => setPickerOpen(true)}>
             Değiştir
           </button>
         )}
       </div>
 
       {price && (
-        <div className="sh-ck-sum-sec">
+        <div className="sh-co-sum-sec sh-co-sum-price">
           <b>Fiyat ayrıntıları</b>
-          <dl className="sh-ck-lines">
-            {estimate ? (
-              <div>
-                <dt>
-                  {formatMoney(price.price, price.currency)} × {estimate.label}
-                </dt>
-                <dd>{formatMoney(estimate.total, price.currency)}</dd>
-              </div>
-            ) : (
-              <div>
-                <dt>{listingModelLabel(price.listingModelKey, price.listingModelLabel)}</dt>
-                <dd>{formatMoney(price.price, price.currency)}</dd>
-              </div>
-            )}
-            {estimate && ratio && ratio < 1 && (
-              <div className="sh-ck-muted">
-                <dt>Onaydan sonra ön ödeme (%{Math.round(ratio * 100)})</dt>
-                <dd>{formatMoney(estimate.total * ratio, price.currency)}</dd>
-              </div>
-            )}
+          <dl>
+            <div>
+              <dt>{estimate ? `${formatMoney(price.price, price.currency)} × ${estimate.label}` : listingModelLabel(price.listingModelKey, price.listingModelLabel)}</dt>
+              <dd>{estimate ? money(estimate.total) : money(price.price)}</dd>
+            </div>
+            <div className="sh-co-green">
+              <dt>Bugün ödenecek</dt>
+              <dd>{money(0)}</dd>
+            </div>
           </dl>
-          <div className="sh-ck-total">
+          <div className="sh-co-total">
             <span>
-              Tahmini toplam <small>{price.currency}</small>
+              Toplam <u>{price.currency}</u>
             </span>
-            <b>{estimate ? formatMoney(estimate.total, price.currency) : '—'}</b>
+            <b>{estimate ? money(estimate.total) : '—'}</b>
           </div>
-          <div className="sh-ck-today">
-            <span>Bugün ödenecek</span>
-            <b>{formatMoney(0, price.currency)}</b>
-          </div>
-          <p className="sh-ck-fine">Kesin tutar kaptan onayında netleşir. Ekstralar ve yakıt ayrıca belirtilir.</p>
+          <button type="button" className="sh-co-link" onClick={() => setBreakdownOpen(true)}>
+            Fiyat dökümü
+          </button>
         </div>
       )}
     </aside>
   )
 
+  /* ---------- mobil özet (ilk adım) ---------- */
+  const mobileSummary = (
+    <div className="sh-co-msum">
+      {listingRow}
+      <div className="sh-co-sum-row">
+        <span>
+          <b>{hourly ? 'Tarih ve saat' : 'Tarihler'}</b>
+          <p>{dateText}</p>
+        </span>
+        <button type="button" className="sh-co-pill" onClick={() => setPickerOpen(true)}>
+          {ready ? 'Değiştir' : 'Tarih seç'}
+        </button>
+      </div>
+      <p className="sh-co-msum-note">
+        <Gift size={18} strokeWidth={1.8} aria-hidden="true" /> Onaylanan bu rezervasyonda %15’e varan cashback kazanırsın.
+      </p>
+      <div className="sh-co-sum-row">
+        <span>
+          <b>Misafirler</b>
+          <p>{trip.guests} misafir</p>
+        </span>
+        <button type="button" className="sh-co-pill" onClick={() => setPickerOpen(true)}>
+          Değiştir
+        </button>
+      </div>
+      {price && (
+        <div className="sh-co-sum-row">
+          <span>
+            <b>Toplam fiyat</b>
+            <p>
+              {estimate ? money(estimate.total) : '—'} <u>{price.currency}</u>
+            </p>
+          </span>
+          <button type="button" className="sh-co-pill" onClick={() => setBreakdownOpen(true)}>
+            Ayrıntılar
+          </button>
+        </div>
+      )}
+      {model.cancellationLabel && (
+        <div className="sh-co-sum-row">
+          <span>
+            <b>{model.cancellationLabel}</b>
+            <p>Kaptanın iptal politikası geçerlidir.</p>
+          </span>
+        </div>
+      )}
+    </div>
+  )
+
+  const breakdown = breakdownOpen && price && (
+    <PriceBreakdown onClose={closeBreakdown}>
+      <dl className="sh-co-bd">
+        <div>
+          <dt>{estimate ? `${formatMoney(price.price, price.currency)} × ${estimate.label}` : listingModelLabel(price.listingModelKey, price.listingModelLabel)}</dt>
+          <dd>{estimate ? money(estimate.total) : money(price.price)}</dd>
+        </div>
+        {estimate && canSplit && (
+          <>
+            <div>
+              <dt>Kaptan onayından sonra (%{Math.round(ratio! * 100)} ön ödeme)</dt>
+              <dd>{money(estimate.total * ratio!)}</dd>
+            </div>
+            <div>
+              <dt>Kalan tutar</dt>
+              <dd>{money(estimate.total * (1 - ratio!))}</dd>
+            </div>
+          </>
+        )}
+        <div className="sh-co-green">
+          <dt>Bugün ödenecek</dt>
+          <dd>{money(0)}</dd>
+        </div>
+        <div className="sh-co-bd-total">
+          <dt>
+            Toplam <u>{price.currency}</u>
+          </dt>
+          <dd>{estimate ? money(estimate.total) : '—'}</dd>
+        </div>
+      </dl>
+      <p className="sh-co-fine">Kesin tutar kaptan onayında netleşir. Ekstralar ve yakıt ayrıca belirtilir.</p>
+    </PriceBreakdown>
+  )
+
   /* ---------- başarı ekranı ---------- */
   if (done) {
     return (
-      <div className="sh-ck">
-        <div className="sh-container sh-ck-grid">
-          <div className="sh-ck-main">
-            <div className="sh-ck-done">
-              <span className="sh-ck-done-ico">
-                <Check size={32} strokeWidth={2.6} />
+      <div className="sh-co is-done">
+        <div className="sh-container sh-co-grid">
+          <div className="sh-co-main">
+            <div className="sh-co-done">
+              <span className="sh-co-done-ico">
+                <Check size={30} strokeWidth={2.6} />
               </span>
-              <h1>Rezervasyon talebin kaptana iletildi</h1>
+              <h1>Talebin {hostName} kaptana iletildi</h1>
               <p>
-                Talebini aldık. Kaptan onayladığında <b>{form.email.trim()}</b> üzerinden seninle iletişime geçilecek. Bu aşamada senden ücret alınmadı.
+                Kaptan onayladığında <b>{form.email.trim()}</b> üzerinden seninle iletişime geçilecek. Bu aşamada senden ücret alınmadı.
               </p>
             </div>
-            <ol className="sh-ck-steps">
+            <ol className="sh-co-timeline">
               <li className="is-done">
                 <span>
                   <Check size={16} strokeWidth={2.6} />
                 </span>
                 <div>
                   <b>Talep gönderildi</b>
-                  <p>{dateText} · {trip.guests} misafir</p>
+                  <p>
+                    {dateText} · {trip.guests} misafir
+                  </p>
                 </div>
               </li>
               <li>
@@ -297,7 +429,7 @@ export default function CheckoutClient({ boat, search }: Props) {
                 </span>
                 <div>
                   <b>Kaptan onayı</b>
-                  <p>Kaptanlar talepleri genellikle 2–4 saat içinde yanıtlar.</p>
+                  <p>Kaptan talebini onayladığında sana e-postayla haber verilir.</p>
                 </div>
               </li>
               <li>
@@ -319,239 +451,265 @@ export default function CheckoutClient({ boat, search }: Props) {
                 </div>
               </li>
             </ol>
-            <div className="sh-ck-done-ctas">
-              {userEmail ? (
-                <Link href="/rezervasyonlarim" className="sh-btn sh-btn--navy">
-                  Rezervasyonlarıma git
-                </Link>
-              ) : (
-                <Link href="/tekne-kiralama" className="sh-btn sh-btn--navy">
-                  Diğer teknelere göz at
-                </Link>
-              )}
-              <Link href={listingUrl} className="sh-ls-btn sh-ck-outline">
+            <div className="sh-co-done-ctas">
+              <Link href={userEmail ? '/rezervasyonlarim' : '/tekne-kiralama'} className="sh-btn sh-btn--navy">
+                {userEmail ? 'Rezervasyonlarıma git' : 'Diğer teknelere göz at'}
+              </Link>
+              <Link href={listingUrl} className="sh-ld-outline">
                 İlana dön
               </Link>
             </div>
           </div>
-          <div className="sh-ck-side">{summary}</div>
+          <div className="sh-co-side">{summary}</div>
         </div>
       </div>
     )
   }
 
-  /* ---------- form ---------- */
-  return (
-    <div className="sh-ck">
-      <div className="sh-container">
-        <header className="sh-ck-head">
-          <Link href={listingUrl} className="sh-icon-btn sh-ck-back" aria-label="İlana dön">
-            <ArrowLeft size={20} />
-          </Link>
-          <h1>Onay ve ödeme</h1>
-        </header>
-      </div>
+  /* ---------- adım içerikleri ---------- */
+  // Kiralama tipine uyan giriş/çıkış saatleri (saatlikte saatleri misafir seçer).
+  const schedule = hourly
+    ? null
+    : (rules.schedules.find(s => (s.title === 'Günlük kiralama') === (price?.listingModelKey === 'daily')) ?? rules.schedules[0] ?? null)
+  const ruleItems: { key: string; icon: LucideIcon; text: string }[] = []
+  if (model.cancellationLabel) ruleItems.push({ key: 'cancel', icon: CalendarCheck, text: `${model.cancellationLabel} politikası geçerlidir.` })
+  if (schedule?.checkIn) ruleItems.push({ key: 'schedule', icon: Sailboat, text: `Giriş ${schedule.checkIn}, çıkış ${schedule.checkOut ?? '—'}.` })
+  for (const h of rules.house) ruleItems.push({ key: h.label, icon: ShieldCheck, text: houseRuleText(h) })
 
-      <div className="sh-container sh-ck-grid">
-        <div className="sh-ck-main">
-          <div className="sh-ck-mobile-sum">{summary}</div>
+  const stepBody: Record<number, ReactNode> = {
+    1: (
+      <>
+        <div className="sh-co-options" role="radiogroup" aria-label="Ödeme zamanı">
+          <Option checked={payWhen === 'full'} onSelect={() => setPayWhen('full')} title={estimate ? `Onaydan sonra ${money(estimate.total)} öde` : 'Onaydan sonra tamamını öde'}>
+            Kaptan talebini onayladığında tutarın tamamını ödersin.
+          </Option>
+          {canSplit && (
+            <Option checked={payWhen === 'split'} onSelect={() => setPayWhen('split')} title="Bir kısmını onaydan sonra, kalanını daha sonra öde">
+              {estimate
+                ? `Onaydan sonra ${money(estimate.total * ratio!)} (%${Math.round(ratio! * 100)}), kalan ${money(estimate.total * (1 - ratio!))} kaptanın belirttiği zamanda ödenir. Ek ücret alınmaz.`
+                : `Onaydan sonra %${Math.round(ratio! * 100)} ön ödeme, kalanı daha sonra. Ek ücret alınmaz.`}
+            </Option>
+          )}
+        </div>
+        <p className="sh-co-reassure">
+          <Lock size={16} strokeWidth={1.9} aria-hidden="true" /> Bugün hiçbir ödeme yapmazsın.
+        </p>
+        {errors.trip && <p className="sh-co-err">{errors.trip}</p>}
+      </>
+    ),
+    2: (
+      <>
+        <div className="sh-co-options" role="radiogroup" aria-label="Ödeme yöntemi">
+          {PAY_OPTIONS.map(({ key, icon: Icon, title, desc }) => (
+            <Option key={key} checked={pay === key} onSelect={() => setPay(key)} title={title} icon={<Icon size={22} strokeWidth={1.6} aria-hidden="true" />}>
+              {desc}
+            </Option>
+          ))}
+        </div>
+        <p className="sh-co-reassure">
+          <ShieldCheck size={16} strokeWidth={1.9} aria-hidden="true" /> Kart bilgilerin bu adımda istenmez. Kaptan onayladığında ödeme adımı için seninle iletişime geçilir.
+        </p>
+      </>
+    ),
+    3: (
+      <>
+        <div className="sh-co-host">
+          <HostAvatar name={hostName} src={owner?.avatarUrl ?? null} size={52} />
+          <span>
+            <b>{hostName}</b>
+            <small>Kaptanın teknesi ve rotan hakkında bilmesi gerekenleri paylaş.</small>
+          </span>
+        </div>
+        <label className="sh-co-field">
+          <span className="sr-only">Kaptana mesajın</span>
+          <textarea
+            rows={4}
+            value={form.message}
+            onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+            placeholder={`Merhaba ${hostName}! Rota tercihim, kutlama ya da özel isteklerim…`}
+            maxLength={900}
+          />
+        </label>
 
-          {/* 1 — yolculuk */}
-          <section className={`sh-ck-sec${errors.trip ? ' sh-ck-invalid' : ''}`}>
-            <h2>
-              <span>1</span> Yolculuğun
-            </h2>
-            <div className="sh-ck-row">
-              <span>
-                <b>{hourly ? 'Tarih ve saat' : 'Tarihler'}</b>
-                <p>{dateText}</p>
-              </span>
-              <button type="button" className="sh-ck-change" onClick={() => setPickerOpen(true)}>
-                {ready ? 'Değiştir' : 'Tarih seç'}
-              </button>
-            </div>
-            <div className="sh-ck-row">
-              <span>
-                <b>Misafirler</b>
-                <p>{trip.guests} misafir</p>
-              </span>
-              <button type="button" className="sh-ck-change" onClick={() => setPickerOpen(true)}>
-                Değiştir
-              </button>
-            </div>
-            {errors.trip && <p className="sh-ck-err">{errors.trip}</p>}
-          </section>
-
-          {/* 2 — bilgiler */}
-          <section className="sh-ck-sec">
-            <h2>
-              <span>2</span> İletişim bilgilerin
-            </h2>
-            {!userEmail && (
-              <div className="sh-ck-login">
-                <span>Hesabın varsa giriş yap; bilgilerin otomatik dolsun ve rezervasyonunu takip et.</span>
-                <button type="button" className="sh-ck-change" onClick={() => setAuthOpen(true)}>
-                  Giriş yap
-                </button>
-              </div>
-            )}
-            <div className="sh-form sh-ck-form">
-              <label className={errors.name ? 'sh-ck-invalid' : undefined}>
-                <span>Ad soyad *</span>
-                <input {...field('name')} autoComplete="name" placeholder="Kimlikteki gibi" />
-                {errors.name && <small className="sh-ck-err">{errors.name}</small>}
-              </label>
-              <div className="sh-ck-2col">
-                <label className={errors.email ? 'sh-ck-invalid' : undefined}>
-                  <span>E-posta *</span>
-                  <input {...field('email')} type="email" autoComplete="email" placeholder="ornek@eposta.com" />
-                  {errors.email && <small className="sh-ck-err">{errors.email}</small>}
-                </label>
-                <label className={errors.phone ? 'sh-ck-invalid' : undefined}>
-                  <span>Telefon</span>
-                  <input {...field('phone')} type="tel" autoComplete="tel" placeholder="+90 5xx xxx xx xx" />
-                  {errors.phone ? <small className="sh-ck-err">{errors.phone}</small> : <small>Kaptan gerektiğinde ulaşabilsin.</small>}
-                </label>
-              </div>
-              <label>
-                <span>Kaptana mesajın</span>
-                <textarea
-                  rows={4}
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  placeholder="Rota tercihin, kutlama, özel istekler…"
-                  maxLength={900}
-                />
-              </label>
-            </div>
-          </section>
-
-          {/* 3 — ödeme */}
-          <section className="sh-ck-sec">
-            <h2>
-              <span>3</span> Ödeme
-            </h2>
-            <div className="sh-ck-paynote">
-              <Lock size={18} strokeWidth={1.8} aria-hidden="true" />
-              <p>
-                <b>Şimdi ücret alınmaz.</b> Kaptan talebini onayladığında, seçtiğin yöntemle ödeme adımı için seninle iletişime geçilir.
-              </p>
-            </div>
-            <div className="sh-ck-pay" role="radiogroup" aria-label="Ödeme tercihi">
-              {PAY_OPTIONS.map(({ key, icon: Icon, title, desc }) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={pay === key}
-                  className={`sh-ck-payopt${pay === key ? ' is-on' : ''}`}
-                  onClick={() => setPay(key)}
-                >
-                  <Icon size={22} strokeWidth={1.6} aria-hidden="true" />
-                  <span>
-                    <b>{title}</b>
-                    <small>{desc}</small>
-                  </span>
-                  <i aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-            {estimate && price && (
-              <dl className="sh-ck-plan">
-                <div>
-                  <dt>Bugün</dt>
-                  <dd>{formatMoney(0, price.currency)}</dd>
-                </div>
-                {ratio && ratio < 1 ? (
-                  <>
-                    <div>
-                      <dt>Kaptan onayından sonra (%{Math.round(ratio * 100)} ön ödeme)</dt>
-                      <dd>{formatMoney(estimate.total * ratio, price.currency)}</dd>
-                    </div>
-                    <div>
-                      <dt>Kalan tutar</dt>
-                      <dd>{formatMoney(estimate.total * (1 - ratio), price.currency)}</dd>
-                    </div>
-                  </>
-                ) : (
-                  <div>
-                    <dt>Kaptan onayından sonra</dt>
-                    <dd>{formatMoney(estimate.total, price.currency)}</dd>
-                  </div>
-                )}
-              </dl>
-            )}
-          </section>
-
-          {/* 4 — kurallar */}
-          <section className={`sh-ck-sec${errors.agree ? ' sh-ck-invalid' : ''}`}>
-            <h2>
-              <span>4</span> Kurallar ve onay
-            </h2>
-            <ul className="sh-ck-rules">
-              {model.cancellationLabel && (
-                <li>
-                  <CalendarCheck size={20} strokeWidth={1.6} aria-hidden="true" /> {model.cancellationLabel} politikası geçerlidir.
-                </li>
-              )}
-              {rules.schedules[0]?.checkIn && (
-                <li>
-                  <Sailboat size={20} strokeWidth={1.6} aria-hidden="true" /> Giriş {rules.schedules[0].checkIn}, çıkış {rules.schedules[0].checkOut ?? '—'}.
-                </li>
-              )}
-              {rules.house.map(h => (
-                <li key={h.label}>
-                  <ShieldCheck size={20} strokeWidth={1.6} aria-hidden="true" />
-                  {h.label === 'Evcil hayvan' ? (h.allowed ? 'Evcil hayvan kabul ediliyor.' : 'Evcil hayvan kabul edilmiyor.') : `${h.label}${h.label.startsWith('Sigara') ? '' : h.allowed ? ' serbest' : ' izinli değil'}.`}
+        <h3 className="sh-co-sub">İletişim bilgilerin</h3>
+        {!userEmail && (
+          <p className="sh-co-login">
+            Hesabın var mı?{' '}
+            <button type="button" onClick={() => setAuthOpen(true)}>
+              Giriş yap
+            </button>{' '}
+            — bilgilerin otomatik dolsun, rezervasyonunu takip et.
+          </p>
+        )}
+        <div className="sh-co-inputs">
+          <label className={`sh-co-input${errors.name ? ' is-invalid' : ''}`}>
+            <small>Ad soyad</small>
+            <input {...field('name')} autoComplete="name" placeholder="Kimlikteki gibi" />
+          </label>
+          <label className={`sh-co-input${errors.email ? ' is-invalid' : ''}`}>
+            <small>E-posta</small>
+            <input {...field('email')} type="email" autoComplete="email" placeholder="ornek@eposta.com" />
+          </label>
+          <label className={`sh-co-input${errors.phone ? ' is-invalid' : ''}`}>
+            <small>Telefon (isteğe bağlı)</small>
+            <input {...field('phone')} type="tel" autoComplete="tel" placeholder="+90 5xx xxx xx xx" />
+          </label>
+        </div>
+        {(errors.name || errors.email || errors.phone) && <p className="sh-co-err">{errors.name ?? errors.email ?? errors.phone}</p>}
+      </>
+    ),
+    4: (
+      <>
+        <dl className="sh-co-review">
+          <div>
+            <dt>Tarihler</dt>
+            <dd>{dateText}</dd>
+          </div>
+          <div>
+            <dt>Misafirler</dt>
+            <dd>{trip.guests} misafir</dd>
+          </div>
+          <div>
+            <dt>Ödeme</dt>
+            <dd>{whenText}</dd>
+          </div>
+          <div>
+            <dt>Yöntem</dt>
+            <dd>{PAY_OPTIONS.find(o => o.key === pay)!.title}</dd>
+          </div>
+        </dl>
+        {ruleItems.length > 0 && (
+          <>
+            <h3 className="sh-co-sub">Tekne kuralları</h3>
+            <ul className="sh-co-rules">
+              {ruleItems.map(({ key, icon: Icon, text }) => (
+                <li key={key}>
+                  <Icon size={20} strokeWidth={1.6} aria-hidden="true" /> {text}
                 </li>
               ))}
             </ul>
-            <label className="sh-ck-agree">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={e => {
-                  setAgree(e.target.checked)
-                  if (errors.agree) setErrors(({ agree: _omit, ...rest }) => rest)
-                }}
-              />
-              <span>
-                Rezervasyon şartlarını, iptal politikasını ve tekne kurallarını okudum, kabul ediyorum. <Link href="#">Gizlilik Politikası</Link>
-              </span>
-            </label>
-            {errors.agree && <p className="sh-ck-err">{errors.agree}</p>}
-          </section>
+          </>
+        )}
+        <label className={`sh-co-agree${errors.agree ? ' is-invalid' : ''}`}>
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={e => {
+              setAgree(e.target.checked)
+              if (errors.agree) clearError('agree')
+            }}
+          />
+          <span>Rezervasyon şartlarını, iptal politikasını ve tekne kurallarını okudum, kabul ediyorum.</span>
+        </label>
+        {errors.agree && <p className="sh-co-err">{errors.agree}</p>}
+        {submitError && (
+          <p className="sh-co-err" role="alert">
+            {submitError}
+          </p>
+        )}
+      </>
+    ),
+  }
 
-          {submitError && (
-            <p className="sh-form-error" role="alert">
-              {submitError}
-            </p>
-          )}
+  const stepSummary: Record<number, string> = {
+    1: whenText,
+    2: PAY_OPTIONS.find(o => o.key === pay)!.title,
+    3: [form.name.trim(), form.email.trim()].filter(Boolean).join(' · ') || 'İletişim bilgileri',
+    4: '',
+  }
 
-          <div className="sh-ck-submit">
-            <button type="button" className="sh-btn sh-btn--navy" onClick={submit} disabled={submitting}>
-              {submitting && <Loader2 size={18} className="sh-spin" aria-hidden="true" />}
-              {submitting ? 'Gönderiliyor…' : 'Onayla ve talebi gönder'}
-            </button>
-            <p>
-              <MailCheck size={15} strokeWidth={1.8} aria-hidden="true" /> Bu adımda kartından ücret çekilmez.
-            </p>
-          </div>
+  const primaryLabel = step === 4 ? (submitting ? 'Gönderiliyor…' : 'Rezervasyon talebi gönder') : 'Sonraki'
+
+  /* ---------- sayfa ---------- */
+  return (
+    <div className={`sh-co${step === 1 ? ' is-first' : ''}`}>
+      <div className="sh-container sh-co-head">
+        {step > 1 ? (
+          <button type="button" className="sh-icon-btn sh-co-back sh-co-back--m" onClick={back} aria-label="Önceki adım">
+            <ArrowLeft size={20} />
+          </button>
+        ) : null}
+        <Link href={listingUrl} className="sh-icon-btn sh-co-back sh-co-back--d" aria-label="İlana dön">
+          <ArrowLeft size={20} />
+        </Link>
+        <h1>
+          <span className="sh-co-title-d">Rezervasyon talebi</span>
+          <span className="sh-co-title-m">{step === 1 ? 'İncele ve devam et' : STEP_TITLES[step - 1]}</span>
+        </h1>
+        <Link href={listingUrl} className="sh-icon-btn sh-co-close" aria-label="Kapat">
+          <X size={20} />
+        </Link>
+      </div>
+
+      <div className="sh-container sh-co-grid">
+        <div className="sh-co-main">
+          {step === 1 && mobileSummary}
+
+          {STEP_TITLES.map((title, i) => {
+            const n = i + 1
+            const active = n === step
+            const completed = n < reached && !active
+            return (
+              <section key={title} id={`co-step-${n}`} className={`sh-co-step${active ? ' is-active' : ''}${completed ? ' is-done' : ''}`}>
+                <header>
+                  <h2>
+                    <span className="sh-co-step-no">{n}. </span>
+                    {title}
+                  </h2>
+                  {completed && (
+                    <button type="button" className="sh-co-pill" onClick={() => goTo(n)}>
+                      Değiştir
+                    </button>
+                  )}
+                </header>
+                {completed && stepSummary[n] && <p className="sh-co-step-sum">{stepSummary[n]}</p>}
+                {active && (
+                  <div className="sh-co-step-body">
+                    {stepBody[n]}
+                    <div className="sh-co-step-foot">
+                      <button type="button" className={`sh-co-next${n === 4 ? ' sh-co-next--wide is-final' : ''}`} onClick={next} disabled={submitting}>
+                        {submitting && n === 4 && <Loader2 size={18} className="sh-spin" aria-hidden="true" />}
+                        {n === 4 ? primaryLabel : 'Sonraki'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )
+          })}
         </div>
 
-        <div className="sh-ck-side">{summary}</div>
+        <div className="sh-co-side">
+          <div className="sh-co-promo">
+            <Gift size={22} strokeWidth={1.8} aria-hidden="true" />
+            <p>
+              <b>Bu rezervasyon onaylanınca %15’e varan cashback kazanırsın.</b> Tutar Ahoy bakiyene eklenir.
+            </p>
+          </div>
+          <div className="sh-co-guard">
+            <ShieldCheck size={22} strokeWidth={1.8} aria-hidden="true" />
+            <p>
+              Kaptan onaylamadan ödeme alınmaz; ilanlar yayına girmeden önce incelenir. <Link href="/neden-ahoy">Nasıl çalışır?</Link>
+            </p>
+          </div>
+          {summary}
+        </div>
       </div>
 
-      {/* mobil alt çubuk */}
-      <div className="sh-ck-bar">
-        <span>
-          <b>{estimate && price ? formatMoney(estimate.total, price.currency) : 'Tarih seç'}</b>
-          <small>{estimate ? `${estimate.label} · bugün ödeme yok` : 'Şimdi ücret alınmaz'}</small>
-        </span>
-        <button type="button" className="sh-btn sh-btn--navy" onClick={submit} disabled={submitting}>
-          {submitting ? 'Gönderiliyor…' : 'Talebi gönder'}
+      {/* mobil alt çubuk: ilerleme + ana buton */}
+      <div className="sh-co-bar">
+        <div className="sh-co-progress" aria-hidden="true">
+          {STEP_TITLES.map((t, i) => (
+            <span key={t} className={i < step ? 'is-on' : undefined} />
+          ))}
+        </div>
+        <button type="button" className={`sh-co-next sh-co-next--bar${step === 4 ? ' is-final' : ''}`} onClick={next} disabled={submitting}>
+          {submitting && <Loader2 size={18} className="sh-spin" aria-hidden="true" />}
+          {primaryLabel}
         </button>
       </div>
+
+      {breakdown}
 
       <TripPickerModal
         open={pickerOpen}
@@ -565,11 +723,71 @@ export default function CheckoutClient({ boat, search }: Props) {
         onConfirm={v => {
           setTrip(v)
           setPickerOpen(false)
-          if (errors.trip) setErrors(({ trip: _omit, ...rest }) => rest)
+          if (errors.trip) clearError('trip')
         }}
       />
 
-      {authOpen && <AuthModal initialMode="signin" onClose={() => setAuthOpen(false)} />}
+      {authOpen && <AuthModal initialMode="signin" onClose={closeAuth} />}
     </div>
+  )
+}
+
+function houseRuleText(h: { label: string; allowed: boolean; note?: string }): string {
+  if (h.label === 'Evcil hayvan')
+    return h.allowed ? `Evcil hayvan kabul ediliyor${h.note ? ` (${h.note.toLocaleLowerCase('tr')})` : ''}.` : 'Evcil hayvan kabul edilmiyor.'
+  if (h.label.startsWith('Sigara')) return `${h.label}.`
+  return `${h.label} ${h.allowed ? 'serbest' : 'izinli değil'}.`
+}
+
+/** Airbnb tarzı seçenek satırı (radyo). */
+function Option({
+  checked,
+  onSelect,
+  title,
+  icon,
+  children,
+}: {
+  checked: boolean
+  onSelect: () => void
+  title: string
+  icon?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <button type="button" role="radio" aria-checked={checked} className={`sh-co-opt${checked ? ' is-on' : ''}`} onClick={onSelect}>
+      {icon && <span className="sh-co-opt-ico">{icon}</span>}
+      <span className="sh-co-opt-text">
+        <b>{title}</b>
+        <small>{children}</small>
+      </span>
+      <i aria-hidden="true" />
+    </button>
+  )
+}
+
+function PriceBreakdown({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+  return createPortal(
+    <div className="sh-modal-overlay" onClick={onClose}>
+      <div className="sh-modal sh-co-bd-modal" role="dialog" aria-modal="true" aria-label="Fiyat dökümü" onClick={e => e.stopPropagation()}>
+        <div className="sh-modal-head">
+          <button type="button" className="sh-icon-btn" onClick={onClose} aria-label="Kapat">
+            <X size={18} />
+          </button>
+          <h2>Fiyat dökümü</h2>
+          <span />
+        </div>
+        <div className="sh-modal-body">{children}</div>
+      </div>
+    </div>,
+    document.body,
   )
 }

@@ -37,6 +37,7 @@ import type { PublicBoatSummary } from '@/lib/api'
 import BoatListCard from '@/components/boats/BoatListCard'
 import AuthModal from '@/components/auth/AuthModal'
 import AhoyGuarantee from '@/components/sh/AhoyGuarantee'
+import Art3D from '@/components/sh/Art3D'
 import ShareModal from '@/components/sh/ShareModal'
 import RangeCalendar from '@/components/sh/RangeCalendar'
 import { boatTypeLabel, cleanText, formatDayMonth, formatMoney, prettyValue } from '@/lib/boatFormat'
@@ -46,7 +47,7 @@ import ListingGallery from './ListingGallery'
 import BookingPanel, { useBookingState, type ListingSection } from './BookingPanel'
 import HostAvatar from './HostAvatar'
 import MessageCaptainModal from './MessageCaptainModal'
-import { groupAmenities, type AmenityGroup } from './amenityCatalog'
+import { groupAmenities, missingAmenities, type AmenityGroup, type MissingAmenity } from './amenityCatalog'
 import { DEFAULT_SPEC_ICON, SPEC_GROUPS, SPEC_ICONS, type FeatureIcon } from './featureIcons'
 import { buildRules } from './listingRules'
 
@@ -68,6 +69,8 @@ interface Row {
 /** Başlık + açıklama (öne çıkanlar, koşullar, kurallar). */
 interface Note {
   icon?: AnyIcon
+  /** Renkli 3D ikon (/public/icons/3d/<ad>.webp). */
+  art?: string
   title: string
   text: string
 }
@@ -96,7 +99,9 @@ const EXTRA_UNIT: Record<string, string> = {
 const GENERAL_SPEC_KEYS = ['boat_type', 'manufacturer_brand', 'model']
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-const AMENITY_PREVIEW = 6
+const AMENITY_PREVIEW = 8
+/** Önizlemede imkanların sonunda gösterilen, teknede olmayan (üstü çizili) imkan sayısı. */
+const MISSING_PREVIEW = 2
 const SERVICE_PREVIEW = 5
 const SPEC_PREVIEW = 6
 
@@ -193,6 +198,7 @@ export default function ListingDetail({ boat, similar }: Props) {
   /* ---------- imkanlar ---------- */
   const amenityGroups = useMemo(() => groupAmenities(boat.amenities), [boat.amenities])
   const amenities = amenityGroups.flatMap(g => g.items)
+  const missing = useMemo(() => missingAmenities(boat.amenities), [boat.amenities])
 
   /* ---------- hizmetler ve ekstralar ---------- */
   const services: Row[] = [
@@ -238,23 +244,25 @@ export default function ListingDetail({ boat, similar }: Props) {
 
   /* ---------- ücret ve koşullar ---------- */
   const terms: Note[] = [
-    minDuration && { title: `Minimum kiralama: ${minDuration}`, text: `Bu tekne en az ${minDuration} için kiralanabilir.` },
-    weeklyDay && { title: `Haftalık teslim günü: ${weeklyDay}`, text: `Haftalık kiralamalarda giriş ve çıkış ${weeklyDay} günü yapılır.` },
+    minDuration && { art: 'hourglass', title: `Minimum kiralama: ${minDuration}`, text: `Bu tekne en az ${minDuration} için kiralanabilir.` },
+    weeklyDay && { art: 'spiral-calendar', title: `Haftalık teslim günü: ${weeklyDay}`, text: `Haftalık kiralamalarda giriş ve çıkış ${weeklyDay} günü yapılır.` },
     model.contactForFuelCost
-      ? { title: 'Yakıt: kaptanla netleştirilir', text: 'Yakıt ücreti rotaya ve seyir süresine göre kaptanla birlikte belirlenir.' }
+      ? { art: 'fuel-pump', title: 'Yakıt: kaptanla netleştirilir', text: 'Yakıt ücreti rotaya ve seyir süresine göre kaptanla birlikte belirlenir.' }
       : model.fuelCostNote
-        ? { title: `Yakıt: ${model.fuelCostNote}`, text: 'Yakıt ücreti kullanıma göre hesaplanır.' }
+        ? { art: 'fuel-pump', title: `Yakıt: ${model.fuelCostNote}`, text: 'Yakıt ücreti kullanıma göre hesaplanır.' }
         : null,
-    acUsage && { title: `Klima kullanımı: ${acUsage}`, text: 'Kaptanın belirlediği günlük klima kullanım süresidir.' },
+    acUsage && { art: 'snowflake', title: `Klima kullanımı: ${acUsage}`, text: 'Kaptanın belirlediği günlük klima kullanım süresidir.' },
     {
+      art: 'credit-card',
       title: model.depositLabel ? `Ödeme: ${model.depositLabel}` : 'Ödeme',
       text: model.depositLabel
         ? `Kaptan talebini onayladıktan sonra ${model.depositLabel.toLocaleLowerCase('tr')} alınır; o zamana kadar ödeme yapmazsın.`
         : 'Kaptan talebini onayladıktan sonra ödeme alınır; o zamana kadar ödeme yapmazsın.',
     },
     model.cancellationLabel && {
+      art: 'calendar',
       title: `İptal politikası: ${model.cancellationLabel.replace(/ iptal$/, '')}`,
-      text: 'Kaptanın belirlediği iptal politikası uygulanır. Ayrıntılar için bize yazabilirsin.',
+      text: 'Kaptanın belirlediği iptal politikası uygulanır. Ayrıntılar için kaptana sorabilirsin.',
     },
   ].filter(Boolean) as Note[]
 
@@ -430,7 +438,8 @@ export default function ListingDetail({ boat, similar }: Props) {
             {amenities.length > 0 && (
               <section className="sh-ld-sec" id="imkanlar">
                 <h2 className="sh-ld-h2">İmkanlar</h2>
-                <ul className="sh-ld-list">
+                {/* iki sütun; teknede olmayan önemli imkanlar sonda, üstü çizili */}
+                <ul className="sh-ld-list sh-ld-list--2">
                   {amenities.slice(0, AMENITY_PREVIEW).map(({ key, label, icon: Icon, isExtra }) => (
                     <li key={key}>
                       <Icon size={24} strokeWidth={1.5} />
@@ -440,8 +449,19 @@ export default function ListingDetail({ boat, similar }: Props) {
                       </span>
                     </li>
                   ))}
+                  {missing.slice(0, MISSING_PREVIEW).map(({ key, label, icon: Icon }) => (
+                    <li key={key} className="is-off">
+                      <span className="sh-ico-off">
+                        <Icon size={24} strokeWidth={1.5} />
+                      </span>
+                      <s>
+                        <span className="sr-only">Yok: </span>
+                        {label}
+                      </s>
+                    </li>
+                  ))}
                 </ul>
-                {amenities.length > AMENITY_PREVIEW && (
+                {(amenities.length > AMENITY_PREVIEW || missing.length > MISSING_PREVIEW) && (
                   <button type="button" className="sh-ld-outline" onClick={() => setSheet('amenities')}>
                     {amenities.length} imkanın tümünü göster
                   </button>
@@ -546,6 +566,7 @@ export default function ListingDetail({ boat, similar }: Props) {
                 <div className="sh-ld-cols">
                   {r.schedules.map(s => (
                     <div key={s.title}>
+                      <Art3D name={s.title.startsWith('Günlük') ? 'sun' : 'moon'} size={44} className="sh-ld-art" />
                       <b>{s.title}</b>
                       <p>Giriş: {s.checkIn ?? '—'}</p>
                       <p>Çıkış: {s.checkOut ?? '—'}</p>
@@ -553,6 +574,7 @@ export default function ListingDetail({ boat, similar }: Props) {
                   ))}
                   {(boat.checkInNotes || boat.checkOutNotes) && (
                     <div>
+                      <Art3D name="memo" size={44} className="sh-ld-art" />
                       <b>Kaptandan not</b>
                       {boat.checkInNotes && <p>{boat.checkInNotes}</p>}
                       {boat.checkOutNotes && <p>{boat.checkOutNotes}</p>}
@@ -568,6 +590,7 @@ export default function ListingDetail({ boat, similar }: Props) {
                 <div className="sh-ld-cols">
                   {terms.map(t => (
                     <div key={t.title}>
+                      {t.art && <Art3D name={t.art} size={44} className="sh-ld-art" />}
                       <b>{t.title}</b>
                       <p>{t.text}</p>
                     </div>
@@ -671,7 +694,7 @@ export default function ListingDetail({ boat, similar }: Props) {
 
       {sheet === 'amenities' && (
         <FeatureSheet title="İmkanlar" onClose={closeSheet}>
-          <AmenitySheetContent groups={amenityGroups} />
+          <AmenitySheetContent groups={amenityGroups} missing={missing} />
         </FeatureSheet>
       )}
       {sheet === 'services' && (
@@ -739,7 +762,7 @@ function FeatureSheet({ title, onClose, children }: { title: string; onClose: ()
   )
 }
 
-function AmenitySheetContent({ groups }: { groups: AmenityGroup[] }) {
+function AmenitySheetContent({ groups, missing }: { groups: AmenityGroup[]; missing: MissingAmenity[] }) {
   return (
     <>
       {groups.map(g => (
@@ -758,6 +781,24 @@ function AmenitySheetContent({ groups }: { groups: AmenityGroup[] }) {
           </ul>
         </section>
       ))}
+      {missing.length > 0 && (
+        <section className="sh-sheet-group">
+          <h3>Mevcut olmayan imkanlar</h3>
+          <ul className="sh-sheet-list">
+            {missing.map(({ key, label, icon: Icon, safety }) => (
+              <li key={key} className="is-off">
+                <span className="sh-ico-off">
+                  <Icon size={26} strokeWidth={1.5} />
+                </span>
+                <span>
+                  <s>{label}</s>
+                  {safety && <small>Kaptan bu ekipmanı belirtmedi. Sorun varsa kaptana mesaj gönderebilirsin.</small>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   )
 }

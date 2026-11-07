@@ -27,7 +27,7 @@ export default function CaptainsPage() {
             <Link href="/tekne-kiralama" className="captains-btn captains-btn--primary">
               Kaptanlı tekne ara
             </Link>
-            <Link href="/#neden-ahoy" className="captains-btn captains-btn--outline">
+            <Link href="/neden-ahoy" className="captains-btn captains-btn--outline">
               Neden Ahoy?
             </Link>
           </div>

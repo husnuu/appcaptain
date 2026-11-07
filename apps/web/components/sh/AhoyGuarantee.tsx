@@ -15,7 +15,7 @@ export default function AhoyGuarantee({ className }: { className?: string }) {
       </p>
       <p className="sh-ag-text">
         Doğrulanmış kaptanlar, sigortalı tekneler ve 7/24 destekle güvenle rezervasyon yapıyorsun.{' '}
-        <Link href="/#neden-ahoy">Daha fazla bilgi al</Link>
+        <Link href="/neden-ahoy">Daha fazla bilgi al</Link>
       </p>
     </div>
   )
