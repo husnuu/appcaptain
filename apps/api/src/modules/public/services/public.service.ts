@@ -140,7 +140,26 @@ export async function listPublicBoats(query: PublicBoatListQuery) {
 export async function getPublicBoat(id: string) {
   const boat = await boatRepository.getState(id);
   if (!boat || boat.status !== "ACTIVE") return null;
-  return boat;
+  return { ...boat, owner: await getPublicOwner(boat.ownerId) };
+}
+
+/** İlan sahibinin herkese açık bilgisi — yalnızca ilk ad (soyad paylaşılmaz). */
+async function getPublicOwner(ownerId: string) {
+  const owner = await prisma.profile.findUnique({
+    where: { id: ownerId },
+    select: { fullName: true, companyName: true, avatarUrl: true, createdAt: true, badge: true },
+  });
+  if (!owner) return null;
+  const first = owner.fullName?.trim().split(/\s+/)[0] ?? "";
+  const name = first
+    ? first.charAt(0).toLocaleUpperCase("tr") + first.slice(1)
+    : owner.companyName?.trim() || null;
+  return {
+    name,
+    avatarUrl: owner.avatarUrl ?? null,
+    joinedAt: owner.createdAt.toISOString(),
+    badge: owner.badge ?? null,
+  };
 }
 
 export interface PublicLocation {

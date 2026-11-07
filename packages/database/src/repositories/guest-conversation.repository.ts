@@ -21,6 +21,14 @@ export interface GetOrCreateConversationData {
   initialMessage?: string | null;
 }
 
+/** Rezervasyon öncesi ilan sayfasından başlatılan konuşma. */
+export interface GetOrCreateInquiryData {
+  boatId: string;
+  captainId: string;
+  guestName: string;
+  guestEmail: string;
+}
+
 export interface GuestConversationRepository {
   listForCaptain(captainId: string): Promise<GuestConversationDTO[]>;
   getByIdForCaptain(
@@ -35,4 +43,9 @@ export interface GuestConversationRepository {
   getOrCreateForBooking(
     data: GetOrCreateConversationData
   ): Promise<GuestConversationDTO>;
+  /** Aynı misafir + tekne için açık (rezervasyonsuz) konuşmayı döner, yoksa oluşturur. */
+  getOrCreateForInquiry(data: GetOrCreateInquiryData): Promise<GuestConversationDTO>;
+  /** Misafirin (e-posta ile) tüm konuşmaları — rezervasyonlu ve rezervasyonsuz. */
+  listForGuest(guestEmail: string): Promise<GuestConversationDTO[]>;
+  getByIdForGuest(id: string, guestEmail: string): Promise<GuestConversationDTO | null>;
 }

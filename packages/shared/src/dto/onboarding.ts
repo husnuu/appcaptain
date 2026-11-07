@@ -166,6 +166,15 @@ export interface BoatProgressDTO {
   isReadyForReview: boolean;
 }
 
+/** İlan sahibinin herkese açık bilgileri — yalnızca ad (soyad paylaşılmaz). */
+export interface PublicBoatOwnerDTO {
+  name: string | null;
+  avatarUrl: string | null;
+  /** Kaptanın Ahoy'a katıldığı tarih (ISO). */
+  joinedAt: string;
+  badge: string | null;
+}
+
 export interface SerializedBoatDTO {
   id: string;
   ownerId: string;
@@ -194,6 +203,8 @@ export interface SerializedBoatDTO {
   createdAt: string | Date;
   updatedAt: string | Date;
   lastSavedAt: string | Date | null;
+  /** Yalnızca herkese açık ilan uç noktası doldurur. */
+  owner?: PublicBoatOwnerDTO | null;
 }
 
 export interface BoatListItemDTO {

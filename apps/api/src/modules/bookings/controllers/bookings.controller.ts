@@ -70,16 +70,15 @@ export async function captainBookingRoutes(app: FastifyInstance) {
 }
 
 /**
- * Customer endpoints — same requireAuth hook as the captain routes (any
- * valid Supabase-issued token, regardless of which app it came from). Scoped
- * to the logged-in customer's own bookings by matching their account email
- * against Booking.guestEmail — there's no customerId column, bookings stay
- * guest-shaped even when placed while logged in.
+ * Customer endpoints — web müşterisinin Supabase oturumu (requireCustomer).
+ * Kaptan JWT'si (requireAuth) burada çalışmaz: müşteri anahtarları Supabase
+ * tarafından ES256 ile imzalanır. Kayıtlar, hesap e-postası Booking.guestEmail
+ * ile eşleştirilerek bulunur — customerId kolonu yoktur.
  */
 export async function customerBookingRoutes(app: FastifyInstance) {
-  app.addHook("onRequest", app.requireAuth);
+  app.addHook("onRequest", app.requireCustomer);
 
   app.get("/bookings/mine", async (req) => {
-    return service.listByCustomerEmail(req.authUser!.email);
+    return service.listByCustomerEmail(req.customer!.email);
   });
 }

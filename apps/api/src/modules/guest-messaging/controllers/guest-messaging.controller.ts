@@ -1,11 +1,20 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { sendGuestMessageSchema } from "@getyourboat/shared";
+import { prisma } from "@getyourboat/database";
 import { parseDetailed } from "../../../lib/validate.js";
 import * as service from "../services/guest-messaging.service.js";
 
 const idParam = (req: FastifyRequest) => (req.params as { id: string }).id;
-const captainName = (req: FastifyRequest) =>
-  (req.authUser!.email?.split("@")[0] ?? "Kaptan");
+/** Misafire görünen kaptan adı: profildeki ilk ad (ilan sayfasıyla aynı), yoksa e-posta öneki. */
+async function captainName(req: FastifyRequest): Promise<string> {
+  const profile = await prisma.profile.findUnique({
+    where: { id: req.authUser!.id },
+    select: { fullName: true },
+  });
+  const first = profile?.fullName?.trim().split(/\s+/)[0];
+  if (first) return first.charAt(0).toLocaleUpperCase("tr") + first.slice(1);
+  return req.authUser!.email?.split("@")[0] ?? "Kaptan";
+}
 
 export async function guestMessagingRoutes(app: FastifyInstance) {
   app.addHook("onRequest", app.requireAuth);
@@ -39,7 +48,7 @@ export async function guestMessagingRoutes(app: FastifyInstance) {
       idParam(req),
       req.authUser!.id,
       content,
-      captainName(req)
+      await captainName(req)
     );
     return reply.code(201).send({ message });
   });

@@ -7,6 +7,7 @@ import { Prisma, prisma } from "../../client.js";
 import type {
   CreateGuestMessageData,
   GetOrCreateConversationData,
+  GetOrCreateInquiryData,
   GuestConversationRepository,
 } from "../guest-conversation.repository.js";
 
@@ -167,5 +168,46 @@ export class PrismaGuestConversationRepository
       include: includeRefs,
     });
     return toConversationDTO(created);
+  }
+
+  async getOrCreateForInquiry(data: GetOrCreateInquiryData) {
+    const existing = await prisma.guestConversation.findFirst({
+      where: {
+        boatId: data.boatId,
+        bookingId: null,
+        guestEmail: { equals: data.guestEmail, mode: "insensitive" },
+      },
+      orderBy: { lastAt: "desc" },
+      include: includeRefs,
+    });
+    if (existing) return toConversationDTO(existing);
+
+    const created = await prisma.guestConversation.create({
+      data: {
+        boatId: data.boatId,
+        captainId: data.captainId,
+        guestName: data.guestName,
+        guestEmail: data.guestEmail,
+      },
+      include: includeRefs,
+    });
+    return toConversationDTO(created);
+  }
+
+  async listForGuest(guestEmail: string) {
+    const rows = await prisma.guestConversation.findMany({
+      where: { guestEmail: { equals: guestEmail, mode: "insensitive" } },
+      orderBy: { lastAt: "desc" },
+      include: includeRefs,
+    });
+    return rows.map(toConversationDTO);
+  }
+
+  async getByIdForGuest(id: string, guestEmail: string) {
+    const row = await prisma.guestConversation.findFirst({
+      where: { id, guestEmail: { equals: guestEmail, mode: "insensitive" } },
+      include: includeRefs,
+    });
+    return row ? toConversationDTO(row) : null;
   }
 }

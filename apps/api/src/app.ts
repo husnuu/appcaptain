@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import { authPlugin } from "./plugins/auth.js";
 import { captainAuthPlugin } from "./plugins/captain-auth.js";
+import { customerAuthPlugin } from "./plugins/customer-auth.js";
 import { adminAuthPlugin } from "./plugins/admin-auth.js";
 import { registerRoutes } from "./routes/index.js";
 import { HttpError } from "./lib/errors.js";
@@ -48,6 +49,7 @@ export async function buildApp() {
   await app.register(cookie);
   await app.register(authPlugin); // legacy JWT (phase 0)
   await app.register(captainAuthPlugin);
+  await app.register(customerAuthPlugin); // web müşterileri (Supabase oturumu)
   await app.register(adminAuthPlugin);
   await registerRoutes(app);
 
