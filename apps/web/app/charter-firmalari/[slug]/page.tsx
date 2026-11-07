@@ -13,10 +13,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const firm = getFirmBySlug(slug)
   if (!firm) {
-    return { title: 'Charter Firmasi Bulunamadi — SeaHub' }
+    return { title: 'Charter Firmasi Bulunamadi — Ahoy' }
   }
   return {
-    title: `${firm.name} — Charter Detaylari | SeaHub`,
+    title: `${firm.name} — Charter Detaylari | Ahoy`,
     description: `${firm.name} icin rota, indirim ve filo detaylarini inceleyin.`,
   }
 }

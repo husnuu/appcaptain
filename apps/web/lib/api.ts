@@ -26,6 +26,15 @@ export interface PublicBoatSummary {
   productionYear: number | null;
   amenities: { key: string; label: string }[];
   rating: number | null;
+  // Liste kartı için ek alanlar (API'nin eski sürümleri döndürmeyebilir).
+  photoUrls?: string[];
+  instantBooking?: boolean;
+  brand?: string | null;
+  model?: string | null;
+  enginePowerHp?: number | null;
+  berths?: number | null;
+  crewCount?: number | null;
+  cancellationPolicy?: 'flexible' | 'moderate' | 'strict' | null;
 }
 
 export interface PublicBoatListParams {

@@ -48,7 +48,7 @@ const DEFAULT_ECOSYSTEM_HEADER = {
 };
 
 const DEFAULT_TRUST_HEADER = {
-  title: "SeaHub Güven Programı",
+  title: "Ahoy Güven Programı",
   subtitle: "Her adımda yanınızdayız — rezervasyondan limana kadar",
 };
 

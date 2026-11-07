@@ -9,8 +9,8 @@ import ThreadRow from '@/components/forum/ThreadRow'
 import { getForumCategories, getForumThreads } from '@/lib/forumData'
 
 export const metadata: Metadata = {
-  title: 'Forum — SeaHub Deniz Topluluğu',
-  description: 'Rotalar, kiralama tavsiyeleri, kaptan önerileri ve daha fazlası. SeaHub denizci topluluğuna katılın.',
+  title: 'Forum — Ahoy Deniz Topluluğu',
+  description: 'Rotalar, kiralama tavsiyeleri, kaptan önerileri ve daha fazlası. Ahoy denizci topluluğuna katılın.',
 }
 
 // ── Category color → CSS class map ──────────────────────────
@@ -64,7 +64,7 @@ export default async function ForumPage() {
         <div className="forum-hero-inner">
           <div className="forum-hero-top">
             <div>
-              <p className="forum-eyebrow">SeaHub topluluğu</p>
+              <p className="forum-eyebrow">Ahoy topluluğu</p>
               <h1 className="forum-title">Denizci forumu</h1>
               <p className="forum-hero-sub">12.000+ üye — rotalar, kiralama tavsiyeleri ve kaptan önerileri</p>
             </div>

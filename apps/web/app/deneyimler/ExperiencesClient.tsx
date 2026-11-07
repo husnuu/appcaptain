@@ -359,7 +359,7 @@ export default function ExperiencesClient({ experiences, locations, categories }
                 <p className="gyg-filter-label">Öne çıkanlar</p>
                 <label className="gyg-check">
                   <input type="checkbox" checked={onlyBadge} onChange={e => setOnlyBadge(e.target.checked)} />
-                  <span>SeaHub Onaylı</span>
+                  <span>Ahoy Onaylı</span>
                 </label>
                 <label className="gyg-check">
                   <input

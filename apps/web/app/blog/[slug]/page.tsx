@@ -17,9 +17,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const post = getBlogPostBySlug(slug)
-  if (!post) return { title: 'Yazı bulunamadı — SeaHub Blog' }
+  if (!post) return { title: 'Yazı bulunamadı — Ahoy Blog' }
   return {
-    title: `${post.title} — SeaHub Blog`,
+    title: `${post.title} — Ahoy Blog`,
     description: post.excerpt,
     openGraph: { title: post.title, description: post.excerpt, images: [post.image] },
   }
@@ -108,7 +108,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {/* ── BREADCRUMB ──────────────────────────────────────── */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 24px 0' }}>
         <nav style={{ fontSize: 13, fontWeight: 500, color: 'var(--ash-gray)' }} aria-label="Sayfa konumu">
-          <Link href="/" style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>SeaHub</Link>
+          <Link href="/" style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>Ahoy</Link>
           <span style={{ margin: '0 6px' }}>›</span>
           <Link href="/blog" style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>Blog</Link>
           <span style={{ margin: '0 6px' }}>›</span>
@@ -176,7 +176,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
             <div>
               <div className="author-card-name">{post.author.name}</div>
-              <div className="author-card-title">{post.author.title} · SeaHub</div>
+              <div className="author-card-title">{post.author.title} · Ahoy</div>
               <p className="author-card-bio">
                 Deniz tutkunusu, seyyah ve editör. Ege ile Akdeniz&apos;in koylarında 10 yılı aşkın
                 süredir yelken açıyor, dalıyor ve bu deneyimleri sizlerle paylaşıyor.

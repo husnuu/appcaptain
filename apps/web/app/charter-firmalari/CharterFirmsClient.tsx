@@ -354,7 +354,7 @@ export default function CharterFirmsClient({ coverImageUrl }: { coverImageUrl?: 
 
         <div className="charter-filter-panel">
           <p className="charter-filter-intro">
-            Sıradaki tekne kiralama ve deneyim planınız için SeaHub anlaşmalı charter firmalarını keşfedin.
+            Sıradaki tekne kiralama ve deneyim planınız için Ahoy anlaşmalı charter firmalarını keşfedin.
           </p>
 
           <div className="charter-company-search">

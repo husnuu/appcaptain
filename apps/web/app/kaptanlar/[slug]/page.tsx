@@ -20,9 +20,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const captain = getCaptainBySlug(slug)
-  if (!captain) return { title: 'Kaptan bulunamadı — SeaHub' }
+  if (!captain) return { title: 'Kaptan bulunamadı — Ahoy' }
   return {
-    title: `${captain.name} — Kaptan Profili | SeaHub`,
+    title: `${captain.name} — Kaptan Profili | Ahoy`,
     description: `${captain.basePort} çıkışlı · ${captain.rating} puan · ${captain.reviewCount} yorum. Tekneleri ve misafir değerlendirmelerini inceleyin.`,
   }
 }

@@ -41,7 +41,7 @@ export default function CashbackProgramBanner() {
 
         <div className="cashback-miles-inner">
           <div className="cashback-miles-left">
-            <p className="cashback-miles-eyebrow">SeaHub Cashback</p>
+            <p className="cashback-miles-eyebrow">Ahoy Cashback</p>
             <h2 id="cashback-program-heading" className="cashback-miles-headline">
               Her onaylı rezervasyonda geri kazanın
             </h2>

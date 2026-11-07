@@ -37,7 +37,7 @@ export default function CashbackSection() {
 
         <div className="cashback-miles-inner">
           <div className="cashback-miles-left">
-            <p className="cashback-miles-eyebrow">SeaHub</p>
+            <p className="cashback-miles-eyebrow">Ahoy</p>
             <h2 id="fleet-banner-heading" className="cashback-miles-headline">
               Geniş Tekne Ağı
             </h2>

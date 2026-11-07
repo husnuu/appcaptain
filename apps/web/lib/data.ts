@@ -166,7 +166,7 @@ export function getTestimonials(): Testimonial[] {
     {
       id: 't5',
       rating: 5,
-      text: 'Eğitim programlarımız SeaHub topluluğuyla buluşunca güçlü bir sinerji oluştu.',
+      text: 'Eğitim programlarımız Ahoy topluluğuyla buluşunca güçlü bir sinerji oluştu.',
       authorName: 'Özge Demir',
       authorRole: 'Eğitim Koordinatörü',
       authorCompany: 'Türk Yelken Federasyonu',
@@ -302,10 +302,10 @@ export function getBlogPostBySlug(slug: string): BlogPostFull | null {
   if (slug !== 'yelkenli-kiralama-ipuclari') {
     return {
       ...meta,
-      tags: [meta.tag, 'Deniz', 'SeaHub'],
+      tags: [meta.tag, 'Deniz', 'Ahoy'],
       relatedSlugs: posts.filter(p => p.slug !== slug).slice(0, 3).map(p => p.slug),
       content: [
-        { type: 'paragraph', html: `<p>Bu yazı yakında yayınlanacak. <strong>SeaHub Blog</strong>'u takip etmeyi unutmayın.</p>` },
+        { type: 'paragraph', html: `<p>Bu yazı yakında yayınlanacak. <strong>Ahoy Blog</strong>'u takip etmeyi unutmayın.</p>` },
       ],
     }
   }
@@ -339,7 +339,7 @@ export function getBlogPostBySlug(slug: string): BlogPostFull | null {
       { type: 'heading', level: 2, text: '2. Kaptanı Önceden Araştırın' },
       {
         type: 'paragraph',
-        html: `<p>Kaptan, tatilinizdeki en kritik unsurdur. Tekneyi bilen, bölgeyi tanıyan ve misafirlerle iyi iletişim kuran bir kaptan sıradan bir tatili efsaneye dönüştürür. Kiralama öncesinde kaptanın <strong>değerlendirmelerini mutlaka okuyun</strong>, mümkünse bir ön görüşme yapın.</p><p>SeaHub platformunda tüm kaptanlar kimlik doğrulaması ve lisans kontrolünden geçmektedir. Profil sayfalarındaki yorumlar gerçek misafirlerden geliyor.</p>`,
+        html: `<p>Kaptan, tatilinizdeki en kritik unsurdur. Tekneyi bilen, bölgeyi tanıyan ve misafirlerle iyi iletişim kuran bir kaptan sıradan bir tatili efsaneye dönüştürür. Kiralama öncesinde kaptanın <strong>değerlendirmelerini mutlaka okuyun</strong>, mümkünse bir ön görüşme yapın.</p><p>Ahoy platformunda tüm kaptanlar kimlik doğrulaması ve lisans kontrolünden geçmektedir. Profil sayfalarındaki yorumlar gerçek misafirlerden geliyor.</p>`,
       },
       {
         type: 'quote',
@@ -413,7 +413,7 @@ export function getBlogPostBySlug(slug: string): BlogPostFull | null {
         type: 'callout',
         icon: '⛵',
         title: 'Hazır mısınız?',
-        body: 'SeaHub\'da 900\'den fazla tekne sizi bekliyor. Tarih ve lokasyon seçin, rüya yolculuğunuzu planlayın.',
+        body: 'Ahoy\'da 900\'den fazla tekne sizi bekliyor. Tarih ve lokasyon seçin, rüya yolculuğunuzu planlayın.',
       },
     ],
   }

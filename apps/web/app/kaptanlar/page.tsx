@@ -5,7 +5,7 @@ import CaptainsClient from './CaptainsClient'
 import { CAPTAINS } from './data'
 
 export const metadata: Metadata = {
-  title: 'Onaylı Kaptanlar — SeaHub',
+  title: 'Onaylı Kaptanlar — Ahoy',
   description:
     'Lisanslı ve doğrulanmış kaptanları keşfedin. Tekneleri, misafir yorumları ve puanlarıyla karşılaştırın.',
 }
@@ -15,7 +15,7 @@ export default function CaptainsPage() {
     <section className="captains-page" aria-labelledby="captains-heading">
       <div className="captains-hero">
         <div className="captains-shell captains-hero-inner">
-          <p className="captains-eyebrow">SeaHub Güven Programı</p>
+          <p className="captains-eyebrow">Ahoy Güven Programı</p>
           <h1 id="captains-heading" className="browse-title captains-hero-title">
             Onaylı Kaptanlar
           </h1>
@@ -27,8 +27,8 @@ export default function CaptainsPage() {
             <Link href="/tekne-kiralama" className="captains-btn captains-btn--primary">
               Kaptanlı tekne ara
             </Link>
-            <Link href="/#eco-heading" className="captains-btn captains-btn--outline">
-              Neden SeaHub?
+            <Link href="/#neden-ahoy" className="captains-btn captains-btn--outline">
+              Neden Ahoy?
             </Link>
           </div>
         </div>

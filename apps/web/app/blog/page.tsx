@@ -5,8 +5,8 @@ import BlogCategoryTabs from '@/components/blog/BlogCategoryTabs'
 import { getBlogPosts, getBlogCategories } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Deniz Rehberi — SeaHub Blog',
-  description: 'Rota tavsiyeleri, kiralama rehberleri, deneyim hikayeleri ve teknik ipuçları. SeaHub\'ın deniz rehberi.',
+  title: 'Deniz Rehberi — Ahoy Blog',
+  description: 'Rota tavsiyeleri, kiralama rehberleri, deneyim hikayeleri ve teknik ipuçları. Ahoy\'un deniz rehberi.',
 }
 
 export default async function BlogPage() {
@@ -31,7 +31,7 @@ export default async function BlogPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--rausch)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
-                🌊 SeaHub Blog
+                🌊 Ahoy Blog
               </p>
               <h1 style={{ fontSize: 36, fontWeight: 700, color: 'var(--ink-black)', letterSpacing: '-0.6px', marginBottom: 6 }}>
                 Deniz Rehberi

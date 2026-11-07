@@ -14,7 +14,24 @@ const BOAT_LIST_FEATURE_KEYS = [
   "length_ft_m",
   "year_of_manufacture",
   "number_of_cabins_for_customer_without_crew",
+  "manufacturer_brand",
+  "model",
+  "total_engine_power_hp",
+  "maximum_sleeps_berths",
+  "number_of_crew_members",
 ] as const;
+
+/** Liste kartında gösterilecek en fazla fotoğraf sayısı (kart içi kaydırma). */
+const BOAT_LIST_PHOTO_LIMIT = 5;
+
+const CANCELLATION_POLICIES = new Set(["flexible", "moderate", "strict"]);
+
+/** structuredRules içinden yalnızca iptal politikası anahtarı okunur; diğer kurallar listede dönmez. */
+function cancellationPolicy(rules: unknown): string | null {
+  if (!rules || typeof rules !== "object") return null;
+  const raw = (rules as Record<string, unknown>).cancellation_policy;
+  return typeof raw === "string" && CANCELLATION_POLICIES.has(raw) ? raw : null;
+}
 
 type FeatureValueRow = { featureKey: string; value: string | null };
 
@@ -62,10 +79,17 @@ export async function listPublicBoats(query: PublicBoatListQuery) {
         id: true,
         title: true,
         description: true,
+        approvalType: true,
+        structuredRules: true,
         boatType: { select: { key: true, label: true } },
         listingModels: { select: { listingModel: { select: { key: true, label: true } } } },
         pricing: { select: { listingModelKey: true, price: true, currency: true } },
-        photos: { where: { isCover: true }, take: 1, select: { publicUrl: true } },
+        photos: {
+          where: { publicUrl: { not: null } },
+          orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
+          take: BOAT_LIST_PHOTO_LIMIT,
+          select: { publicUrl: true },
+        },
         featureValues: {
           where: { featureKey: { in: [...BOAT_LIST_FEATURE_KEYS] } },
           select: { featureKey: true, value: true },
@@ -84,6 +108,14 @@ export async function listPublicBoats(query: PublicBoatListQuery) {
     title: boat.title,
     description: boat.description,
     coverPhotoUrl: boat.photos[0]?.publicUrl ?? null,
+    photoUrls: boat.photos.map((p) => p.publicUrl).filter((u): u is string => !!u),
+    instantBooking: boat.approvalType === "INSTANT",
+    brand: textFeature(boat.featureValues, "manufacturer_brand"),
+    model: textFeature(boat.featureValues, "model"),
+    enginePowerHp: numericFeature(boat.featureValues, "total_engine_power_hp"),
+    berths: numericFeature(boat.featureValues, "maximum_sleeps_berths"),
+    crewCount: numericFeature(boat.featureValues, "number_of_crew_members"),
+    cancellationPolicy: cancellationPolicy(boat.structuredRules),
     city: textFeature(boat.featureValues, "city"),
     country: textFeature(boat.featureValues, "country"),
     marina: textFeature(boat.featureValues, "marina"),

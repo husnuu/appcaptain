@@ -3,7 +3,7 @@ import CharterFirmsClient from './CharterFirmsClient'
 import { DEFAULT_HERO } from '@/lib/content/heroDefaults'
 
 export const metadata: Metadata = {
-  title: 'Charter Firmaları — SeaHub',
+  title: 'Charter Firmaları — Ahoy',
   description: 'Ülkeye göre charter firmalarını keşfedin. Popüler şirketleri logo ve isimleriyle inceleyin.',
 }
 

@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import AuthModal from '@/components/auth/AuthModal'
+import { CalendarDays, ChevronDown, CircleUserRound, MapPin, Menu, Search, Users } from 'lucide-react'
+import { Logo } from '@/components/home/Logo'
 
 const CAPTAIN_APP_URL = process.env.NEXT_PUBLIC_CAPTAIN_URL ?? 'https://appcaptain-captain.vercel.app'
 
@@ -139,7 +141,7 @@ const DISCOVER_ITEMS = [
 const USER_MENU_BOTTOM = [
   { href: '/tekne-kiralama', label: 'Tekne Kiralama' },
   { href: '/deneyimler',     label: 'Deneyimler' },
-  { href: '/#eco-heading',   label: 'Neden SeaHub' },
+  { href: '/#neden-ahoy',   label: 'Neden Ahoy' },
   { href: '/forum',          label: 'Forum' },
   { href: '/blog',           label: 'Deniz Rehberi' },
   { href: '/cashback',       label: 'Cashback Programı' },
@@ -152,7 +154,6 @@ interface NavProps {
 
 export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGGESTIONS }: NavProps) {
   const router = useRouter()
-  const [scrolled,      setScrolled]      = useState(false)
   const [discoverOpen,  setDiscoverOpen]  = useState(false)
   const [userMenuOpen,  setUserMenuOpen]  = useState(false)
   const [user,          setUser]          = useState<User | null>(null)
@@ -208,16 +209,6 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
     return () => subscription.unsubscribe()
   }, [])
 
-  // Switch to compact pill after scrolling past hero
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 420)
-      if (window.scrollY < 420) setSearchOpen(false)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   // Close all dropdowns/panels on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -261,19 +252,19 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
         />
       )}
     <nav
-      className={`nav${scrolled ? ' nav--scrolled' : ''}${searchOpen ? ' nav--search-open' : ''}`}
+      className={`sh-nav${searchOpen ? ' sh-nav--open' : ''}`}
       role="navigation"
       aria-label="Ana navigasyon"
     >
-      <div className="nav-inner">
+      <div className="sh-container sh-nav-inner">
 
-        {/* Logo + ana menü (logonun hemen sağı) */}
-        <div className="nav-brand-row">
-          <Link href="/" className="nav-logo" aria-label="SeaHub ana sayfa">
+        {/* Logo + Keşfedin */}
+        <div className="sh-nav-left">
+          <Link href="/" className="sh-nav-logo" aria-label="Ahoy ana sayfa">
             {logoUrl ? (
               <Image
                 src={logoUrl}
-                alt="SeaHub"
+                alt="Ahoy"
                 width={220}
                 height={44}
                 className="nav-logo-mark"
@@ -281,82 +272,73 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
                 priority
               />
             ) : (
-              <span className="nav-logo-text nav-logo-text--solo">SeaHub</span>
+              <Logo />
             )}
           </Link>
 
-          <div className={`nav-links${scrolled ? ' nav-links--hidden' : ''}`} role="menubar" aria-label="Ana menü">
-            <Link href="/tekne-kiralama" className="nav-link" role="menuitem">Tekne Kiralama</Link>
-            <Link href="/deneyimler" className="nav-link" role="menuitem">Deneyimler</Link>
+          <div className="nav-discover-wrap" ref={discoverRef}>
+            <button
+              className={`sh-pill-btn${discoverOpen ? ' open' : ''}`}
+              onClick={() => setDiscoverOpen(o => !o)}
+              aria-haspopup="true"
+              aria-expanded={discoverOpen}
+            >
+              Keşfedin
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+                style={{ transform: discoverOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+              />
+            </button>
 
-            {/* Keşfedin — dropdown */}
-            <div className="nav-discover-wrap" ref={discoverRef}>
-              <button
-                className={`nav-link nav-discover-btn${discoverOpen ? ' open' : ''}`}
-                onClick={() => setDiscoverOpen(o => !o)}
-                aria-haspopup="true"
-                aria-expanded={discoverOpen}
-                role="menuitem"
-              >
-                Keşfedin
-                <svg
-                  className="nav-caret"
-                  width="14" height="14"
-                  viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5"
-                  strokeLinecap="round" strokeLinejoin="round"
-                  aria-hidden="true"
-                  style={{ transform: discoverOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                >
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </button>
-
-              {discoverOpen && (
-                <div className="nav-dropdown" role="menu" aria-label="Keşfedin alt menüsü">
-                  <div className="nav-dropdown-grid">
-                    {DISCOVER_ITEMS.map(item => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="nav-dropdown-item"
-                        role="menuitem"
-                        onClick={() => setDiscoverOpen(false)}
-                      >
-                        <div>
-                          <div className="nav-dropdown-label">{item.label}</div>
-                          <div className="nav-dropdown-desc">{item.desc}</div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
+            {discoverOpen && (
+              <div className="nav-dropdown" role="menu" aria-label="Keşfedin alt menüsü">
+                <div className="nav-dropdown-grid">
+                  {DISCOVER_ITEMS.map(item => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                      onClick={() => setDiscoverOpen(false)}
+                    >
+                      <div>
+                        <div className="nav-dropdown-label">{item.label}</div>
+                        <div className="nav-dropdown-desc">{item.desc}</div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Orta: scroll sonrası arama */}
-        <div className="nav-center">
-
-          <div ref={searchRef} className={`nsp-wrap${scrolled ? ' nsp-wrap--visible' : ''}`}>
-
-            {/* Collapsed pill */}
+        {/* Orta: arama */}
+        <div className="sh-nav-center" ref={searchRef}>
             {!searchOpen && (
               <button
-                className="nav-search-pill nav-search-pill--visible"
+                className="sh-search-pill"
                 onClick={() => { setSearchOpen(true); setActiveField('location') }}
                 aria-label="Arama formunu aç"
               >
-                <span className="nsp-field">{location || 'Nereye?'}</span>
-                <span className="nsp-div" aria-hidden="true" />
-                <span className="nsp-field">{startDate && endDate ? `${fmtShort(startDate)} – ${fmtShort(endDate)}` : 'Tarih ekle'}</span>
-                <span className="nsp-div" aria-hidden="true" />
-                <span className="nsp-field nsp-field--light">{guests > 0 ? `${guests} misafir` : 'Misafir ekle'}</span>
-                <span className="nsp-btn" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                  </svg>
+                <span className="sh-sp-field">
+                  <MapPin size={18} fill="currentColor" stroke="#fff" strokeWidth={1.5} aria-hidden="true" />
+                  {location || 'Nereye?'}
+                </span>
+                <span className="sh-sp-div" aria-hidden="true" />
+                <span className="sh-sp-field">
+                  <CalendarDays size={18} aria-hidden="true" />
+                  {startDate && endDate ? `${fmtShort(startDate)} – ${fmtShort(endDate)}` : 'Ne zaman?'}
+                </span>
+                <span className="sh-sp-div" aria-hidden="true" />
+                <span className="sh-sp-field">
+                  <Users size={18} fill="currentColor" aria-hidden="true" />
+                  {guests > 0 ? `${guests} misafir` : 'Misafir'}
+                </span>
+                <span className="sh-sp-btn" aria-hidden="true">
+                  <Search size={20} strokeWidth={2} />
                 </span>
               </button>
             )}
@@ -515,40 +497,27 @@ export default function Nav({ logoUrl = null, locationSuggestions = DEFAULT_SUGG
                 </div>
               </div>
             )}
-          </div>
-
         </div>
 
-        {/* Right actions */}
-        <div className="nav-actions">
-          <Link href="/#eco-heading" className="nav-host-link">Neden SeaHub</Link>
-          <button className="nav-icon-btn" aria-label="Dil seçimi">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-          </button>
+        {/* Sağ: Kaptan Paneli + menü */}
+        <div className="sh-nav-right">
+          <a href={CAPTAIN_APP_URL} className="sh-btn sh-btn--navy sh-captain-btn">Kaptan Paneli</a>
 
           {/* User menu */}
           <div className="nav-user-wrap" ref={userMenuRef}>
             <button
-              className={`nav-user-menu${userMenuOpen ? ' nav-user-menu--open' : ''}`}
+              className={`sh-menu-pill${userMenuOpen ? ' open' : ''}`}
               onClick={() => setUserMenuOpen(o => !o)}
               aria-haspopup="true"
               aria-expanded={userMenuOpen}
               aria-label="Kullanıcı menüsü"
             >
-              {/* Hamburger icon */}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="3" y1="6"  x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
-              {/* Avatar */}
-              <div className="nav-avatar" aria-hidden="true">
-                {user?.email ? user.email.charAt(0).toUpperCase() : 'S'}
-              </div>
+              <Menu size={26} strokeWidth={2} aria-hidden="true" />
+              {user?.email ? (
+                <span className="sh-menu-avatar" aria-hidden="true">{user.email.charAt(0).toUpperCase()}</span>
+              ) : (
+                <CircleUserRound size={30} strokeWidth={1.8} aria-hidden="true" />
+              )}
             </button>
 
             {userMenuOpen && (

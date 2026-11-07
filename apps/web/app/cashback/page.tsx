@@ -11,16 +11,16 @@ import {
 } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'SeaHub Cashback Programı — Her rezervasyonda geri kazanın',
+  title: 'Ahoy Cashback Programı — Her rezervasyonda geri kazanın',
   description:
-    'Onaylı tekne ve deneyim rezervasyonlarınızda SeaHub Cashback ile ilk kiralamada %5, sonrakilerde %15\'e varan bakiye kazanın. Ek ücret yok.',
+    'Onaylı tekne ve deneyim rezervasyonlarınızda Ahoy Cashback ile ilk kiralamada %5, sonrakilerde %15\'e varan bakiye kazanın. Ek ücret yok.',
 }
 
 const STEPS = [
   {
     n: 1,
     title: 'Rezervasyon yapın',
-    desc: 'Tekne kiralama veya deneyim seçin; ödemeyi SeaHub üzerinden tamamlayın.',
+    desc: 'Tekne kiralama veya deneyim seçin; ödemeyi Ahoy üzerinden tamamlayın.',
     Icon: CalendarCheck,
   },
   {
@@ -32,7 +32,7 @@ const STEPS = [
   {
     n: 3,
     title: 'Cüzdana işlensin',
-    desc: 'Kazanılan tutar SeaHub cüzdanınıza otomatik yansır; ekstra başvuru gerekmez.',
+    desc: 'Kazanılan tutar Ahoy cüzdanınıza otomatik yansır; ekstra başvuru gerekmez.',
     Icon: Wallet,
   },
   {
@@ -66,7 +66,7 @@ export default function CashbackProgramPage() {
         <div className="cb-hero-inner">
           <p className="cb-eyebrow">
             <Sparkles size={14} strokeWidth={2.5} aria-hidden />
-            SeaHub Cashback
+            Ahoy Cashback
           </p>
           <h1 id="cb-hero-title" className="cb-title">
             Her onaylı rezervasyonda geri kazanın
@@ -102,7 +102,7 @@ export default function CashbackProgramPage() {
             </div>
             <p className="cb-tier-pct">%5</p>
             <p className="cb-tier-desc">
-              SeaHub üzerinden tamamladığınız ilk onaylı rezervasyonda cashback oranı.
+              Ahoy üzerinden tamamladığınız ilk onaylı rezervasyonda cashback oranı.
             </p>
           </article>
           <article className="cb-tier-card cb-tier-card--accent">
@@ -185,7 +185,7 @@ export default function CashbackProgramPage() {
       </section>
 
       <p className="cb-legal">
-        SeaHub Cashback oranları ve koşulları kampanya dönemlerine göre değişebilir. Kesin kurallar rezervasyon sırasında ve hesap
+        Ahoy Cashback oranları ve koşulları kampanya dönemlerine göre değişebilir. Kesin kurallar rezervasyon sırasında ve hesap
         sözleşmenizde yer alır.
       </p>
     </div>

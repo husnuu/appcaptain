@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!dto) return { title: 'Deneyim bulunamadı' }
   const exp = experienceToCard(dto)
   return {
-    title: `${exp.title} — SeaHub`,
+    title: `${exp.title} — Ahoy`,
     description: `${exp.category} deneyimi. ${exp.duration} süren bu unutulmaz tur için hemen rezervasyon yapın.`,
   }
 }
@@ -100,7 +100,7 @@ function getDetailData(slug: string) {
   if (DETAIL_DATA[slug]) return DETAIL_DATA[slug]
   // Fallback generic data for any other slug
   return {
-    providerName: 'SeaHub Rehberi',
+    providerName: 'Ahoy Rehberi',
     providerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80',
     extraImages: [
       'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80',

@@ -1,67 +1,62 @@
-// Server component — ana sayfa içeriği lib/data.ts + lib/homeContent.ts'ten okunur.
-import HeroSection         from '@/components/hero/HeroSection'
-import CashbackSection     from '@/components/sections/CashbackSection'
-import CashbackProgramBanner from '@/components/sections/CashbackProgramBanner'
-import EcosystemSection    from '@/components/sections/EcosystemSection'
-import BrowseSection       from '@/components/sections/BrowseSection'
-import LocationSection     from '@/components/sections/LocationSection'
-import MapSection          from '@/components/sections/MapSection'
-import DiscoverBannerSection from '@/components/sections/DiscoverBannerSection'
-import TrustSection        from '@/components/sections/TrustSection'
-import TestimonialsSection from '@/components/sections/TestimonialsSection'
-import BlogSection            from '@/components/sections/BlogSection'
-import PopularBookingsSection from '@/components/sections/PopularBookingsSection'
-import PopularLinksSection   from '@/components/sections/PopularLinksSection'
-import NewsletterSection     from '@/components/sections/NewsletterSection'
-
-import { getHomePageContent } from '@/lib/homeContent'
+// Ana sayfa — Figma tasarımı (components/home). İçerik: components/home/content.ts
+import HomeHero from '@/components/home/HomeHero'
+import {
+  BoatTypeCards,
+  CashbackCard,
+  DiscoverBanner,
+  ExperienceCards,
+  TrustBlock,
+} from '@/components/home/HomeStatic'
+import {
+  BlogRail,
+  Newsletter,
+  PlanTrip,
+  PopularLocations,
+  PopularSearches,
+  RailSection,
+  Testimonials,
+} from '@/components/home/HomeInteractive'
 
 export const revalidate = 60
 
 export default function HomePage() {
-  const home = getHomePageContent()
-
   return (
-    <>
-      <div className="home-hero-stack">
-        <HeroSection content={home.hero} />
-        <CashbackSection />
-      </div>
+    <div className="sh-home">
+      <HomeHero />
 
-      <EcosystemSection
-        title={home.ecosystem.title}
-        subtitle={home.ecosystem.subtitle}
-        features={home.ecosystem.features}
-      />
+      <section className="sh-sect sh-sect--white" aria-label="Kiralama ve deneyimler">
+        <RailSection
+          title="Kiralama seçenekleri"
+          moreHref="/tekne-kiralama"
+          subtitle="Tekne tiplerini karşılaştır ve seyahat planına uygun kiralama seçeneğini keşfet."
+        >
+          <BoatTypeCards />
+        </RailSection>
+        <RailSection
+          title="Tatiline göre deneyimler"
+          moreHref="/deneyimler"
+          subtitle="Tatil stiline, konfor beklentine ve seyahat planına uygun deneyimleri keşfet."
+        >
+          <ExperienceCards />
+        </RailSection>
+        <CashbackCard />
+      </section>
 
-      <BrowseSection boatTypes={home.boatTypes} experiences={home.experiences} />
+      <PopularLocations />
 
-      <CashbackProgramBanner />
+      <section className="sh-sect sh-sect--white" aria-label="Seyahatini planla">
+        <PlanTrip />
+        <DiscoverBanner />
+      </section>
 
-      <LocationSection
-        rentalLocations={home.rentalLocations}
-        experienceLocations={home.experienceLocations}
-      />
+      <TrustBlock />
+      <Testimonials />
+      <BlogRail />
 
-      <MapSection content={home.mapSection} logoUrl={null} />
-
-      <DiscoverBannerSection content={home.discoverBanner} />
-
-      <TrustSection
-        title={home.trustHeader.title}
-        subtitle={home.trustHeader.subtitle}
-        features={home.trustFeatures}
-      />
-
-      <TestimonialsSection testimonials={home.testimonials} />
-
-      <BlogSection posts={home.blogPosts} />
-
-      <PopularBookingsSection />
-
-      <PopularLinksSection />
-
-      <NewsletterSection />
-    </>
+      <section className="sh-sect sh-sect--white" aria-label="Popüler aramalar">
+        <PopularSearches />
+        <Newsletter />
+      </section>
+    </div>
   )
 }

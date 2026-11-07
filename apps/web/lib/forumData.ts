@@ -148,7 +148,7 @@ export function getForumThreads(): ForumThread[] {
       categoryId: 'deneyimler',
       categoryLabel: 'Deneyimler & Aktiviteler',
       categoryColor: 'green',
-      title: 'Teknede yoga workshop deneyimim — SeaHub üzerinden aldım',
+      title: 'Teknede yoga workshop deneyimim — Ahoy üzerinden aldım',
       excerpt: 'İlk başta biraz şüpheliydim ama inanılmaz bir deneyimdi. Sabah güneş doğarken Ege\'de yoga yapmak... Kelimelerle anlatılmaz.',
       author: {
         name: 'Selin D.',

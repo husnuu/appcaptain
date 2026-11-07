@@ -4,7 +4,7 @@ import { fetchExperiences } from '@/lib/api'
 import { experienceToCard, EXPERIENCE_CATEGORIES } from '@/lib/mappers'
 
 export const metadata: Metadata = {
-  title: 'Deneyimler — SeaHub',
+  title: 'Deneyimler — Ahoy',
   description: 'Türkiye kıyılarında yelken, dalış, tekne turu ve daha fazlası. Yerel rehberlerle unutulmaz deniz deneyimleri.',
 }
 
