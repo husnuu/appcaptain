@@ -155,6 +155,27 @@ enum CancellationPolicyType {
   CUSTOM
 }
 
+enum ExperienceProductType {
+  TOUR
+  ACTIVITY
+  TRANSFER
+  TICKET
+}
+
+enum ExperienceDifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum CustomerInfoFieldType {
+  TEXT
+  DATE
+  FILE
+  DROPDOWN
+}
+
 enum DataSource {
   MANUAL
   EXTERNAL_API
@@ -598,20 +619,23 @@ model Experience {
   currentStep    ExperienceStep   @default(CATEGORY)
   completedSteps ExperienceStep[] @default([])
 
-  category         ExperienceCategory?
-  title            String              @default("")
-  referenceCode    String?
-  shortDescription String              @default("")
-  fullDescription  String              @default("")
-  highlights       String[]            @default([])
-  keywords         String[]            @default([])
+  category            ExperienceCategory?
+  secondaryCategories  ExperienceCategory[]   @default([])
+  productType          ExperienceProductType?
+  title                String                 @default("")
+  referenceCode        String?
+  shortDescription     String                 @default("")
+  fullDescription      String                 @default("")
+  highlights           String[]               @default([])
+  keywords             String[]               @default([])
 
-  included              String[] @default([])
-  notIncluded           String[] @default([])
-  notAllowed            String[] @default([])
-  toBring               String[] @default([])
-  knowBeforeYouGo       String[] @default([])
+  included              String[]                   @default([])
+  notIncluded           String[]                   @default([])
+  notAllowed            String[]                   @default([])
+  toBring               String[]                   @default([])
+  knowBeforeYouGo       String[]                   @default([])
   emergencyContactPhone String?
+  difficultyLevel       ExperienceDifficultyLevel?
 
   durationMinutes      Int      @default(60)
   meetingPoint         String   @default("")
@@ -630,14 +654,20 @@ model Experience {
   requiredEquipment    String[] @default([])
   accessibilityInfo    String?
   accessibilityOptions String[] @default([])
+  pickupOffered        Boolean  @default(false)
+  pickupAreas          String?
+  pickupFee            Decimal? @db.Decimal(10, 2)
 
   basePrice            Decimal               @default(0) @db.Decimal(10, 2)
   currency             String                @default("TRY")
   pricingType          ExperiencePricingType @default(PER_PERSON)
   childDiscountPercent Int?
+  currencyLocked       Boolean               @default(false)
+  displayCurrency      String?
 
   cancellationPolicy     CancellationPolicyType @default(FREE_24H)
   cancellationPolicyText String?
+  cancellationTiers      Json?
 
   coverPhotoUrl String   @default("")
   photoUrls     String[] @default([])
@@ -648,12 +678,44 @@ model Experience {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  discounts Discount[]
+  discounts         Discount[]
+  customerInfoFields ExperienceCustomerInfoField[]
+  seasonalPricingRules ExperienceSeasonalPricingRule[]
 
   @@index([captainId])
   @@index([status])
   @@index([category])
   @@map("experiences")
+}
+
+model ExperienceCustomerInfoField {
+  id           String                @id @default(uuid()) @db.Uuid
+  experienceId String                @db.Uuid
+  experience   Experience            @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  label        String
+  fieldType    CustomerInfoFieldType @default(TEXT)
+  required     Boolean               @default(false)
+  helpText     String?
+  options      String[]              @default([])
+  sortOrder    Int                   @default(0)
+  createdAt    DateTime              @default(now())
+
+  @@index([experienceId])
+  @@map("experience_customer_info_fields")
+}
+
+model ExperienceSeasonalPricingRule {
+  id           String     @id @default(uuid()) @db.Uuid
+  experienceId String     @db.Uuid
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  label        String     @default("")
+  startDate    DateTime
+  endDate      DateTime
+  price        Decimal    @db.Decimal(10, 2)
+  createdAt    DateTime   @default(now())
+
+  @@index([experienceId])
+  @@map("experience_seasonal_pricing_rules")
 }
 
 /**

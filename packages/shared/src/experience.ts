@@ -4,6 +4,9 @@ import {
   ExperiencePricingType,
   CancellationPolicyType,
   ExperienceStatus,
+  ExperienceProductType,
+  ExperienceDifficultyLevel,
+  CustomerInfoFieldType,
 } from "./enums";
 
 /** Canonical experience wizard step order. */
@@ -58,6 +61,27 @@ export const CANCELLATION_POLICY_LABELS: Record<CancellationPolicyType, string> 
 export const EXPERIENCE_PRICING_TYPE_LABELS: Record<ExperiencePricingType, string> = {
   [ExperiencePricingType.PER_PERSON]: "Kişi başı",
   [ExperiencePricingType.PER_GROUP]: "Grup başı",
+};
+
+export const EXPERIENCE_PRODUCT_TYPE_LABELS: Record<ExperienceProductType, string> = {
+  [ExperienceProductType.TOUR]: "Tur",
+  [ExperienceProductType.ACTIVITY]: "Aktivite",
+  [ExperienceProductType.TRANSFER]: "Transfer",
+  [ExperienceProductType.TICKET]: "Bilet",
+};
+
+export const EXPERIENCE_DIFFICULTY_LEVEL_LABELS: Record<ExperienceDifficultyLevel, string> = {
+  [ExperienceDifficultyLevel.EASY]: "Kolay",
+  [ExperienceDifficultyLevel.MEDIUM]: "Orta",
+  [ExperienceDifficultyLevel.HARD]: "Zor",
+  [ExperienceDifficultyLevel.EXPERT]: "Uzman",
+};
+
+export const CUSTOMER_INFO_FIELD_TYPE_LABELS: Record<CustomerInfoFieldType, string> = {
+  [CustomerInfoFieldType.TEXT]: "Metin",
+  [CustomerInfoFieldType.DATE]: "Tarih",
+  [CustomerInfoFieldType.FILE]: "Dosya Yükleme",
+  [CustomerInfoFieldType.DROPDOWN]: "Açılır Liste",
 };
 
 export function experienceStepIndex(step: ExperienceStep): number {

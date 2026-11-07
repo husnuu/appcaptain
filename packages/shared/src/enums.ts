@@ -138,6 +138,33 @@ export const ExperienceStep = {
 } as const;
 export type ExperienceStep = (typeof ExperienceStep)[keyof typeof ExperienceStep];
 
+export const ExperienceProductType = {
+  TOUR: "TOUR",
+  ACTIVITY: "ACTIVITY",
+  TRANSFER: "TRANSFER",
+  TICKET: "TICKET",
+} as const;
+export type ExperienceProductType =
+  (typeof ExperienceProductType)[keyof typeof ExperienceProductType];
+
+export const ExperienceDifficultyLevel = {
+  EASY: "EASY",
+  MEDIUM: "MEDIUM",
+  HARD: "HARD",
+  EXPERT: "EXPERT",
+} as const;
+export type ExperienceDifficultyLevel =
+  (typeof ExperienceDifficultyLevel)[keyof typeof ExperienceDifficultyLevel];
+
+export const CustomerInfoFieldType = {
+  TEXT: "TEXT",
+  DATE: "DATE",
+  FILE: "FILE",
+  DROPDOWN: "DROPDOWN",
+} as const;
+export type CustomerInfoFieldType =
+  (typeof CustomerInfoFieldType)[keyof typeof CustomerInfoFieldType];
+
 export const ExperiencePricingType = {
   PER_PERSON: "PER_PERSON",
   PER_GROUP: "PER_GROUP",

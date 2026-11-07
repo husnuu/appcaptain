@@ -4,6 +4,9 @@ import {
   ExperienceStatus,
   ExperienceStep,
   CancellationPolicyType,
+  ExperienceProductType,
+  ExperienceDifficultyLevel,
+  CustomerInfoFieldType,
 } from "../enums";
 
 export interface ExperienceProgressDTO {
@@ -29,12 +32,32 @@ export interface ExperienceListItemDTO {
   updatedAt: string | Date;
 }
 
+export interface ExperienceCustomerInfoFieldDTO {
+  id: string;
+  label: string;
+  fieldType: CustomerInfoFieldType;
+  required: boolean;
+  helpText: string | null;
+  options: string[];
+  sortOrder: number;
+}
+
+export interface ExperienceSeasonalPricingRuleDTO {
+  id: string;
+  label: string;
+  startDate: string | Date;
+  endDate: string | Date;
+  price: number;
+}
+
 export interface ExperienceDTO {
   id: string;
   captainId: string;
   status: ExperienceStatus;
   progress: ExperienceProgressDTO;
   category: ExperienceCategory | null;
+  secondaryCategories: ExperienceCategory[];
+  productType: ExperienceProductType | null;
   title: string;
   referenceCode: string | null;
   shortDescription: string;
@@ -47,6 +70,7 @@ export interface ExperienceDTO {
   toBring: string[];
   knowBeforeYouGo: string[];
   emergencyContactPhone: string | null;
+  difficultyLevel: ExperienceDifficultyLevel | null;
   durationMinutes: number;
   meetingPoint: string;
   meetingPointLat: number | null;
@@ -64,18 +88,26 @@ export interface ExperienceDTO {
   requiredEquipment: string[];
   accessibilityInfo: string | null;
   accessibilityOptions: string[];
+  pickupOffered: boolean;
+  pickupAreas: string | null;
+  pickupFee: number | null;
   basePrice: number;
   currency: string;
   pricingType: ExperiencePricingType;
   childDiscountPercent: number | null;
+  currencyLocked: boolean;
+  displayCurrency: string | null;
   cancellationPolicy: CancellationPolicyType;
   cancellationPolicyText: string | null;
+  cancellationTiers: { daysBefore: number; refundPercent: number }[];
   coverPhotoUrl: string;
   photoUrls: string[];
   videoUrl: string | null;
   reviewNote: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
+  customerInfoFields: ExperienceCustomerInfoFieldDTO[];
+  seasonalPricingRules: ExperienceSeasonalPricingRuleDTO[];
 }
 
 export interface ExperienceAdminListItemDTO extends ExperienceListItemDTO {

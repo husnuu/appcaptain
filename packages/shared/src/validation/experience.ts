@@ -5,6 +5,9 @@ import {
   ExperiencePricingType,
   ExperienceStatus,
   ExperienceStep,
+  ExperienceProductType,
+  ExperienceDifficultyLevel,
+  CustomerInfoFieldType,
 } from "../enums";
 
 const stringItem = z.string().trim().min(1);
@@ -13,6 +16,8 @@ const optionalStringList = z.array(stringItem).default([]);
 
 export const experienceStep1Schema = z.object({
   category: z.nativeEnum(ExperienceCategory),
+  secondaryCategories: z.array(z.nativeEnum(ExperienceCategory)).default([]),
+  productType: z.nativeEnum(ExperienceProductType).optional().nullable(),
 });
 
 export const experienceStep2Schema = z.object({
@@ -31,6 +36,7 @@ export const experienceStep3Schema = z.object({
   toBring: optionalStringList,
   knowBeforeYouGo: optionalStringList,
   emergencyContactPhone: z.string().trim().min(6).max(30).optional().nullable(),
+  difficultyLevel: z.nativeEnum(ExperienceDifficultyLevel).optional().nullable(),
 });
 
 export const experienceStep4Schema = z
@@ -52,6 +58,9 @@ export const experienceStep4Schema = z
     requiredEquipment: optionalStringList,
     accessibilityInfo: z.string().trim().max(1000).optional().nullable(),
     accessibilityOptions: optionalStringList,
+    pickupOffered: z.coerce.boolean().optional().default(false),
+    pickupAreas: z.string().trim().max(1000).optional().nullable(),
+    pickupFee: z.coerce.number().min(0).optional().nullable(),
   })
   .refine((v) => v.maxParticipants >= v.minParticipants, {
     message: "Maksimum katılımcı minimumdan küçük olamaz",
@@ -63,12 +72,20 @@ export const experienceStep5Schema = z.object({
   currency: z.string().trim().length(3).default("TRY"),
   pricingType: z.nativeEnum(ExperiencePricingType),
   childDiscountPercent: z.coerce.number().int().min(0).max(100).optional().nullable(),
+  currencyLocked: z.coerce.boolean().optional().default(false),
+  displayCurrency: z.string().trim().length(3).optional().nullable(),
+});
+
+const cancellationTierSchema = z.object({
+  daysBefore: z.coerce.number().int().min(0).max(365),
+  refundPercent: z.coerce.number().int().min(0).max(100),
 });
 
 export const experienceStep6Schema = z
   .object({
     cancellationPolicy: z.nativeEnum(CancellationPolicyType),
     cancellationPolicyText: z.string().trim().max(2000).optional().nullable(),
+    cancellationTiers: z.array(cancellationTierSchema).default([]),
   })
   .refine(
     (v) =>
@@ -158,6 +175,26 @@ export const experienceRegisterPhotoSchema = z.object({
 export const experienceAdminReviewSchema = z.object({
   note: z.string().trim().min(5).max(2000).optional(),
 });
+
+export const experienceCustomerInfoFieldSchema = z.object({
+  label: z.string().trim().min(2).max(120),
+  fieldType: z.nativeEnum(CustomerInfoFieldType),
+  required: z.boolean().optional().default(false),
+  helpText: z.string().trim().max(300).optional().nullable(),
+  options: z.array(z.string().trim().min(1)).optional().default([]),
+});
+
+export const experienceSeasonalPricingRuleSchema = z
+  .object({
+    label: z.string().trim().max(120).optional().default(""),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    price: z.coerce.number().positive("Fiyat 0'dan büyük olmalı"),
+  })
+  .refine((v) => v.endDate >= v.startDate, {
+    message: "Bitiş tarihi başlangıçtan önce olamaz",
+    path: ["endDate"],
+  });
 
 export const EXPERIENCE_STEP_SCHEMAS: Record<ExperienceStep, z.ZodTypeAny> = {
   [ExperienceStep.CATEGORY]: experienceStep1Schema,

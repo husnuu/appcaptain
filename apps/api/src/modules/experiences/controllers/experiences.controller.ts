@@ -5,6 +5,8 @@ import {
   experiencePhotoUploadUrlSchema,
   experienceRegisterPhotoSchema,
   experienceStatusToggleSchema,
+  experienceCustomerInfoFieldSchema,
+  experienceSeasonalPricingRuleSchema,
 } from "@getyourboat/shared";
 import { badRequest } from "../../../lib/errors.js";
 import { parseDetailed } from "../../../lib/validate.js";
@@ -80,5 +82,33 @@ export async function experienceRoutes(app: FastifyInstance) {
     const { url } = req.body as { url?: string };
     if (!url) throw badRequest("url gerekli");
     return service.removePhoto(idParam(req), req.authUser!.id, url);
+  });
+
+  app.post("/experiences/:id/customer-info-fields", async (req) => {
+    await loadOwnedExperience(idParam(req), req.authUser!);
+    const body = parseDetailed(experienceCustomerInfoFieldSchema, req.body);
+    const items = await service.addCustomerInfoField(idParam(req), req.authUser!.id, body);
+    return { items };
+  });
+
+  app.delete("/experiences/:id/customer-info-fields/:fieldId", async (req) => {
+    await loadOwnedExperience(idParam(req), req.authUser!);
+    const { fieldId } = req.params as { fieldId: string };
+    const items = await service.removeCustomerInfoField(idParam(req), req.authUser!.id, fieldId);
+    return { items };
+  });
+
+  app.post("/experiences/:id/seasonal-pricing", async (req) => {
+    await loadOwnedExperience(idParam(req), req.authUser!);
+    const body = parseDetailed(experienceSeasonalPricingRuleSchema, req.body);
+    const items = await service.addSeasonalPricingRule(idParam(req), req.authUser!.id, body);
+    return { items };
+  });
+
+  app.delete("/experiences/:id/seasonal-pricing/:ruleId", async (req) => {
+    await loadOwnedExperience(idParam(req), req.authUser!);
+    const { ruleId } = req.params as { ruleId: string };
+    const items = await service.removeSeasonalPricingRule(idParam(req), req.authUser!.id, ruleId);
+    return { items };
   });
 }

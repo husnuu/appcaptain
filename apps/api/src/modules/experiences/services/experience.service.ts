@@ -5,6 +5,7 @@ import {
   ExperienceStep,
   computeExperienceProgress,
   experienceSchema,
+  type CustomerInfoFieldType,
 } from "@getyourboat/shared";
 import { badRequest, forbidden, notFound } from "../../../lib/errors.js";
 import { sanitizeStorageFileName } from "../../../lib/sanitize.js";
@@ -175,4 +176,36 @@ export async function removePhoto(id: string, captainId: string, photoUrl: strin
   const photoUrls = exp.photoUrls.filter((p) => p !== photoUrl);
   const coverPhotoUrl = exp.coverPhotoUrl === photoUrl ? "" : exp.coverPhotoUrl;
   return experienceRepository.updateFields(id, { photoUrls, coverPhotoUrl });
+}
+
+export async function addCustomerInfoField(
+  id: string,
+  captainId: string,
+  input: { label: string; fieldType: CustomerInfoFieldType; required?: boolean; helpText?: string | null; options?: string[] }
+) {
+  const exp = await getOwnedOrThrow(id, captainId);
+  assertEditableStatus(exp.status);
+  return experienceRepository.addCustomerInfoField(id, input);
+}
+
+export async function removeCustomerInfoField(id: string, captainId: string, fieldId: string) {
+  const exp = await getOwnedOrThrow(id, captainId);
+  assertEditableStatus(exp.status);
+  return experienceRepository.removeCustomerInfoField(id, fieldId);
+}
+
+export async function addSeasonalPricingRule(
+  id: string,
+  captainId: string,
+  input: { label?: string; startDate: Date; endDate: Date; price: number }
+) {
+  const exp = await getOwnedOrThrow(id, captainId);
+  assertEditableStatus(exp.status);
+  return experienceRepository.addSeasonalPricingRule(id, input);
+}
+
+export async function removeSeasonalPricingRule(id: string, captainId: string, ruleId: string) {
+  const exp = await getOwnedOrThrow(id, captainId);
+  assertEditableStatus(exp.status);
+  return experienceRepository.removeSeasonalPricingRule(id, ruleId);
 }
