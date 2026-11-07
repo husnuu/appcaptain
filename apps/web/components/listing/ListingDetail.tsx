@@ -5,39 +5,47 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { createPortal } from 'react-dom'
 import {
   Anchor,
-  Bath,
-  BedDouble,
-  Calendar,
-  CalendarDays,
-  CalendarX2,
+  Award,
+  CalendarCheck,
   CircleCheck,
-  Clock,
+  Cigarette,
   FileCheck2,
+  FileText,
   Fuel,
-  Headset,
+  Gift,
+  Heart,
   MapPin,
+  MessageCircleMore,
   Navigation,
   PartyPopper,
-  ReceiptText,
-  Ruler,
-  ScrollText,
-  Share2,
+  PawPrint,
+  Sailboat,
+  Share,
   ShieldCheck,
   Ship,
-  Sparkles,
-  UserRoundCheck,
-  Users,
-  Wallet,
+  ShipWheel,
+  SprayCan,
+  Star,
+  Utensils,
+  Wine,
   X,
+  Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { toBoatDetailViewModel, type SerializedBoatDTO } from '@getyourboat/shared'
+import { ApprovalType, toBoatDetailViewModel, type SerializedBoatDTO } from '@getyourboat/shared'
 import type { PublicBoatSummary } from '@/lib/api'
 import BoatListCard from '@/components/boats/BoatListCard'
-import { TRUST_FEATURES } from '@/components/home/content'
-import { boatTypeLabel, cleanText, prettyValue } from '@/lib/boatFormat'
+import AuthModal from '@/components/auth/AuthModal'
+import AhoyGuarantee from '@/components/sh/AhoyGuarantee'
+import ShareModal from '@/components/sh/ShareModal'
+import RangeCalendar from '@/components/sh/RangeCalendar'
+import { boatTypeLabel, cleanText, formatDayMonth, formatMoney, prettyValue } from '@/lib/boatFormat'
+import { estimatePrice } from '@/lib/bookingPrice'
+import { setPendingFavorite, useFavorites } from '@/lib/favorites'
 import ListingGallery from './ListingGallery'
-import BookingPanel from './BookingPanel'
+import BookingPanel, { useBookingState, type ListingSection } from './BookingPanel'
+import HostAvatar from './HostAvatar'
+import MessageCaptainModal from './MessageCaptainModal'
 import { groupAmenities, type AmenityGroup } from './amenityCatalog'
 import { DEFAULT_SPEC_ICON, SPEC_GROUPS, SPEC_ICONS, type FeatureIcon } from './featureIcons'
 import { buildRules } from './listingRules'
@@ -47,11 +55,21 @@ interface Props {
   similar: PublicBoatSummary[]
 }
 
-const STAT_ICONS: Record<string, LucideIcon> = {
-  Kapasite: Users,
-  Kabin: BedDouble,
-  Tuvalet: Bath,
-  Uzunluk: Ruler,
+type AnyIcon = FeatureIcon | LucideIcon
+
+/** "Etiket: değer" satırı (hizmetler, ilan özellikleri). */
+interface Row {
+  key: string
+  icon: AnyIcon
+  label: string
+  value: string
+}
+
+/** Başlık + açıklama (öne çıkanlar, koşullar, kurallar). */
+interface Note {
+  icon?: AnyIcon
+  title: string
+  text: string
 }
 
 const DOC_LABELS: Record<string, string> = {
@@ -61,134 +79,200 @@ const DOC_LABELS: Record<string, string> = {
   captain_license: 'Kaptan ehliyeti',
 }
 
-const TRUST_ICONS = { shield: ShieldCheck, ship: Ship, headset: Headset, user: UserRoundCheck }
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-const AMENITY_PREVIEW = 10
-const SPEC_PREVIEW = 8
-
-interface InfoItem {
-  icon: LucideIcon
-  title: string
-  lines: string[]
+const FEE_ICONS: Record<string, LucideIcon> = {
+  'Liman ücreti': Anchor,
+  'Final temizliği': SprayCan,
+  'Transit log': FileText,
 }
+
+const EXTRA_UNIT: Record<string, string> = {
+  PER_BOOKING: 'rezervasyon başı',
+  PER_PERSON: 'kişi başı',
+  PER_DAY: 'gün başı',
+  PER_HOUR: 'saat başı',
+}
+
+/** Özellikler popup'ında "Tekne" grubunun başına eklenen genel satırlar. */
+const GENERAL_SPEC_KEYS = ['boat_type', 'manufacturer_brand', 'model']
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+const AMENITY_PREVIEW = 6
+const SERVICE_PREVIEW = 5
+const SPEC_PREVIEW = 6
 
 export default function ListingDetail({ boat, similar }: Props) {
   const model = useMemo(() => toBoatDetailViewModel(boat), [boat])
+  const booking = useBookingState(boat)
   // "Tümünü göster" listeleri sayfayı uzatmak yerine popup'ta açılır.
-  const [sheet, setSheet] = useState<'amenities' | 'specs' | null>(null)
+  const [sheet, setSheet] = useState<'amenities' | 'services' | 'specs' | null>(null)
   const closeSheet = useCallback(() => setSheet(null), [])
   const [descOpen, setDescOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  // giriş penceresi hangi işlem için açıldı (favori / kaptana mesaj)
+  const [authFor, setAuthFor] = useState<'favorite' | 'message' | null>(null)
+  const [msgOpen, setMsgOpen] = useState(false)
+  const [toast, setToast] = useState<{ text: string; link?: boolean } | null>(null)
+  const closeShare = useCallback(() => setShareOpen(false), [])
+  const closeAuth = useCallback(() => setAuthFor(null), [])
+  const closeMsg = useCallback(() => setMsgOpen(false), [])
+
+  const showToast = useCallback((text: string, link = false) => {
+    setToast({ text, link })
+    window.setTimeout(() => setToast(t => (t?.text === text ? null : t)), 3200)
+  }, [])
+  // Giriş öncesi kalbe basıldıysa giriş yapılınca otomatik eklenir.
+  const fav = useFavorites({ onPendingAdded: id => id === boat.id && showToast('Favorilerine eklendi', true) })
+  const saved = fav.isFavorite(boat.id)
+
+  /* ---------- ilan sahibi + kaptana mesaj ---------- */
+  const owner = boat.owner ?? null
+  const hostName = owner?.name ?? 'Kaptan'
+  const openMessage = () => {
+    if (!fav.ready) return
+    if (!fav.user) setAuthFor('message')
+    else setMsgOpen(true)
+  }
+  const toggleFavorite = async () => {
+    if (!fav.ready) return
+    if (!fav.user) {
+      setPendingFavorite(boat.id)
+      setAuthFor('favorite')
+      return
+    }
+    try {
+      const added = await fav.toggle(boat.id)
+      showToast(added ? 'Favorilerine eklendi' : 'Favorilerinden çıkarıldı', !!added)
+    } catch {
+      showToast('Bir sorun oluştu, lütfen tekrar dene')
+    }
+  }
 
   const feature = (key: string) => boat.features.find(f => f.key === key)?.value?.trim() || null
+  const num = (key: string) => {
+    const n = Number(feature(key) ?? 0)
+    return Number.isFinite(n) ? n : 0
+  }
   const capacityRaw = Number(feature('capacity') ?? 8)
   const maxGuests = Number.isFinite(capacityRaw) && capacityRaw > 0 ? capacityRaw : 8
   const year = feature('year_of_manufacture')
   const refit = feature('year_of_refit')
-  const city = model.location?.city ?? feature('city')
   const type = boatTypeLabel(boat.boatType) ?? model.boatTypeLabel
   const loc = model.location
   const place = cleanText([loc?.marina, loc?.city, loc?.region].filter(Boolean).join(', ') || 'Türkiye')
-  const rules = (boat.structuredRules ?? {}) as Record<string, unknown>
-  const minDuration = typeof rules.min_rental_duration === 'string' && rules.min_rental_duration ? rules.min_rental_duration : null
+  const instant = boat.approvalType === ApprovalType.INSTANT
+  const crew = num('number_of_crew_members')
+  const crewIncluded = num('crew_members_included_in_the_price')
 
-  const stats: { icon: LucideIcon; text: string }[] = [
-    ...model.stats.map(s => ({ icon: STAT_ICONS[s.label] ?? Anchor, text: s.value })),
-    ...(year ? [{ icon: Calendar, text: refit && refit !== year ? `${year} model · ${refit} yenileme` : `${year} model` }] : []),
-  ]
-
-  const highlights: InfoItem[] = [
-    model.approvalLabel && {
-      icon: ShieldCheck,
-      title: model.approvalLabel,
-      lines: [model.approvalLabel === 'Anında rezervasyon' ? 'Talebin anında onaylanır.' : 'Kaptan talebini genellikle birkaç saat içinde yanıtlar.'],
-    },
-    model.cancellationLabel && { icon: CalendarX2, title: model.cancellationLabel, lines: ['Bu teknede kaptanın iptal politikası geçerlidir.'] },
-    { icon: Wallet, title: 'Şimdi ödeme yok', lines: [model.depositLabel ? `Kaptan onayladıktan sonra ${model.depositLabel.toLocaleLowerCase('tr')} alınır.` : 'Ödeme, kaptan talebini onayladıktan sonra alınır.'] },
-  ].filter(Boolean) as InfoItem[]
-
-  /* ---------- olanaklar ---------- */
-  const amenityGroups = useMemo(() => groupAmenities(boat.amenities), [boat.amenities])
-  const amenityTotal = amenityGroups.reduce((n, g) => n + g.items.length, 0)
-  const visibleGroups = (() => {
-    if (amenityTotal <= AMENITY_PREVIEW) return amenityGroups
-    let left = AMENITY_PREVIEW
-    return amenityGroups
-      .map(g => {
-        const items = g.items.slice(0, Math.max(0, left))
-        left -= items.length
-        return { ...g, items }
-      })
-      .filter(g => g.items.length > 0)
-  })()
-
-  /* ---------- bilinmesi gerekenler ---------- */
   const r = useMemo(
     () => buildRules(boat.structuredRules as Record<string, unknown> | null, model.contactForFuelCost, model.fuelCostNote),
     [boat.structuredRules, model.contactForFuelCost, model.fuelCostNote],
   )
   const cond = (label: string) => r.conditions.find(c => c.label.startsWith(label))?.value ?? null
+  const minDuration = cond('Minimum')
+  const weeklyDay = cond('Haftalık')
+  const acUsage = cond('Günlük klima')
   const docs = boat.documents.map(d => DOC_LABELS[d.documentTypeKey] ?? d.documentTypeLabel)
-  const info: InfoItem[] = [
-    r.schedules.length > 0 && {
-      icon: Clock,
-      title: 'Giriş ve çıkış',
-      lines: r.schedules.map(s => `${s.title.startsWith('Günlük') ? 'Günlük' : 'Konaklamalı'}: giriş ${s.checkIn ?? '—'}, çıkış ${s.checkOut ?? '—'}`),
-    },
-    (cond('Minimum') || cond('Haftalık')) && {
-      icon: CalendarDays,
-      title: 'Kiralama süresi',
-      lines: [cond('Minimum') && `En az ${cond('Minimum')} kiralanabilir.`, cond('Haftalık') && `Haftalık teslim günü ${cond('Haftalık')}.`].filter(Boolean) as string[],
-    },
-    (cond('Günlük klima') || cond('Yakıt')) && {
-      icon: Fuel,
-      title: 'Yakıt ve klima',
-      lines: [
-        cond('Yakıt') && (model.contactForFuelCost ? 'Yakıt ücreti kaptanla netleştirilir.' : `Yakıt tüketimi ${cond('Yakıt')}.`),
-        cond('Günlük klima') && `Günlük klima kullanımı ${cond('Günlük klima')}.`,
-      ].filter(Boolean) as string[],
-    },
-    r.included.length > 0 && {
-      icon: CircleCheck,
-      title: 'Fiyata dahil',
-      lines: [joinTr(r.included.map(f => f.label.toLocaleLowerCase('tr'))).replace(/^./, c => c.toLocaleUpperCase('tr')) + ' fiyata dahildir.'],
-    },
-    r.extras.length > 0 && {
-      icon: ReceiptText,
-      title: 'Ayrıca ödenir',
-      lines: r.extras.map(f => (f.value ? `${f.label}: ${f.value}` : f.label)),
-    },
-    r.house.length > 0 && {
-      icon: ScrollText,
-      title: 'Tekne kuralları',
-      lines: r.house.map(h =>
-        h.label === 'Evcil hayvan'
-          ? h.allowed
-            ? `Evcil hayvan kabul ediliyor${h.note ? ` (${h.note.toLocaleLowerCase('tr')})` : ''}.`
-            : 'Evcil hayvan kabul edilmiyor.'
-          : h.label.startsWith('Sigara')
-            ? `${h.label}.`
-            : `${h.label} ${h.allowed ? 'serbest' : 'izinli değil'}.`,
-      ),
-    },
-    model.cancellationLabel && { icon: CalendarX2, title: 'İptal politikası', lines: [`${model.cancellationLabel} politikası uygulanır. Ayrıntılar için kaptana sorabilirsin.`] },
-    r.services && { icon: PartyPopper, title: 'Ek hizmetler', lines: [r.services] },
-    docs.length > 0 && { icon: FileCheck2, title: 'Belgeler', lines: [`${joinTr(docs)} Ahoy’a yüklendi.`] },
-  ].filter(Boolean) as InfoItem[]
 
-  const specItems: SpecItem[] = model.specs.map(sp => ({
-    label: sp.label,
-    value: sp.value,
-    key: sp.key,
-    icon: (sp.key && SPEC_ICONS[sp.key]) || DEFAULT_SPEC_ICON,
-  }))
-  const specPreview = specItems.slice(0, SPEC_PREVIEW)
+  /* ---------- özet satırı: "Yelkenli · 8 kişi · 1 kabin · 14 m · 2019" ---------- */
+  const facts = [
+    type,
+    ...model.stats.map(s => s.value),
+    year ? (refit && refit !== year ? `${year} (${refit} yenileme)` : year) : null,
+  ].filter(Boolean) as string[]
+
+  /* ---------- öne çıkanlar ---------- */
+  const highlights: Note[] = [
+    crew > 0 && { icon: ShipWheel, title: 'Mürettebatlı kiralama', text: `Teknede ${crew} kişilik profesyonel mürettebat bulunur.` },
+    instant
+      ? { icon: Zap, title: 'Anında rezervasyon', text: 'Talebin kaptan onayı beklemeden kesinleşir.' }
+      : { icon: ShieldCheck, title: 'Kaptan onaylı rezervasyon', text: 'Kaptan talebini genellikle birkaç saat içinde yanıtlar.' },
+    model.cancellationLabel && { icon: CalendarCheck, title: model.cancellationLabel, text: 'Bu teknede kaptanın belirlediği iptal politikası geçerlidir.' },
+    docs.length > 0 && { icon: FileCheck2, title: 'Belgeli tekne', text: `${joinTr(docs)} Ahoy’a yüklendi.` },
+  ].filter(Boolean) as Note[]
+
+  /* ---------- imkanlar ---------- */
+  const amenityGroups = useMemo(() => groupAmenities(boat.amenities), [boat.amenities])
+  const amenities = amenityGroups.flatMap(g => g.items)
+
+  /* ---------- hizmetler ve ekstralar ---------- */
+  const services: Row[] = [
+    crew > 0 && {
+      key: 'crew',
+      icon: ShipWheel,
+      label: `Mürettebat (${crew} kişi)`,
+      value: crewIncluded >= crew ? 'Fiyata dahil' : crewIncluded > 0 ? `${crewIncluded} kişi fiyata dahil` : 'Fiyata dahil değil',
+    },
+    ...r.included.map(f => ({ key: `inc-${f.label}`, icon: FEE_ICONS[f.label] ?? CircleCheck, label: f.label, value: 'Fiyata dahil' })),
+    ...r.extras.map(f => ({ key: `ext-${f.label}`, icon: FEE_ICONS[f.label] ?? CircleCheck, label: f.label, value: f.value ? `Ayrıca ödenir · ${f.value}` : 'Ayrıca ödenir' })),
+    model.contactForFuelCost
+      ? { key: 'fuel', icon: Fuel, label: 'Yakıt', value: 'Kaptanla netleştirilir' }
+      : model.fuelCostNote
+        ? { key: 'fuel', icon: Fuel, label: 'Yakıt', value: model.fuelCostNote }
+        : null,
+    ...amenities
+      .filter(a => a.isExtra)
+      .map(a => ({ key: `am-${a.key}`, icon: a.icon, label: a.label, value: a.price ? `Ücretli · ${a.price.replace('+', '')}` : 'Ücretli' })),
+    ...boat.extras.map(e => ({
+      key: `x-${e.id}`,
+      icon: Gift,
+      label: e.name,
+      value: `${formatMoney(e.price, e.currency)}${EXTRA_UNIT[e.pricingType] ? ` · ${EXTRA_UNIT[e.pricingType]}` : ''}`,
+    })),
+    r.services && { key: 'services', icon: PartyPopper, label: 'Ek hizmetler', value: r.services },
+  ].filter(Boolean) as Row[]
+
+  /* ---------- ilan özellikleri ---------- */
+  const brand = feature('manufacturer_brand')
+  const modelName = feature('model')
+  const specRows: Row[] = [
+    type && { key: 'boat_type', icon: Sailboat, label: 'Tekne tipi', value: type },
+    brand && { key: 'manufacturer_brand', icon: Award, label: 'Marka', value: brand },
+    modelName && { key: 'model', icon: Ship, label: 'Model', value: modelName },
+    ...model.specs.map(sp => ({
+      key: sp.key ?? sp.label,
+      icon: (sp.key && SPEC_ICONS[sp.key]) || DEFAULT_SPEC_ICON,
+      label: sp.label,
+      value: prettyValue(sp.value),
+    })),
+  ].filter(Boolean) as Row[]
+
+  /* ---------- ücret ve koşullar ---------- */
+  const terms: Note[] = [
+    minDuration && { title: `Minimum kiralama: ${minDuration}`, text: `Bu tekne en az ${minDuration} için kiralanabilir.` },
+    weeklyDay && { title: `Haftalık teslim günü: ${weeklyDay}`, text: `Haftalık kiralamalarda giriş ve çıkış ${weeklyDay} günü yapılır.` },
+    model.contactForFuelCost
+      ? { title: 'Yakıt: kaptanla netleştirilir', text: 'Yakıt ücreti rotaya ve seyir süresine göre kaptanla birlikte belirlenir.' }
+      : model.fuelCostNote
+        ? { title: `Yakıt: ${model.fuelCostNote}`, text: 'Yakıt ücreti kullanıma göre hesaplanır.' }
+        : null,
+    acUsage && { title: `Klima kullanımı: ${acUsage}`, text: 'Kaptanın belirlediği günlük klima kullanım süresidir.' },
+    {
+      title: model.depositLabel ? `Ödeme: ${model.depositLabel}` : 'Ödeme',
+      text: model.depositLabel
+        ? `Kaptan talebini onayladıktan sonra ${model.depositLabel.toLocaleLowerCase('tr')} alınır; o zamana kadar ödeme yapmazsın.`
+        : 'Kaptan talebini onayladıktan sonra ödeme alınır; o zamana kadar ödeme yapmazsın.',
+    },
+    model.cancellationLabel && {
+      title: `İptal politikası: ${model.cancellationLabel.replace(/ iptal$/, '')}`,
+      text: 'Kaptanın belirlediği iptal politikası uygulanır. Ayrıntılar için bize yazabilirsin.',
+    },
+  ].filter(Boolean) as Note[]
+
+  /* ---------- tekne kuralları ---------- */
+  const house: Note[] = r.house.map(h => {
+    if (h.label === 'Evcil hayvan')
+      return { icon: PawPrint, title: 'Evcil hayvan', text: h.allowed ? `Kabul ediliyor${h.note ? ` (${h.note.toLocaleLowerCase('tr')})` : ''}` : 'Kabul edilmiyor' }
+    if (h.label.startsWith('Sigara')) return { icon: Cigarette, title: 'Sigara', text: 'Yalnızca açık alanda içilebilir' }
+    if (h.label === 'Alkol') return { icon: Wine, title: 'Alkol', text: h.allowed ? 'Serbest' : 'İzin verilmiyor' }
+    return { icon: Utensils, title: h.label, text: h.allowed ? 'Serbest' : 'İzin verilmiyor' }
+  })
+
   const desc = model.description ?? ''
   const longDesc = desc.length > 420
 
   const mapUrl =
     loc?.latitude != null && loc.longitude != null && MAPBOX_TOKEN
-      ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+183d85(${loc.longitude},${loc.latitude})/${loc.longitude},${loc.latitude},12.5,0/1100x460@2x?access_token=${MAPBOX_TOKEN}`
+      ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+183d85(${loc.longitude},${loc.latitude})/${loc.longitude},${loc.latitude},12.5,0/1280x440@2x?access_token=${MAPBOX_TOKEN}`
       : null
   const directionsUrl =
     loc?.latitude != null && loc.longitude != null
@@ -197,79 +281,119 @@ export default function ListingDetail({ boat, similar }: Props) {
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.summary)}`
         : null
 
-  const share = async () => {
-    const url = window.location.href
-    try {
-      if (navigator.share) await navigator.share({ title: model.title, url })
-      else {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      }
-    } catch {
-      /* kullanıcı paylaşımı iptal etti */
-    }
-  }
+  const hasInfo = r.schedules.length > 0 || terms.length > 0 || house.length > 0 || !!model.rules
+  const sections = useMemo<ListingSection[]>(
+    () =>
+      [
+        { id: 'fotograflar', label: 'Fotoğraflar' },
+        amenities.length > 0 && { id: 'imkanlar', label: 'İmkanlar' },
+        services.length > 0 && { id: 'hizmetler', label: 'Hizmetler' },
+        specRows.length > 0 && { id: 'ozellikler', label: 'Özellikler' },
+        { id: 'musaitlik', label: 'Müsaitlik' },
+        loc && { id: 'konum', label: 'Konum' },
+        hasInfo && { id: 'bilinmesi-gerekenler', label: 'Bilinmesi gerekenler' },
+      ].filter(Boolean) as ListingSection[],
+    [amenities.length, services.length, specRows.length, loc, hasInfo],
+  )
+
+  /* ---------- satır içi takvim ---------- */
+  const { trip, setTrip, blocked, hourly } = booking
+  // Süre etiketi fiyat hesabıyla aynı: günlükte "5 gün", konaklamalıda "4 gece", haftalıkta "1 hafta".
+  const span = estimatePrice(booking.price, trip.range.start, trip.range.end)?.label ?? null
+  const calStatus = trip.range.start
+    ? trip.range.end && !hourly
+      ? `${formatDayMonth(trip.range.start)} — ${formatDayMonth(trip.range.end)}${span ? ` · ${span}` : ''}`
+      : hourly
+        ? `${formatDayMonth(trip.range.start)} · saatleri rezervasyon kartından seçebilirsin`
+        : 'Şimdi çıkış tarihini seç'
+    : 'Giriş tarihini seçerek müsaitliği ve tahmini fiyatı gör.'
 
   return (
-    <div className="sh-home sh-lst">
+    <div className="sh-ld">
       <div className="sh-container">
-        <nav className="sh-crumbs sh-lst-crumbs" aria-label="Sayfa yolu">
-          <Link href="/">Ana sayfa</Link>
-          <span aria-hidden="true">/</span>
-          <Link href="/tekne-kiralama">Tekne kiralama</Link>
-          {city && (
-            <>
-              <span aria-hidden="true">/</span>
-              <Link href={`/tekne-kiralama?city=${encodeURIComponent(city)}`}>{city}</Link>
-            </>
-          )}
-        </nav>
-
-        <header className="sh-lst-head">
-          <div>
-            <div className="sh-lst-tags">
-              {type && <span className="sh-badge sh-badge--static">{type}</span>}
-              {model.subtitle && <span className="sh-lst-sub">{model.subtitle}</span>}
+        {/* ---------- başlık + galeri ---------- */}
+        <div className="sh-ld-top">
+          <header className="sh-ld-head">
+            <h1 className="sh-ld-title">{model.title}</h1>
+            <div className="sh-ld-actions">
+              <button type="button" className="sh-ld-act" onClick={() => setShareOpen(true)} aria-label="Paylaş">
+                <Share size={18} strokeWidth={2} aria-hidden="true" />
+                <span>Paylaş</span>
+              </button>
+              <button
+                type="button"
+                className={`sh-ld-act${saved ? ' is-saved' : ''}`}
+                onClick={toggleFavorite}
+                aria-pressed={saved}
+                aria-label={saved ? 'Favorilerimden çıkar' : 'Favorilerime ekle'}
+              >
+                <Heart size={18} strokeWidth={2} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
+                <span>{saved ? 'Favorilerimde' : 'Favorilerime ekle'}</span>
+              </button>
             </div>
-            <h1 className="sh-lst-title">{model.title}</h1>
-            <p className="sh-lst-loc">
-              <MapPin size={16} strokeWidth={2} aria-hidden="true" />
-              {place}
-              <span className="sh-dot-sep" aria-hidden="true" />
-              <span className="sh-nowrap">
-                <Sparkles size={15} strokeWidth={2} aria-hidden="true" /> Yeni ilan
-              </span>
-            </p>
+          </header>
+          <div id="fotograflar" className="sh-ld-gal">
+            <ListingGallery photos={model.gallery} title={model.title} />
           </div>
-          <button type="button" className="sh-pill-btn sh-lst-share" onClick={share}>
-            <Share2 size={16} strokeWidth={2} aria-hidden="true" /> {copied ? 'Bağlantı kopyalandı' : 'Paylaş'}
-          </button>
-        </header>
+        </div>
 
-        <ListingGallery photos={model.gallery} title={model.title} />
-
-        <div className="sh-lst-body">
-          <div className="sh-lst-main">
-            {/* öne çıkanlar */}
-            <section className="sh-ls sh-ls--first">
-              {stats.length > 0 && (
-                <ul className="sh-ls-stats">
-                  {stats.map(({ icon: Icon, text }) => (
-                    <li key={text}>
-                      <Icon size={20} strokeWidth={1.6} aria-hidden="true" />
-                      {text}
-                    </li>
+        {/* ---------- iki sütun: ayrıntılar + rezervasyon kartı ---------- */}
+        <div className="sh-ld-body">
+          <div className="sh-ld-main">
+            <section className="sh-ld-sec sh-ld-overview">
+              <div className="sh-ld-place">
+                <h2>{place}</h2>
+                {instant && (
+                  <span className="sh-ld-instant">
+                    <Zap size={14} strokeWidth={2.2} aria-hidden="true" /> Anında rezervasyon
+                  </span>
+                )}
+              </div>
+              {facts.length > 0 && (
+                <p className="sh-ld-facts">
+                  {/* ayraç öncekine bağlı: satır kırılınca nokta satır sonunda kalır */}
+                  {facts.map((f, i) => (
+                    <span key={f}>
+                      {f}
+                      {i < facts.length - 1 && (
+                        <i className="sh-ld-dot" aria-hidden="true">
+                          ·
+                        </i>
+                      )}
+                    </span>
                   ))}
-                </ul>
+                </p>
               )}
-              <ul className="sh-ls-highlights">
-                {highlights.map(({ icon: Icon, title, lines }) => (
+              <p className="sh-ld-new">
+                <Star size={16} strokeWidth={0} fill="currentColor" aria-hidden="true" /> Yeni ilan
+              </p>
+            </section>
+
+            {owner && (
+              <section className="sh-ld-sec sh-ld-host" aria-label="İlan sahibi">
+                <HostAvatar name={hostName} src={owner.avatarUrl} size={56} />
+                <div className="sh-ld-host-text">
+                  <b>İlan sahibi: {hostName}</b>
+                  <p>
+                    {hostSince(owner.joinedAt)}
+                    {owner.badge ? ` · ${owner.badge}` : ''}
+                  </p>
+                </div>
+                <button type="button" className="sh-ld-outline sh-ld-host-btn" onClick={openMessage}>
+                  <MessageCircleMore size={19} strokeWidth={1.8} aria-hidden="true" />
+                  Kaptana mesaj gönder
+                </button>
+              </section>
+            )}
+
+            <section className="sh-ld-sec">
+              <ul className="sh-ld-hl">
+                {highlights.map(({ icon: Icon, title, text }) => (
                   <li key={title}>
-                    <Icon size={26} strokeWidth={1.5} aria-hidden="true" />
+                    {Icon && <Icon size={30} strokeWidth={1.3} aria-hidden="true" />}
                     <div>
                       <b>{title}</b>
-                      <p>{lines[0]}</p>
+                      <p>{text}</p>
                     </div>
                   </li>
                 ))}
@@ -277,95 +401,110 @@ export default function ListingDetail({ boat, similar }: Props) {
             </section>
 
             {desc && (
-              <section className="sh-ls">
-                <h2 className="sh-ls-h2">Tekne hakkında</h2>
-                <p className={`sh-ls-text${longDesc && !descOpen ? ' is-clamped' : ''}`}>{desc}</p>
+              <section className="sh-ld-sec" id="hakkinda">
+                <h2 className="sh-ld-h2">Tekne hakkında</h2>
+                <p className={`sh-ld-text${longDesc && !descOpen ? ' is-clamped' : ''}`}>{desc}</p>
                 {longDesc && (
-                  <button type="button" className="sh-link-btn sh-ls-link" onClick={() => setDescOpen(o => !o)}>
-                    {descOpen ? 'Daha az göster' : 'Devamını oku'}
+                  <button type="button" className="sh-ld-more" onClick={() => setDescOpen(o => !o)}>
+                    {descOpen ? 'Daha az göster' : 'Daha fazla göster'}
                   </button>
                 )}
               </section>
             )}
 
-            {amenityTotal > 0 && (
-              <section className="sh-ls">
-                <h2 className="sh-ls-h2">Teknede neler var?</h2>
-                {visibleGroups.map(g => (
-                  <div key={g.key} className="sh-ls-group">
-                    <h3>{g.title}</h3>
-                    <ul className="sh-ls-amen">
-                      {g.items.map(({ key, label, icon: Icon, isExtra, price }) => (
-                        <li key={key}>
-                          <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
-                          <span>
-                            {label}
-                            {isExtra && <small>Ücretli{price ? ` · ${price.replace('+', '')}` : ''}</small>}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-                {amenityTotal > AMENITY_PREVIEW && (
-                  <button type="button" className="sh-ls-btn" onClick={() => setSheet('amenities')}>
-                    {amenityTotal} olanağın tümünü göster
-                  </button>
-                )}
-              </section>
-            )}
-
-            {model.specs.length > 0 && (
-              <section className="sh-ls">
-                <h2 className="sh-ls-h2">Teknik özellikler</h2>
-                <dl className="sh-ls-specs">
-                  {specPreview.map(({ label, value, icon: Icon }) => (
-                    <div key={label}>
-                      <dt>
-                        <Icon size={22} strokeWidth={1.5} />
-                        {label}
-                      </dt>
-                      <dd>{prettyValue(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {specItems.length > SPEC_PREVIEW && (
-                  <button type="button" className="sh-ls-btn" onClick={() => setSheet('specs')}>
-                    {specItems.length} özelliğin tümünü göster
-                  </button>
-                )}
-              </section>
-            )}
-
-            {loc && (
-              <section className="sh-ls">
-                <h2 className="sh-ls-h2">Nereden kalkıyor?</h2>
-                <p className="sh-ls-muted">{loc.summary ? cleanText(loc.summary) : place}</p>
-                <div className="sh-ls-map">
-                  {mapUrl ? (
-                    // Mapbox statik harita — next/image optimizasyonu gerekmiyor.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={mapUrl} alt={`${model.title} konumu`} loading="lazy" />
-                  ) : (
-                    <div className="sh-ls-map-fallback">
-                      <MapPin size={28} aria-hidden="true" />
-                    </div>
-                  )}
-                  {directionsUrl && (
-                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="sh-btn sh-btn--white sh-ls-map-btn">
-                      Yol tarifi al <Navigation size={16} fill="currentColor" aria-hidden="true" />
-                    </a>
-                  )}
+            <section className="sh-ld-sec">
+              <div className="sh-ld-promo">
+                <Gift size={36} strokeWidth={1.6} className="sh-ld-promo-ico" aria-hidden="true" />
+                <div>
+                  <h3>
+                    Bu ilanda <em>%15’e varan cashback</em> var!
+                  </h3>
+                  <p>Onaylanan her rezervasyonda tutarın bir kısmı Ahoy bakiyene eklenir; sonraki kiralamanda kullanırsın.</p>
+                  <Link href="/cashback" className="sh-ld-outline">
+                    Cashback’i keşfet
+                  </Link>
                 </div>
+              </div>
+            </section>
+
+            {amenities.length > 0 && (
+              <section className="sh-ld-sec" id="imkanlar">
+                <h2 className="sh-ld-h2">İmkanlar</h2>
+                <ul className="sh-ld-list">
+                  {amenities.slice(0, AMENITY_PREVIEW).map(({ key, label, icon: Icon, isExtra }) => (
+                    <li key={key}>
+                      <Icon size={24} strokeWidth={1.5} />
+                      <span>
+                        {label}
+                        {isExtra && <small> · Ücretli</small>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {amenities.length > AMENITY_PREVIEW && (
+                  <button type="button" className="sh-ld-outline" onClick={() => setSheet('amenities')}>
+                    {amenities.length} imkanın tümünü göster
+                  </button>
+                )}
               </section>
             )}
+
+            {services.length > 0 && (
+              <section className="sh-ld-sec" id="hizmetler">
+                <h2 className="sh-ld-h2">Sunulan hizmetler ve ekstralar</h2>
+                <RowList rows={services.slice(0, SERVICE_PREVIEW)} />
+                {services.length > SERVICE_PREVIEW && (
+                  <button type="button" className="sh-ld-outline" onClick={() => setSheet('services')}>
+                    {services.length} hizmetin tümünü göster
+                  </button>
+                )}
+              </section>
+            )}
+
+            <section className="sh-ld-sec">
+              <AhoyGuarantee />
+            </section>
+
+            {specRows.length > 0 && (
+              <section className="sh-ld-sec" id="ozellikler">
+                <h2 className="sh-ld-h2">İlan özellikleri</h2>
+                <RowList rows={specRows.slice(0, SPEC_PREVIEW)} />
+                {specRows.length > SPEC_PREVIEW && (
+                  <button type="button" className="sh-ld-outline" onClick={() => setSheet('specs')}>
+                    +{specRows.length - SPEC_PREVIEW} özelliğin tümünü göster
+                  </button>
+                )}
+              </section>
+            )}
+
+            <section className="sh-ld-sec" id="musaitlik">
+              <h2 className="sh-ld-h2">Müsaitlik</h2>
+              <p className="sh-ld-sub">{calStatus}</p>
+              <div className="sh-ld-cal">
+                <RangeCalendar value={trip.range} blocked={blocked} single={hourly} onChange={range => setTrip(t => ({ ...t, range }))} />
+              </div>
+              {(minDuration || weeklyDay) && (
+                <p className="sh-ld-cal-note">
+                  {minDuration && (
+                    <>
+                      Bu tekne en az <b>{minDuration}</b> kiralanabilir.{' '}
+                    </>
+                  )}
+                  {weeklyDay && (
+                    <>
+                      Haftalık kiralamalarda teslim günü <b>{weeklyDay}</b>.
+                    </>
+                  )}
+                </p>
+              )}
+            </section>
           </div>
 
-          <div className="sh-lst-side">
+          <div className="sh-ld-side">
             <BookingPanel
               boat={boat}
-              coverUrl={model.gallery[0]?.url ?? null}
-              place={place}
+              booking={booking}
+              sections={sections}
               maxGuests={maxGuests}
               approvalLabel={model.approvalLabel}
               cancellationLabel={model.cancellationLabel}
@@ -374,59 +513,107 @@ export default function ListingDetail({ boat, similar }: Props) {
           </div>
         </div>
 
-        {/* tam genişlik: bilinmesi gerekenler */}
-        {(info.length > 0 || model.rules) && (
-          <section className="sh-ls sh-ls--wide" aria-labelledby="know-title">
-            <h2 className="sh-ls-h2" id="know-title">
-              Bilinmesi gerekenler
-            </h2>
-            <ul className="sh-ls-info">
-              {info.map(({ icon: Icon, title, lines }) => (
-                <li key={title}>
-                  <Icon size={28} strokeWidth={1.4} aria-hidden="true" />
-                  <b>{title}</b>
-                  {lines.map(l => (
-                    <p key={l}>{l}</p>
-                  ))}
-                </li>
-              ))}
-            </ul>
-            {model.rules && (
-              <div className="sh-ls-note">
-                <b>Kaptanın notu</b>
-                <p>{model.rules}</p>
-              </div>
-            )}
+        {/* ---------- tam genişlik bölümler ---------- */}
+        {loc && (
+          <section className="sh-ld-sec sh-ld-wide" id="konum">
+            <h2 className="sh-ld-h2">Nereden bineceksin?</h2>
+            <p className="sh-ld-loc">{place}</p>
+            {loc.summary && <p className="sh-ld-sub">{cleanText(loc.summary)}</p>}
+            <div className="sh-ld-map">
+              {mapUrl ? (
+                // Mapbox statik harita — next/image optimizasyonu gerekmiyor.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={mapUrl} alt={`${model.title} konumu`} loading="lazy" />
+              ) : (
+                <div className="sh-ld-map-fallback">
+                  <MapPin size={28} aria-hidden="true" />
+                </div>
+              )}
+              {directionsUrl && (
+                <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="sh-btn sh-btn--white sh-ld-map-btn">
+                  Yol tarifi al <Navigation size={16} fill="currentColor" aria-hidden="true" />
+                </a>
+              )}
+            </div>
           </section>
         )}
 
-        <section className="sh-ls sh-ls--wide" aria-labelledby="trust-title">
-          <h2 className="sh-ls-h2" id="trust-title">
-            Ahoy güvencesiyle kirala
-          </h2>
-          <ul className="sh-ls-info sh-ls-info--4">
-            {TRUST_FEATURES.map(f => {
-              const Icon = TRUST_ICONS[f.icon]
-              return (
-                <li key={f.title}>
-                  <Icon size={28} strokeWidth={1.4} aria-hidden="true" />
-                  <b>{f.title}</b>
-                  <p>{f.desc}</p>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
+        {hasInfo && (
+          <div id="bilinmesi-gerekenler">
+            {r.schedules.length > 0 && (
+              <section className="sh-ld-sec sh-ld-wide">
+                <h2 className="sh-ld-h2">Giriş ve çıkış saatleri</h2>
+                <div className="sh-ld-cols">
+                  {r.schedules.map(s => (
+                    <div key={s.title}>
+                      <b>{s.title}</b>
+                      <p>Giriş: {s.checkIn ?? '—'}</p>
+                      <p>Çıkış: {s.checkOut ?? '—'}</p>
+                    </div>
+                  ))}
+                  {(boat.checkInNotes || boat.checkOutNotes) && (
+                    <div>
+                      <b>Kaptandan not</b>
+                      {boat.checkInNotes && <p>{boat.checkInNotes}</p>}
+                      {boat.checkOutNotes && <p>{boat.checkOutNotes}</p>}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {terms.length > 0 && (
+              <section className="sh-ld-sec sh-ld-wide">
+                <h2 className="sh-ld-h2">Ücret ve koşullar</h2>
+                <div className="sh-ld-cols">
+                  {terms.map(t => (
+                    <div key={t.title}>
+                      <b>{t.title}</b>
+                      <p>{t.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" className="sh-ld-ask" onClick={openMessage}>
+                  <MessageCircleMore size={22} strokeWidth={1.6} aria-hidden="true" />
+                  <span>
+                    Ek açıklamaya mı ihtiyacın var? <u>Ayrıntılar için kaptana mesaj gönder.</u>
+                  </span>
+                </button>
+              </section>
+            )}
+
+            {(house.length > 0 || model.rules) && (
+              <section className="sh-ld-sec sh-ld-wide">
+                <h2 className="sh-ld-h2">Tekne kuralları</h2>
+                {house.length > 0 && (
+                  <ul className="sh-ld-cols sh-ld-cols--ico">
+                    {house.map(({ icon: Icon, title, text }) => (
+                      <li key={title}>
+                        {Icon && <Icon size={28} strokeWidth={1.4} aria-hidden="true" />}
+                        <div>
+                          <b>{title}</b>
+                          <p>{text}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {model.rules && (
+                  <p className="sh-ld-foot">
+                    <b>Kaptanın notu:</b> {model.rules}
+                  </p>
+                )}
+              </section>
+            )}
+          </div>
+        )}
 
         {similar.length > 0 && (
-          <section className="sh-ls sh-ls--wide sh-ls--last" aria-labelledby="similar-title">
-            <div className="sh-section-head">
-              <div>
-                <h2 className="sh-ls-h2" id="similar-title">
-                  Benzer tekneler
-                </h2>
-                <p className="sh-ls-muted">{city ? `${city} ve çevresinde ilgini çekebilecek diğer tekneler.` : 'İlgini çekebilecek diğer tekneler.'}</p>
-              </div>
+          <section className="sh-ld-sec sh-ld-wide sh-ld-similar" aria-labelledby="similar-title">
+            <div className="sh-ld-similar-head">
+              <h2 className="sh-ld-h2" id="similar-title">
+                Benzer tekneler
+              </h2>
               <Link href="/tekne-kiralama" className="sh-link-arrow">
                 Tüm tekneleri gör
               </Link>
@@ -440,25 +627,88 @@ export default function ListingDetail({ boat, similar }: Props) {
         )}
       </div>
 
+      {shareOpen && (
+        <ShareModal
+          url={window.location.href}
+          title={model.title}
+          image={model.gallery[0]?.url ?? null}
+          subtitle={[type, place].filter(Boolean).join(' · ')}
+          onClose={closeShare}
+        />
+      )}
+      {authFor && (
+        <AuthModal
+          reason={
+            authFor === 'message'
+              ? `${hostName} kaptana mesaj göndermek için giriş yap ya da ücretsiz hesap oluştur.`
+              : 'Favorilerine eklemek için giriş yap ya da ücretsiz hesap oluştur.'
+          }
+          // Mesaj için giriş yapıldıysa pencere kapanınca mesaj penceresi açılır.
+          onSuccess={authFor === 'message' ? () => setMsgOpen(true) : undefined}
+          onClose={closeAuth}
+        />
+      )}
+      {msgOpen && (
+        <MessageCaptainModal
+          boatId={boat.id}
+          boatTitle={model.title}
+          hostName={hostName}
+          hostAvatar={owner?.avatarUrl ?? null}
+          onClose={closeMsg}
+          onAuthRequired={() => {
+            setMsgOpen(false)
+            setAuthFor('message')
+          }}
+        />
+      )}
+      {toast && (
+        <div className="sh-toast" role="status">
+          <Heart size={16} strokeWidth={2.2} fill={toast.link ? 'currentColor' : 'none'} aria-hidden="true" />
+          <span>{toast.text}</span>
+          {toast.link && <Link href="/hesabim#favoriler">Favorilerim</Link>}
+        </div>
+      )}
+
       {sheet === 'amenities' && (
-        <FeatureSheet title="Teknede neler var?" onClose={closeSheet}>
+        <FeatureSheet title="İmkanlar" onClose={closeSheet}>
           <AmenitySheetContent groups={amenityGroups} />
         </FeatureSheet>
       )}
+      {sheet === 'services' && (
+        <FeatureSheet title="Sunulan hizmetler ve ekstralar" onClose={closeSheet}>
+          <ul className="sh-sheet-list">
+            {services.map(({ key, icon: Icon, label, value }) => (
+              <li key={key}>
+                <Icon size={26} strokeWidth={1.5} />
+                <span>{label}</span>
+                <b className="sh-sheet-val">{value}</b>
+              </li>
+            ))}
+          </ul>
+        </FeatureSheet>
+      )}
       {sheet === 'specs' && (
-        <FeatureSheet title="Teknik özellikler" onClose={closeSheet}>
-          <SpecSheetContent items={specItems} />
+        <FeatureSheet title="İlan özellikleri" onClose={closeSheet}>
+          <SpecSheetContent rows={specRows} />
         </FeatureSheet>
       )}
     </div>
   )
 }
 
-interface SpecItem {
-  key?: string
-  label: string
-  value: string
-  icon: FeatureIcon
+function RowList({ rows }: { rows: Row[] }) {
+  return (
+    <ul className="sh-ld-list">
+      {rows.map(({ key, icon: Icon, label, value }) => (
+        <li key={key}>
+          <Icon size={24} strokeWidth={1.5} />
+          <span>
+            {label}: <b>{value}</b>
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 function FeatureSheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -512,13 +762,13 @@ function AmenitySheetContent({ groups }: { groups: AmenityGroup[] }) {
   )
 }
 
-function SpecSheetContent({ items }: { items: SpecItem[] }) {
-  const known = new Set(SPEC_GROUPS.flatMap(g => g.keys))
-  const groups = SPEC_GROUPS.map(g => ({
+function SpecSheetContent({ rows }: { rows: Row[] }) {
+  const known = new Set([...GENERAL_SPEC_KEYS, ...SPEC_GROUPS.flatMap(g => g.keys)])
+  const groups = SPEC_GROUPS.map((g, i) => ({
     title: g.title,
-    items: g.keys.flatMap(k => items.filter(i => i.key === k)),
+    items: (i === 0 ? [...GENERAL_SPEC_KEYS, ...g.keys] : g.keys).flatMap(k => rows.filter(row => row.key === k)),
   })).filter(g => g.items.length > 0)
-  const other = items.filter(i => !i.key || !known.has(i.key))
+  const other = rows.filter(row => !known.has(row.key))
   if (other.length > 0) groups.push({ title: 'Diğer', items: other })
 
   return (
@@ -527,11 +777,11 @@ function SpecSheetContent({ items }: { items: SpecItem[] }) {
         <section key={g.title} className="sh-sheet-group">
           <h3>{g.title}</h3>
           <ul className="sh-sheet-list">
-            {g.items.map(({ label, value, icon: Icon }) => (
-              <li key={label}>
+            {g.items.map(({ key, label, value, icon: Icon }) => (
+              <li key={key}>
                 <Icon size={26} strokeWidth={1.5} />
                 <span>{label}</span>
-                <b className="sh-sheet-val">{prettyValue(value)}</b>
+                <b className="sh-sheet-val">{value}</b>
               </li>
             ))}
           </ul>
@@ -539,6 +789,16 @@ function SpecSheetContent({ items }: { items: SpecItem[] }) {
       ))}
     </>
   )
+}
+
+/** Katılım tarihinden "4 aydır ilan sahibi" / "2 yıldır ilan sahibi". */
+function hostSince(joinedAt: string): string {
+  const joined = new Date(joinedAt)
+  const now = new Date()
+  const months = (now.getFullYear() - joined.getFullYear()) * 12 + (now.getMonth() - joined.getMonth()) - (now.getDate() < joined.getDate() ? 1 : 0)
+  if (!Number.isFinite(months) || months < 1) return 'Ahoy’a yeni katıldı'
+  if (months < 12) return `${months} aydır ilan sahibi`
+  return `${Math.floor(months / 12)} yıldır ilan sahibi`
 }
 
 /** ["a","b","c"] → "a, b ve c" */

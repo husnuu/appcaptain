@@ -1,11 +1,9 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CalendarDays, CircleCheck, Gift, Minus, Plus, ShieldCheck } from 'lucide-react'
+import { CircleCheck, Hourglass, Minus, Moon, Plus, ShieldCheck, Sun, Zap, type LucideIcon } from 'lucide-react'
 import type { SerializedBoatDTO } from '@getyourboat/shared'
 import RangeCalendar from '@/components/sh/RangeCalendar'
 import { fetchAvailability, type BlockedRange } from '@/lib/api'
@@ -13,46 +11,90 @@ import { TIME_OPTIONS, checkoutHref, estimatePrice, minutesOf } from '@/lib/book
 import { formatDayMonth, formatMoney, listingModelLabel, priceUnit } from '@/lib/boatFormat'
 import TripPickerModal, { tripIsComplete, type TripValue } from './TripPickerModal'
 
+/**
+ * İlan sayfasının rezervasyon durumu. Kart, satır içi müsaitlik takvimi ve
+ * üst çubuk aynı state'i paylaşır; bu yüzden state ListingDetail'de tutulur.
+ */
+export function useBookingState(boat: SerializedBoatDTO) {
+  const prices = useMemo(() => boat.pricing.filter(p => p.price > 0), [boat.pricing])
+  const [priceKey, setPriceKey] = useState(prices[0]?.listingModelKey ?? '')
+  const price = prices.find(p => p.listingModelKey === priceKey) ?? prices[0] ?? null
+  const hourly = price?.listingModelKey === 'hourly'
+  const [trip, setTrip] = useState<TripValue>({ range: { start: null, end: null }, guests: 1, startTime: null, endTime: null })
+  const [blocked, setBlocked] = useState<BlockedRange[]>([])
+
+  useEffect(() => {
+    fetchAvailability(boat.id).then(setBlocked).catch(() => setBlocked([]))
+  }, [boat.id])
+
+  const selectModel = (key: string) => {
+    setPriceKey(key)
+    setTrip(t => ({ ...t, range: { start: null, end: null }, startTime: null, endTime: null }))
+  }
+
+  return { prices, price, hourly, trip, setTrip, blocked, selectModel }
+}
+
+export type BookingState = ReturnType<typeof useBookingState>
+
+export interface ListingSection {
+  id: string
+  label: string
+}
+
 interface Props {
   boat: SerializedBoatDTO
-  coverUrl: string | null
-  place: string
+  booking: BookingState
+  /** Üst çubuktaki bölüm sekmeleri (sayfadaki section id'leri). */
+  sections: ListingSection[]
   maxGuests: number
   approvalLabel: string | null
   cancellationLabel: string | null
   minDuration: string | null
 }
 
-export default function BookingPanel({ boat, coverUrl, place, maxGuests, approvalLabel, cancellationLabel, minDuration }: Props) {
-  const router = useRouter()
-  const prices = boat.pricing.filter(p => p.price > 0)
-  const [priceKey, setPriceKey] = useState(prices[0]?.listingModelKey ?? '')
-  const price = prices.find(p => p.listingModelKey === priceKey) ?? prices[0] ?? null
-  const hourly = price?.listingModelKey === 'hourly'
+/** Üst çubuğun yüksekliği; sekmeye tıklanınca bölüm bu kadar aşağıda durur. */
+const BAR_OFFSET = 78
 
-  const [trip, setTrip] = useState<TripValue>({ range: { start: null, end: null }, guests: 1, startTime: null, endTime: null })
+export default function BookingPanel({ boat, booking, sections, maxGuests, approvalLabel, cancellationLabel, minDuration }: Props) {
+  const router = useRouter()
+  const { prices, price, hourly, trip, setTrip, blocked, selectModel } = booking
+
   const [calOpen, setCalOpen] = useState(false)
   const [modal, setModal] = useState(false)
-  const [blocked, setBlocked] = useState<BlockedRange[]>([])
   const [topBar, setTopBar] = useState(false)
+  const [cardGone, setCardGone] = useState(false)
+  const [active, setActive] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const calRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    fetchAvailability(boat.id).then(setBlocked).catch(() => setBlocked([]))
-  }, [boat.id])
+  const sectionIds = sections.map(s => s.id).join(',')
 
-  // Galeri geçildiğinde üstte fiyat + CTA çubuğu (masaüstü) gösterilir.
+  // Galeri geçilince üstte bölüm sekmeleri; kart görünmez olunca sağda fiyat + CTA.
   useEffect(() => {
     setMounted(true)
+    const ids = sectionIds ? sectionIds.split(',') : []
     const onScroll = () => {
-      const body = document.querySelector('.sh-lst-body') as HTMLElement | null
-      setTopBar(!!body && body.getBoundingClientRect().top < 40)
+      const body = document.querySelector('.sh-ld-body') as HTMLElement | null
+      setTopBar(!!body && body.getBoundingClientRect().top < 1)
+      const card = cardRef.current
+      setCardGone(!!card && card.getBoundingClientRect().bottom < BAR_OFFSET + 8)
+      let current: string | null = null
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= BAR_OFFSET + 24) current = id
+      }
+      setActive(current)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [sectionIds])
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -91,6 +133,12 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
 
   const reserve = () => (ready ? goCheckout(trip) : setModal(true))
 
+  const jump = (id: string) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - BAR_OFFSET + 1, behavior: 'smooth' })
+  }
+
   const priceLine = price ? (
     <p className="sh-bk-price">
       <b>{formatMoney(price.price, price.currency)}</b>
@@ -102,14 +150,22 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
     </p>
   )
 
+  const facts: { icon: LucideIcon; text: string }[] = [
+    price && {
+      icon: price.listingModelKey === 'hourly' || price.listingModelKey === 'daily' ? Sun : Moon,
+      text: listingModelLabel(price.listingModelKey, price.listingModelLabel),
+    },
+    minDuration && { icon: Hourglass, text: `En az ${minDuration}` },
+    approvalLabel && { icon: approvalLabel === 'Anında rezervasyon' ? Zap : ShieldCheck, text: approvalLabel },
+    cancellationLabel && { icon: CircleCheck, text: cancellationLabel },
+  ].filter(Boolean) as { icon: LucideIcon; text: string }[]
+
   return (
     <>
       {/* ---------- masaüstü kart ---------- */}
-      <aside className="sh-bk-card" aria-label="Rezervasyon">
-        <div className="sh-bk-head">
-          {priceLine}
-          {price && <span className="sh-bk-model">{listingModelLabel(price.listingModelKey, price.listingModelLabel)}</span>}
-        </div>
+      <aside className="sh-bk-card" aria-label="Rezervasyon" ref={cardRef}>
+        {priceLine}
+        <p className="sh-bk-sub">Başlangıç fiyatı</p>
 
         {prices.length > 1 && (
           <div className="sh-toggle sh-bk-models" role="tablist" aria-label="Kiralama türü">
@@ -119,10 +175,7 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
                 type="button"
                 role="tab"
                 aria-selected={p.listingModelKey === price?.listingModelKey}
-                onClick={() => {
-                  setPriceKey(p.listingModelKey)
-                  setTrip(t => ({ ...t, range: { start: null, end: null }, startTime: null, endTime: null }))
-                }}
+                onClick={() => selectModel(p.listingModelKey)}
               >
                 {listingModelLabel(p.listingModelKey, p.listingModelLabel).replace(' kiralama', '')}
               </button>
@@ -130,22 +183,33 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
           </div>
         )}
 
+        {facts.length > 0 && (
+          <ul className="sh-bk-facts">
+            {facts.map(({ icon: Icon, text }) => (
+              <li key={text}>
+                <Icon size={19} strokeWidth={1.7} aria-hidden="true" />
+                {text}
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className="sh-bk-box" ref={calRef}>
-          <button type="button" className="sh-bk-dates" onClick={() => setCalOpen(o => !o)} aria-expanded={calOpen}>
+          <button type="button" className={`sh-bk-dates${hourly ? ' sh-bk-dates--one' : ''}`} onClick={() => setCalOpen(o => !o)} aria-expanded={calOpen}>
             {hourly ? (
               <span>
                 <small>Tarih</small>
-                <b>{trip.range.start ? formatDayMonth(trip.range.start) : 'Gün seçin'}</b>
+                <b className={trip.range.start ? '' : 'is-empty'}>{trip.range.start ? formatDayMonth(trip.range.start) : 'Gün seçin'}</b>
               </span>
             ) : (
               <>
                 <span>
                   <small>Giriş</small>
-                  <b>{trip.range.start ? formatDayMonth(trip.range.start) : 'Tarih ekle'}</b>
+                  <b className={trip.range.start ? '' : 'is-empty'}>{trip.range.start ? formatDayMonth(trip.range.start) : 'Tarih ekleyin'}</b>
                 </span>
                 <span>
                   <small>Çıkış</small>
-                  <b>{trip.range.end ? formatDayMonth(trip.range.end) : 'Tarih ekle'}</b>
+                  <b className={trip.range.end ? '' : 'is-empty'}>{trip.range.end ? formatDayMonth(trip.range.end) : 'Tarih ekleyin'}</b>
                 </span>
               </>
             )}
@@ -181,16 +245,15 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
           )}
           <div className="sh-bk-guests">
             <span>
-              <b>Misafir</b>
-              <small>En fazla {maxGuests} kişi</small>
+              <small>Misafir</small>
+              <b>
+                {trip.guests} kişi <i>· en fazla {maxGuests}</i>
+              </b>
             </span>
             <div className="sh-stepper sh-stepper--sm">
               <button type="button" aria-label="Azalt" disabled={trip.guests <= 1} onClick={() => setTrip(t => ({ ...t, guests: t.guests - 1 }))}>
                 <Minus size={15} />
               </button>
-              <span>
-                <b>{trip.guests}</b>
-              </span>
               <button type="button" aria-label="Arttır" disabled={trip.guests >= maxGuests} onClick={() => setTrip(t => ({ ...t, guests: t.guests + 1 }))}>
                 <Plus size={15} />
               </button>
@@ -201,7 +264,7 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
         <button type="button" className="sh-btn sh-btn--navy sh-bk-cta" onClick={reserve}>
           {ready ? 'Rezervasyon yap' : 'Müsaitliği kontrol et'}
         </button>
-        <p className="sh-bk-note">Şimdi ücret alınmaz. Kaptan onayından sonra ödeme yaparsın.</p>
+        <p className="sh-bk-note">Henüz bir ödeme yapmayacaksın.</p>
 
         {estimate && price && (
           <dl className="sh-bk-sum">
@@ -217,56 +280,36 @@ export default function BookingPanel({ boat, coverUrl, place, maxGuests, approva
             </div>
           </dl>
         )}
-
-        <ul className="sh-bk-meta">
-          {approvalLabel && (
-            <li>
-              <ShieldCheck size={17} strokeWidth={1.8} aria-hidden="true" /> {approvalLabel}
-            </li>
-          )}
-          {cancellationLabel && (
-            <li>
-              <CircleCheck size={17} strokeWidth={1.8} aria-hidden="true" /> {cancellationLabel}
-            </li>
-          )}
-          {minDuration && (
-            <li>
-              <CalendarDays size={17} strokeWidth={1.8} aria-hidden="true" /> En az {minDuration}
-            </li>
-          )}
-        </ul>
-
-        <Link href="/cashback" className="sh-bk-cash">
-          <Gift size={18} strokeWidth={1.8} aria-hidden="true" />
-          <span>
-            <b>%15’e varan cashback</b> — onaylanan rezervasyonda bakiyene eklenir.
-          </span>
-        </Link>
       </aside>
 
-      {/* ---------- masaüstü yapışkan üst çubuk (body'ye taşınır; header'ın üstünde kalsın) ---------- */}
+      {/* ---------- masaüstü yapışkan üst çubuk: bölüm sekmeleri + (kart kaybolunca) fiyat ve CTA ---------- */}
       {mounted &&
         createPortal(
           <div className={`sh-bk-top${topBar ? ' is-visible' : ''}`} aria-hidden={!topBar}>
             <div className="sh-container sh-bk-top-inner">
-              <div className="sh-bk-top-boat">
-                {coverUrl && (
-                  <span className="sh-bk-top-img">
-                    <Image src={coverUrl} alt="" fill sizes="60px" />
-                  </span>
-                )}
-                <span>
-                  <b>{boat.title}</b>
-                  <small>{place}</small>
-                </span>
-              </div>
-              <div className="sh-bk-top-cta">
+              <nav className="sh-bk-tabs" aria-label="İlan bölümleri">
+                {sections.map(s => (
+                  <a
+                    key={s.id}
+                    href={`#${s.id}`}
+                    className={active === s.id ? 'is-active' : undefined}
+                    tabIndex={topBar ? 0 : -1}
+                    onClick={e => {
+                      e.preventDefault()
+                      jump(s.id)
+                    }}
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </nav>
+              <div className={`sh-bk-top-cta${cardGone ? ' is-visible' : ''}`} aria-hidden={!cardGone}>
                 <span>
                   {priceLine}
-                  <small>{ready ? tripText(trip) : 'Şimdi ücret alınmaz'}</small>
+                  <small>{ready ? tripText(trip) : 'Tahmini toplam için tarih seç'}</small>
                 </span>
-                <button type="button" className="sh-btn sh-btn--navy" onClick={reserve} tabIndex={topBar ? 0 : -1}>
-                  {ready ? 'Rezervasyon yap' : 'Tarih seç'}
+                <button type="button" className="sh-btn sh-btn--navy" onClick={reserve} tabIndex={topBar && cardGone ? 0 : -1}>
+                  {ready ? 'Rezervasyon yap' : 'Müsaitliği kontrol et'}
                 </button>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Grid2x2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Images, X } from 'lucide-react'
 
 interface Photo {
   url: string
@@ -60,7 +60,7 @@ export default function ListingGallery({ photos, title }: { photos: Photo[]; tit
         ))}
         {count > 1 && (
           <button type="button" className="sh-btn sh-btn--white sh-gal-all" onClick={() => setOpen(0)}>
-            <Grid2x2 size={16} strokeWidth={2} aria-hidden="true" /> Tüm fotoğraflar ({count})
+            <Images size={17} strokeWidth={1.8} aria-hidden="true" /> Tüm fotoğrafları göster
           </button>
         )}
       </div>

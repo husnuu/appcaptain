@@ -130,7 +130,8 @@ export default function HomeHero() {
           </p>
         </div>
 
-        <div className="sh-hsearch">
+        {/* data-hero-search: header bu kutu ekrandan çıkınca kompakt aramaya geçer */}
+        <div className="sh-hsearch" data-hero-search>
           <div className="sh-htabs" role="tablist" aria-label="Arama türü">
             {TABS.map(t => (
               <button

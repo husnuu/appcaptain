@@ -127,7 +127,7 @@ export function TrustBlock() {
     <section className="sh-sect sh-sect--cream sh-trust-wrap" id="neden-ahoy" aria-labelledby="trust-title">
       <div className="sh-container">
         <div className="sh-trust">
-          <Image className="sh-trust-yacht" src="/home/trust-yacht.webp" alt="" width={589} height={397} />
+          <Image className="sh-trust-yacht" src="/home/trust-yacht-clean.webp" alt="" width={589} height={397} />
           <div className="sh-trust-copy">
             <h2 className="sh-trust-title" id="trust-title">
               Deniz deneyiminizi

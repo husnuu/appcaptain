@@ -6,21 +6,17 @@ import { createPortal } from 'react-dom'
 import {
   ArrowDownWideNarrow,
   Check,
-  Headset,
   Minus,
   Plus,
   RotateCcw,
   Sailboat,
-  ShieldCheck,
-  Ship,
   SlidersHorizontal,
-  UserRoundCheck,
   X,
 } from 'lucide-react'
 import type { PublicBoatSummary } from '@/lib/api'
 import BoatListCard from '@/components/boats/BoatListCard'
 import { CashbackCard } from '@/components/home/HomeStatic'
-import { TRUST_FEATURES } from '@/components/home/content'
+import AhoyGuarantee from '@/components/sh/AhoyGuarantee'
 import { boatTypeLabel, listingModelLabel, lowestPrice } from '@/lib/boatFormat'
 
 type Sort = 'recommended' | 'price-asc' | 'price-desc' | 'newest' | 'capacity'
@@ -31,8 +27,6 @@ const SORTS: { value: Sort; label: string }[] = [
   { value: 'capacity', label: 'Kapasite: En geniş' },
   { value: 'newest', label: 'Model yılı: En yeni' },
 ]
-
-const TRUST_ICONS = { shield: ShieldCheck, ship: Ship, headset: Headset, user: UserRoundCheck }
 
 type Range = [number, number]
 type Crew = 'with' | 'without'
@@ -275,7 +269,11 @@ export default function RentalClient({ boats, initialCity, initialType }: Props)
           <h1 className="sh-rl-title">{title}</h1>
           <p className="sh-rl-sub">Doğrulanmış kaptanların teknelerini karşılaştır, sana uygun olanı seç ve rezervasyon talebini gönder.</p>
         </header>
+      </div>
 
+      {/* beyaz tabaka: filtreler + sonuçlar */}
+      <div className="sh-rl-sheet">
+        <div className="sh-container">
         <div className="sh-rl">
           <aside className="sh-rl-side" aria-label="Filtreler">
             <div className="sh-flt-top">
@@ -374,22 +372,16 @@ export default function RentalClient({ boats, initialCity, initialType }: Props)
           </section>
         </div>
 
-        <div className="sh-rent-why">
-          {TRUST_FEATURES.map(t => {
-            const Icon = TRUST_ICONS[t.icon]
-            return (
-              <div key={t.title} className="sh-why">
-                <span className="sh-why-ico">
-                  <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
-                </span>
-                <h3>{t.title}</h3>
-                <p>{t.desc}</p>
-              </div>
-            )
-          })}
         </div>
       </div>
-      <CashbackCard />
+
+      {/* krem bant: Ahoy güvencesi + cashback */}
+      <div className="sh-rl-band">
+        <div className="sh-container">
+          <AhoyGuarantee />
+        </div>
+        <CashbackCard />
+      </div>
 
       {/* ---------- mobil filtre çekmecesi ---------- */}
       {drawer &&

@@ -6,7 +6,6 @@ import './seahub.css'
 import './seahub-pages.css'
 import NavWrapper from '@/components/NavWrapper'
 import Footer from '@/components/Footer'
-import MobileNav from '@/components/MobileNav'
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -48,7 +47,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavWrapper />
         <main>{children}</main>
         <Footer />
-        <MobileNav />
       </body>
     </html>
   )

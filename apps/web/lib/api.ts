@@ -3,6 +3,8 @@ import type {
   CreateBookingInput,
   ExperienceDTO,
   ExperienceListItemDTO,
+  GuestConversationDTO,
+  GuestMessageDTO,
   SerializedBoatDTO,
 } from "@getyourboat/shared";
 import { supabase } from "@/lib/supabase";
@@ -171,4 +173,52 @@ export async function fetchMyBookings(): Promise<BookingDTO[]> {
     console.error("GET /bookings/mine threw:", err);
     return [];
   }
+}
+
+/* ==========================================================================
+   Müşteri mesajlaşması — Supabase oturumuyla (Authorization: Bearer)
+   ========================================================================== */
+
+/** Oturum yoksa "AUTH" hatası fırlatır; çağıran giriş penceresini açar. */
+async function customerFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("AUTH");
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  if (res.status === 401) throw new Error("AUTH");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { message?: string }).message ?? "İstek başarısız oldu");
+  }
+  return res.json() as Promise<T>;
+}
+
+/** İlan sayfasından kaptana mesaj — aynı tekne için açık konuşma varsa ona eklenir. */
+export async function sendBoatMessage(boatId: string, content: string): Promise<{ conversationId: string }> {
+  return customerFetch(`/customer/boats/${boatId}/messages`, { method: "POST", body: JSON.stringify({ content }) });
+}
+
+export async function fetchMyConversations(): Promise<GuestConversationDTO[]> {
+  const data = await customerFetch<{ conversations: GuestConversationDTO[] }>("/customer/conversations");
+  return data.conversations;
+}
+
+export async function fetchConversation(id: string): Promise<{ conversation: GuestConversationDTO; messages: GuestMessageDTO[] }> {
+  return customerFetch(`/customer/conversations/${id}`);
+}
+
+export async function sendConversationMessage(id: string, content: string): Promise<GuestMessageDTO> {
+  const data = await customerFetch<{ message: GuestMessageDTO }>(`/customer/conversations/${id}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+  return data.message;
 }
